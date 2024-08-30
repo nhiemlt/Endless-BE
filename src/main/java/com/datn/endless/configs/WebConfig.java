@@ -1,4 +1,4 @@
-package java6.assignment.configs;
+package com.datn.endless.configs;
 
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

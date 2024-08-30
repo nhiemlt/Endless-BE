@@ -1,4 +1,4 @@
-package java6.assignment.utils;
+package com.datn.endless.services;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package java6.assignment.utils;
+package com.datn.endless.services;
 
 import org.jasypt.util.password.BasicPasswordEncryptor;
 import org.springframework.stereotype.Service;

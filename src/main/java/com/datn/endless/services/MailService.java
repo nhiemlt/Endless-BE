@@ -1,4 +1,4 @@
-package java6.assignment.services;
+package com.datn.endless.services;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
