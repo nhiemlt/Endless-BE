@@ -12,56 +12,32 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "useraddresses")
 public class Useraddress {
-    private String addressID;
-
-    private User userID;
-
-    private Province provinceCode;
-
-    private District districtCode;
-
-    private Ward wardCode;
-
-    private String houseNumberStreet;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "AddressID", nullable = false, length = 36)
-    public String getAddressID() {
-        return addressID;
-    }
+    private String addressID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    public User getUserID() {
-        return userID;
-    }
+    private User userID;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ProvinceCode")
-    public Province getProvinceCode() {
-        return provinceCode;
-    }
+    private Province provinceCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "DistrictCode")
-    public District getDistrictCode() {
-        return districtCode;
-    }
+    private District districtCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "WardCode")
-    public Ward getWardCode() {
-        return wardCode;
-    }
+    private Ward wardCode;
 
     @NotNull
     @Lob
     @Column(name = "HouseNumberStreet", nullable = false)
-    public String getHouseNumberStreet() {
-        return houseNumberStreet;
-    }
+    private String houseNumberStreet;
 
 }

@@ -16,23 +16,15 @@ import java.util.Objects;
 @Embeddable
 public class PermissionroleId implements Serializable {
     private static final long serialVersionUID = -1058579061975791561L;
-    private String permissionID;
-
-    private String roleId;
-
     @Size(max = 36)
     @NotNull
     @Column(name = "PermissionID", nullable = false, length = 36)
-    public String getPermissionID() {
-        return permissionID;
-    }
+    private String permissionID;
 
     @Size(max = 36)
     @NotNull
     @Column(name = "Role_ID", nullable = false, length = 36)
-    public String getRoleId() {
-        return roleId;
-    }
+    private String roleId;
 
     @Override
     public boolean equals(Object o) {

@@ -12,31 +12,19 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "promotiondetails")
 public class Promotiondetail {
-    private String promotionDetailID;
-
-    private Promotion promotionID;
-
-    private Integer percentDiscount;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "PromotionDetailID", nullable = false, length = 36)
-    public String getPromotionDetailID() {
-        return promotionDetailID;
-    }
+    private String promotionDetailID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PromotionID", nullable = false)
-    public Promotion getPromotionID() {
-        return promotionID;
-    }
+    private Promotion promotionID;
 
     @NotNull
     @Column(name = "PercentDiscount", nullable = false)
-    public Integer getPercentDiscount() {
-        return percentDiscount;
-    }
+    private Integer percentDiscount;
 
 }

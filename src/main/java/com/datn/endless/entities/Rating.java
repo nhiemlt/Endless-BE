@@ -14,55 +14,31 @@ import java.time.Instant;
 @Entity
 @Table(name = "ratings")
 public class Rating {
-    private String ratingID;
-
-    private User userID;
-
-    private Orderdetail orderDetailID;
-
-    private Integer ratingValue;
-
-    private String comment;
-
-    private Instant ratingDate;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "RatingID", nullable = false, length = 36)
-    public String getRatingID() {
-        return ratingID;
-    }
+    private String ratingID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    public User getUserID() {
-        return userID;
-    }
+    private User userID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "OrderDetailID", nullable = false)
-    public Orderdetail getOrderDetailID() {
-        return orderDetailID;
-    }
+    private Orderdetail orderDetailID;
 
     @Column(name = "RatingValue")
-    public Integer getRatingValue() {
-        return ratingValue;
-    }
+    private Integer ratingValue;
 
     @Lob
     @Column(name = "Comment")
-    public String getComment() {
-        return comment;
-    }
+    private String comment;
 
     @NotNull
     @Column(name = "RatingDate", nullable = false)
-    public Instant getRatingDate() {
-        return ratingDate;
-    }
+    private Instant ratingDate;
 
 }

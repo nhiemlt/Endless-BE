@@ -12,32 +12,20 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "userroles")
 public class Userrole {
-    private String userroleId;
-
-    private User user;
-
-    private Role role;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "Userrole_ID", nullable = false, length = 36)
-    public String getUserroleId() {
-        return userroleId;
-    }
+    private String userroleId;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    public User getUser() {
-        return user;
-    }
+    private User user;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_Id", nullable = false)
-    public Role getRole() {
-        return role;
-    }
+    private Role role;
 
 }

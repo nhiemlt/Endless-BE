@@ -12,32 +12,20 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "favorite")
 public class Favorite {
-    private String favoriteID;
-
-    private User userID;
-
-    private Product productID;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "FavoriteID", nullable = false, length = 36)
-    public String getFavoriteID() {
-        return favoriteID;
-    }
+    private String favoriteID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    public User getUserID() {
-        return userID;
-    }
+    private User userID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ProductID", nullable = false)
-    public Product getProductID() {
-        return productID;
-    }
+    private Product productID;
 
 }

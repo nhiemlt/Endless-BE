@@ -12,31 +12,19 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "brands")
 public class Brand {
-    private String brandID;
-
-    private String name;
-
-    private String logo;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "BrandID", nullable = false, length = 36)
-    public String getBrandID() {
-        return brandID;
-    }
+    private String brandID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "Name", nullable = false)
-    public String getName() {
-        return name;
-    }
+    private String name;
 
     @Lob
     @Column(name = "Logo")
-    public String getLogo() {
-        return logo;
-    }
+    private String logo;
 
 }

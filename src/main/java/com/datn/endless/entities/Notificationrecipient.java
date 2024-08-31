@@ -12,41 +12,25 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "notificationrecipients")
 public class Notificationrecipient {
-    private String notificationRecipientID;
-
-    private Notification notificationID;
-
-    private User userID;
-
-    private String status;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "NotificationRecipientID", nullable = false, length = 36)
-    public String getNotificationRecipientID() {
-        return notificationRecipientID;
-    }
+    private String notificationRecipientID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "NotificationID", nullable = false)
-    public Notification getNotificationID() {
-        return notificationID;
-    }
+    private Notification notificationID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    public User getUserID() {
-        return userID;
-    }
+    private User userID;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "Status", nullable = false, length = 50)
-    public String getStatus() {
-        return status;
-    }
+    private String status;
 
 }

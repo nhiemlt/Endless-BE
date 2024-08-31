@@ -15,80 +15,44 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "orders")
 public class Order {
-    private String orderID;
-
-    private User userID;
-
-    private Voucher voucherID;
-
-    private LocalDate orderDate;
-
-    private BigDecimal totalMoney;
-
-    private String orderStatus;
-
-    private String orderAddress;
-
-    private String orderPhone;
-
-    private String orderName;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "OrderID", nullable = false, length = 36)
-    public String getOrderID() {
-        return orderID;
-    }
+    private String orderID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    public User getUserID() {
-        return userID;
-    }
+    private User userID;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "VoucherID")
-    public Voucher getVoucherID() {
-        return voucherID;
-    }
+    private Voucher voucherID;
 
     @NotNull
     @Column(name = "OrderDate", nullable = false)
-    public LocalDate getOrderDate() {
-        return orderDate;
-    }
+    private LocalDate orderDate;
 
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)
-    public BigDecimal getTotalMoney() {
-        return totalMoney;
-    }
+    private BigDecimal totalMoney;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "OrderStatus", nullable = false, length = 50)
-    public String getOrderStatus() {
-        return orderStatus;
-    }
+    private String orderStatus;
 
     @Lob
     @Column(name = "OrderAddress")
-    public String getOrderAddress() {
-        return orderAddress;
-    }
+    private String orderAddress;
 
     @Size(max = 15)
     @Column(name = "OrderPhone", length = 15)
-    public String getOrderPhone() {
-        return orderPhone;
-    }
+    private String orderPhone;
 
     @Size(max = 255)
     @Column(name = "OrderName")
-    public String getOrderName() {
-        return orderName;
-    }
+    private String orderName;
 
 }
