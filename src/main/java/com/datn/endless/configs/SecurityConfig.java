@@ -1,5 +1,6 @@
 package com.datn.endless.configs;
 
+import com.datn.endless.services.Constant;
 import com.datn.endless.services.CustomOAuth2UserService;
 import com.datn.endless.services.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
@@ -11,15 +12,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    public SecurityConfig(CustomUserDetailsService customUserDetailsService, CustomOAuth2UserService customOAuth2UserService) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomUserDetailsService customUserDetailsService) {
         this.customOAuth2UserService = customOAuth2UserService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Bean
@@ -50,9 +54,11 @@ public class SecurityConfig {
                         .requestMatchers("/categories/delete").hasAuthority("Xóa danh mục")
                         .requestMatchers("/roles/add").hasAuthority("Thêm vai trò")
                         .requestMatchers("/roles/edit").hasAuthority("Sửa vai trò")
-                        .requestMatchers("/roles/delete").hasAuthority("Xóa vai trò")
+                        .requestMatchers("/roles.delete").hasAuthority("Xóa vai trò")
                         .requestMatchers("/reports/export").hasAuthority("Xuất báo cáo")
                         .requestMatchers("/login").permitAll() // Cho phép truy cập vào /login
+                        .requestMatchers("/register").permitAll()
+                        .requestMatchers("/verify").permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable()) // Vô hiệu hóa CSRF nếu bạn không sử dụng nó cho API
@@ -62,7 +68,9 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
-                );
+                )
+                .addFilterBefore(new JWTAuthenticationFilter(customUserDetailsService),
+                        UsernamePasswordAuthenticationFilter.class); // Thêm JWTAuthenticationFilter vào chuỗi bảo mật
 
         return http.build();
     }
