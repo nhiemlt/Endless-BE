@@ -50,6 +50,14 @@ public class User {
     @Column(name = "Language", length = 50)
     private String language;
 
+    @ColumnDefault("1")
+    @Column(name = "active")
+    private Boolean active;
+
+    @ColumnDefault("0")
+    @Column(name = "forgetPassword")
+    private Boolean forgetPassword;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "UserRoles",

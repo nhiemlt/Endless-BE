@@ -77,5 +77,19 @@ public class MailService {
         sendHtmlMail(to, subject, htmlBody);
     }
 
+    public void sendResetPasswordMail(String username, String to, String resetLink) throws MessagingException {
+        String subject = "Password Reset Request";
+        String htmlBody = "<p>Dear " + username + ",</p>"
+                + "<p>We received a request to reset the password for your account.</p>"
+                + "<p>If you made this request, please click the link below to reset your password:</p>"
+                + "<p><a href=\"" + resetLink + "\">Reset Password</a></p>"
+                + "<p>If you did not request a password reset, please ignore this email or contact our support team.</p>"
+                + "<p>Thank you for your attention.</p>"
+                + "<p>Best regards,<br> Endless</p>";
+
+        sendHtmlMail(to, subject, htmlBody);
+    }
+
+
 
 }
