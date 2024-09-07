@@ -12,40 +12,24 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "carts")
 public class Cart {
-    private String cartID;
-
-    private User userID;
-
-    private Productversion productVersionID;
-
-    private Integer quantity;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "CartID", nullable = false, length = 36)
-    public String getCartID() {
-        return cartID;
-    }
+    private String cartID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    public User getUserID() {
-        return userID;
-    }
+    private User userID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ProductVersionID", nullable = false)
-    public Productversion getProductVersionID() {
-        return productVersionID;
-    }
+    private Productversion productVersionID;
 
     @NotNull
     @Column(name = "Quantity", nullable = false)
-    public Integer getQuantity() {
-        return quantity;
-    }
+    private Integer quantity;
 
 }

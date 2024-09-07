@@ -7,45 +7,34 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @Entity
 @Table(name = "permissions")
 public class Permission {
-    private String permissionID;
-
-    private Module moduleID;
-
-    private String permissionName;
-
-    private String enPermissionname;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "PermissionID", nullable = false, length = 36)
-    public String getPermissionID() {
-        return permissionID;
-    }
+    private String permissionID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ModuleID", nullable = false)
-    public Module getModuleID() {
-        return moduleID;
-    }
+    private Module moduleID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "PermissionName", nullable = false)
-    public String getPermissionName() {
-        return permissionName;
-    }
+    private String permissionName;
 
     @Size(max = 255)
     @Column(name = "EN_PermissionName")
-    public String getEnPermissionname() {
-        return enPermissionname;
-    }
+    private String enPermissionname;
+
+    @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
+    private Set<Role> roles;
 
 }

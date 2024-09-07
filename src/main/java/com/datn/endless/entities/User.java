@@ -6,77 +6,64 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
+
+import java.util.Set;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "users")
 public class User {
-    private String userID;
-
-    private String username;
-
-    private String fullname;
-
-    private String password;
-
-    private String phone;
-
-    private String email;
-
-    private String avatar;
-
-    private String language;
-
     @Id
-    @Size(max = 36)
-    @ColumnDefault("(uuid())")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(name = "UserID", nullable = false, length = 36)
-    public String getUserID() {
-        return userID;
-    }
+    private String userID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "Username", nullable = false)
-    public String getUsername() {
-        return username;
-    }
+    private String username;
 
     @Size(max = 255)
     @Column(name = "Fullname")
-    public String getFullname() {
-        return fullname;
-    }
+    private String fullname;
 
     @Size(max = 255)
     @Column(name = "Password")
-    public String getPassword() {
-        return password;
-    }
+    private String password;
 
     @Size(max = 11)
     @Column(name = "Phone", length = 11)
-    public String getPhone() {
-        return phone;
-    }
+    private String phone;
 
     @Size(max = 255)
     @Column(name = "Email")
-    public String getEmail() {
-        return email;
-    }
+    private String email;
 
     @Lob
     @Column(name = "Avatar")
-    public String getAvatar() {
-        return avatar;
-    }
+    private String avatar;
 
     @Size(max = 50)
     @Column(name = "Language", length = 50)
-    public String getLanguage() {
-        return language;
-    }
+    private String language;
+
+    @ColumnDefault("1")
+    @Column(name = "active")
+    private Boolean active;
+
+    @ColumnDefault("0")
+    @Column(name = "forgetPassword")
+    private Boolean forgetPassword;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "UserRoles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles;
 
 }

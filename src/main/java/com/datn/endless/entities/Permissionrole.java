@@ -9,29 +9,17 @@ import lombok.Setter;
 @Entity
 @Table(name = "permissionrole")
 public class Permissionrole {
-    private PermissionroleId id;
-
-    private Permission permissionID;
-
-    private Role role;
-
     @EmbeddedId
-    public PermissionroleId getId() {
-        return id;
-    }
+    private PermissionroleId id;
 
     @MapsId("permissionID")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PermissionID", nullable = false)
-    public Permission getPermissionID() {
-        return permissionID;
-    }
+    private Permission permissionID;
 
     @MapsId("roleId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "Role_ID", nullable = false)
-    public Role getRole() {
-        return role;
-    }
+    private Role role;
 
 }

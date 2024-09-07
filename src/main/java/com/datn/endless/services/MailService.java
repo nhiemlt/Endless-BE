@@ -64,5 +64,32 @@ public class MailService {
         sendHtmlMail(to, subject, htmlBody);
     }
 
+    public void sendVerificationMail(String username, String to, String verificationLink) throws MessagingException {
+        String subject = "Xác Minh Email Tài Khoản Endless";
+        String htmlBody = "<p>Chào " + username + ",</p>"
+                + "<p>Cảm ơn bạn đã đăng ký với Endless.</p>"
+                + "<p>Vui lòng nhấp vào liên kết dưới đây để xác minh địa chỉ email của bạn:</p>"
+                + "<p><a href=\"" + verificationLink + "\">Xác Minh Email</a></p>"
+                + "<p>Nếu bạn không tạo tài khoản này, vui lòng bỏ qua email này.</p>"
+                + "<p>Cảm ơn bạn đã chú ý.</p>"
+                + "<p>Trân trọng,<br> Endless</p>";
+
+        sendHtmlMail(to, subject, htmlBody);
+    }
+
+    public void sendResetPasswordMail(String username, String to, String resetLink) throws MessagingException {
+        String subject = "Password Reset Request";
+        String htmlBody = "<p>Dear " + username + ",</p>"
+                + "<p>We received a request to reset the password for your account.</p>"
+                + "<p>If you made this request, please click the link below to reset your password:</p>"
+                + "<p><a href=\"" + resetLink + "\">Reset Password</a></p>"
+                + "<p>If you did not request a password reset, please ignore this email or contact our support team.</p>"
+                + "<p>Thank you for your attention.</p>"
+                + "<p>Best regards,<br> Endless</p>";
+
+        sendHtmlMail(to, subject, htmlBody);
+    }
+
+
 
 }

@@ -15,31 +15,19 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "categories")
 public class Category {
-    private String categoryID;
-
-    private String name;
-
-    private String enName;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "CategoryID", nullable = false, length = 36)
-    public String getCategoryID() {
-        return categoryID;
-    }
+    private String categoryID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "Name", nullable = false)
-    public String getName() {
-        return name;
-    }
+    private String name;
 
     @Size(max = 255)
     @Column(name = "EN_name")
-    public String getEnName() {
-        return enName;
-    }
+    private String enName;
 
 }

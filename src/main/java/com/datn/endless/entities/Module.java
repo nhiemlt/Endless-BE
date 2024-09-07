@@ -15,47 +15,27 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "modules")
 public class Module {
-    private String moduleID;
-
-    private String moduleName;
-
-    private String description;
-
-    private String enModulename;
-
-    private String enDescription;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "ModuleID", nullable = false, length = 36)
-    public String getModuleID() {
-        return moduleID;
-    }
+    private String moduleID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "ModuleName", nullable = false)
-    public String getModuleName() {
-        return moduleName;
-    }
+    private String moduleName;
 
     @Size(max = 255)
     @Column(name = "description")
-    public String getDescription() {
-        return description;
-    }
+    private String description;
 
     @Size(max = 255)
     @Column(name = "EN_ModuleName")
-    public String getEnModulename() {
-        return enModulename;
-    }
+    private String enModulename;
 
     @Size(max = 255)
     @Column(name = "EN_description")
-    public String getEnDescription() {
-        return enDescription;
-    }
+    private String enDescription;
 
 }

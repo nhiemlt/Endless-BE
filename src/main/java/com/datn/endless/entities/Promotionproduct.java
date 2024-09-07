@@ -12,32 +12,20 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "promotionproducts")
 public class Promotionproduct {
-    private String promotionProductID;
-
-    private Promotiondetail promotionDetailID;
-
-    private Productversion productVersionID;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "PromotionProductID", nullable = false, length = 36)
-    public String getPromotionProductID() {
-        return promotionProductID;
-    }
+    private String promotionProductID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PromotionDetailID", nullable = false)
-    public Promotiondetail getPromotionDetailID() {
-        return promotionDetailID;
-    }
+    private Promotiondetail promotionDetailID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ProductVersionID", nullable = false)
-    public Productversion getProductVersionID() {
-        return productVersionID;
-    }
+    private Productversion productVersionID;
 
 }

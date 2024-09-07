@@ -18,80 +18,48 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "vouchers")
 public class Voucher {
-    private String voucherID;
-
-    private String voucherCode;
-
-    private BigDecimal leastBill;
-
-    private BigDecimal leastDiscount;
-
-    private BigDecimal biggestDiscount;
-
-    private Integer discountLevel;
-
-    private String discountForm;
-
-    private LocalDate startDate;
-
-    private LocalDate endDate;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "VoucherID", nullable = false, length = 36)
-    public String getVoucherID() {
-        return voucherID;
-    }
+    private String voucherID;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "VoucherCode", nullable = false, length = 50)
-    public String getVoucherCode() {
-        return voucherCode;
-    }
+    private String voucherCode;
 
     @NotNull
     @Column(name = "LeastBill", nullable = false, precision = 18, scale = 2)
-    public BigDecimal getLeastBill() {
-        return leastBill;
-    }
+    private BigDecimal leastBill;
 
     @NotNull
     @Column(name = "LeastDiscount", nullable = false, precision = 18, scale = 2)
-    public BigDecimal getLeastDiscount() {
-        return leastDiscount;
-    }
+    private BigDecimal leastDiscount;
 
     @NotNull
     @Column(name = "BiggestDiscount", nullable = false, precision = 18, scale = 2)
-    public BigDecimal getBiggestDiscount() {
-        return biggestDiscount;
-    }
+    private BigDecimal biggestDiscount;
 
     @NotNull
     @Column(name = "DiscountLevel", nullable = false)
-    public Integer getDiscountLevel() {
-        return discountLevel;
-    }
+    private Integer discountLevel;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "DiscountForm", nullable = false, length = 50)
-    public String getDiscountForm() {
-        return discountForm;
-    }
+    private String discountForm;
 
     @NotNull
     @Column(name = "StartDate", nullable = false)
-    public LocalDate getStartDate() {
-        return startDate;
-    }
+    private LocalDate startDate;
 
     @NotNull
     @Column(name = "EndDate", nullable = false)
-    public LocalDate getEndDate() {
-        return endDate;
-    }
+    private LocalDate endDate;
 
 }
+
+
+
+

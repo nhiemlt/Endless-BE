@@ -12,65 +12,37 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "products")
 public class Product {
-    private String productID;
-
-    private Category categoryID;
-
-    private Brand brandID;
-
-    private String name;
-
-    private String nameEn;
-
-    private String description;
-
-    private String enDescription;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "ProductID", nullable = false, length = 36)
-    public String getProductID() {
-        return productID;
-    }
+    private String productID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "CategoryID", nullable = false)
-    public Category getCategoryID() {
-        return categoryID;
-    }
+    private Category categoryID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "BrandID", nullable = false)
-    public Brand getBrandID() {
-        return brandID;
-    }
+    private Brand brandID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "Name", nullable = false)
-    public String getName() {
-        return name;
-    }
+    private String name;
 
     @Size(max = 255)
     @Column(name = "Name_EN")
-    public String getNameEn() {
-        return nameEn;
-    }
+    private String nameEn;
 
     @Lob
     @Column(name = "Description")
-    public String getDescription() {
-        return description;
-    }
+    private String description;
 
     @Lob
     @Column(name = "EN_description")
-    public String getEnDescription() {
-        return enDescription;
-    }
+    private String enDescription;
 
 }

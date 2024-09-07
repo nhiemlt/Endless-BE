@@ -14,58 +14,34 @@ import java.time.Instant;
 @Entity
 @Table(name = "notifications")
 public class Notification {
-    private String notificationID;
-
-    private String title;
-
-    private String content;
-
-    private String type;
-
-    private Instant notificationDate;
-
-    private String status;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "NotificationID", nullable = false, length = 36)
-    public String getNotificationID() {
-        return notificationID;
-    }
+    private String notificationID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "Title", nullable = false)
-    public String getTitle() {
-        return title;
-    }
+    private String title;
 
     @NotNull
     @Lob
     @Column(name = "Content", nullable = false)
-    public String getContent() {
-        return content;
-    }
+    private String content;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "Type", nullable = false, length = 50)
-    public String getType() {
-        return type;
-    }
+    private String type;
 
     @NotNull
     @Column(name = "NotificationDate", nullable = false)
-    public Instant getNotificationDate() {
-        return notificationDate;
-    }
+    private Instant notificationDate;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "Status", nullable = false, length = 50)
-    public String getStatus() {
-        return status;
-    }
+    private String status;
 
 }

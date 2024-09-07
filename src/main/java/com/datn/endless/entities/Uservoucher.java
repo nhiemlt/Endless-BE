@@ -12,40 +12,24 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "uservouchers")
 public class Uservoucher {
-    private String userVoucherID;
-
-    private User userID;
-
-    private Voucher voucherID;
-
-    private String status;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "UserVoucherID", nullable = false, length = 36)
-    public String getUserVoucherID() {
-        return userVoucherID;
-    }
+    private String userVoucherID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
-    public User getUserID() {
-        return userID;
-    }
+    private User userID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "VoucherID", nullable = false)
-    public Voucher getVoucherID() {
-        return voucherID;
-    }
+    private Voucher voucherID;
 
     @Size(max = 50)
     @Column(name = "Status", length = 50)
-    public String getStatus() {
-        return status;
-    }
+    private String status;
 
 }

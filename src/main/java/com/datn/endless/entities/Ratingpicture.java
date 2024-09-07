@@ -12,31 +12,19 @@ import org.hibernate.annotations.ColumnDefault;
 @Entity
 @Table(name = "ratingpictures")
 public class Ratingpicture {
-    private String pictureID;
-
-    private Rating ratingID;
-
-    private String picture;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "PictureID", nullable = false, length = 36)
-    public String getPictureID() {
-        return pictureID;
-    }
+    private String pictureID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "RatingID", nullable = false)
-    public Rating getRatingID() {
-        return ratingID;
-    }
+    private Rating ratingID;
 
     @Lob
     @Column(name = "Picture")
-    public String getPicture() {
-        return picture;
-    }
+    private String picture;
 
 }

@@ -14,63 +14,35 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "promotions")
 public class Promotion {
-    private String promotionID;
-
-    private String name;
-
-    private String enName;
-
-    private LocalDate startDate;
-
-    private LocalDate endDate;
-
-    private String poster;
-
-    private String enDescription;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "PromotionID", nullable = false, length = 36)
-    public String getPromotionID() {
-        return promotionID;
-    }
+    private String promotionID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "Name", nullable = false)
-    public String getName() {
-        return name;
-    }
+    private String name;
 
     @Size(max = 255)
     @Column(name = "EN_name")
-    public String getEnName() {
-        return enName;
-    }
+    private String enName;
 
     @NotNull
     @Column(name = "StartDate", nullable = false)
-    public LocalDate getStartDate() {
-        return startDate;
-    }
+    private LocalDate startDate;
 
     @NotNull
     @Column(name = "EndDate", nullable = false)
-    public LocalDate getEndDate() {
-        return endDate;
-    }
+    private LocalDate endDate;
 
     @Size(max = 255)
     @Column(name = "Poster")
-    public String getPoster() {
-        return poster;
-    }
+    private String poster;
 
     @Lob
     @Column(name = "EN_description")
-    public String getEnDescription() {
-        return enDescription;
-    }
+    private String enDescription;
 
 }

@@ -14,65 +14,37 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "productversions")
 public class Productversion {
-    private String productVersionID;
-
-    private Product productID;
-
-    private String versionName;
-
-    private BigDecimal purchasePrice;
-
-    private BigDecimal price;
-
-    private String status;
-
-    private String image;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "ProductVersionID", nullable = false, length = 36)
-    public String getProductVersionID() {
-        return productVersionID;
-    }
+    private String productVersionID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ProductID", nullable = false)
-    public Product getProductID() {
-        return productID;
-    }
+    private Product productID;
 
     @Size(max = 255)
     @NotNull
     @Column(name = "VersionName", nullable = false)
-    public String getVersionName() {
-        return versionName;
-    }
+    private String versionName;
 
     @NotNull
     @Column(name = "PurchasePrice", nullable = false, precision = 18, scale = 2)
-    public BigDecimal getPurchasePrice() {
-        return purchasePrice;
-    }
+    private BigDecimal purchasePrice;
 
     @NotNull
     @Column(name = "Price", nullable = false, precision = 18, scale = 2)
-    public BigDecimal getPrice() {
-        return price;
-    }
+    private BigDecimal price;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "Status", nullable = false, length = 50)
-    public String getStatus() {
-        return status;
-    }
+    private String status;
 
     @Lob
     @Column(name = "Image")
-    public String getImage() {
-        return image;
-    }
+    private String image;
 
 }

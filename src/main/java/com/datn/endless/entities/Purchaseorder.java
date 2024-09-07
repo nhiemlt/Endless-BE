@@ -18,39 +18,23 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "purchaseorders")
 public class Purchaseorder {
-    private String purchaseOrderID;
-
-    private LocalDate purchaseDate;
-
-    private String purchaseOrderStatus;
-
-    private BigDecimal totalMoney;
-
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "PurchaseOrderID", nullable = false, length = 36)
-    public String getPurchaseOrderID() {
-        return purchaseOrderID;
-    }
+    private String purchaseOrderID;
 
     @NotNull
     @Column(name = "PurchaseDate", nullable = false)
-    public LocalDate getPurchaseDate() {
-        return purchaseDate;
-    }
+    private LocalDate purchaseDate;
 
     @Size(max = 50)
     @NotNull
     @Column(name = "PurchaseOrderStatus", nullable = false, length = 50)
-    public String getPurchaseOrderStatus() {
-        return purchaseOrderStatus;
-    }
+    private String purchaseOrderStatus;
 
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)
-    public BigDecimal getTotalMoney() {
-        return totalMoney;
-    }
+    private BigDecimal totalMoney;
 
 }
