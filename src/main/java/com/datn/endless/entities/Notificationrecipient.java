@@ -1,5 +1,6 @@
 package com.datn.endless.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,9 +22,11 @@ public class Notificationrecipient {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "NotificationID", nullable = false)
+    @JsonIgnore
     private Notification notificationID;
 
     @NotNull
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
     private User userID;
@@ -32,5 +35,4 @@ public class Notificationrecipient {
     @NotNull
     @Column(name = "Status", nullable = false, length = 50)
     private String status;
-
 }
