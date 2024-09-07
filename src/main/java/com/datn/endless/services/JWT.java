@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.Map;
 
 public class JWT {
 
@@ -16,6 +17,16 @@ public class JWT {
     public JWT(SecretKey secretKey, long expirationTimeMillis) {
         this.secretKey = secretKey;
         this.expirationTimeMillis = expirationTimeMillis;
+    }
+
+    public String generateToken(String subject, Map<String, Object> claims) {
+        return Jwts.builder()
+                .setClaims(claims) // Thêm các Claims bổ sung
+                .setSubject(subject) // Thêm subject (ví dụ: email hoặc username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTimeMillis))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public String generateToken(String username) {
@@ -47,6 +58,8 @@ public class JWT {
             return false;
         }
     }
+
+
 
     public String getUsername(String token) {
         return getClaims(token).getSubject();

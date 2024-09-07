@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Set;
 
@@ -15,8 +16,8 @@ import java.util.Set;
 @Table(name = "users")
 public class User {
     @Id
-    @Size(max = 36)
-    @ColumnDefault("(uuid())")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(name = "UserID", nullable = false, length = 36)
     private String userID;
 
@@ -48,6 +49,14 @@ public class User {
     @Size(max = 50)
     @Column(name = "Language", length = 50)
     private String language;
+
+    @ColumnDefault("1")
+    @Column(name = "active")
+    private Boolean active;
+
+    @ColumnDefault("0")
+    @Column(name = "forgetPassword")
+    private Boolean forgetPassword;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

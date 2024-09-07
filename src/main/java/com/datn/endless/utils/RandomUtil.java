@@ -1,4 +1,4 @@
-package com.datn.endless.services;
+package com.datn.endless.utils;
 
 import java.util.Random;
 

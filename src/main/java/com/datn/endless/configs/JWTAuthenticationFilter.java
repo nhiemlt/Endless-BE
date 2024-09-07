@@ -10,6 +10,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,13 +23,12 @@ import java.util.Date;
 public class JWTAuthenticationFilter extends GenericFilterBean {
 
     private final UserDetailsService userDetailsService;
-    private final String secretKey;
+    private final String secretKey = new Constant().getAUTH_KEY();
 
     private static final Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
 
-    public JWTAuthenticationFilter(UserDetailsService userDetailsService, Constant constant) {
+    public JWTAuthenticationFilter(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
-        this.secretKey = constant.getAUTH_KEY();
     }
 
     @Override
