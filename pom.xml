@@ -43,6 +43,8 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+
+
         <!-- JSON Web Token (JWT) Dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
@@ -102,6 +104,7 @@
         </dependency>
 
         <!-- Springdoc OpenAPI for API Documentation -->
+
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
