@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface OrderdetailRepository extends JpaRepository<Orderdetail, String> {
-    List<Orderdetail> findByOrderIDIn(List<Order> orders);
+    List<Orderdetail> findByOrderID(Order order);
 }
