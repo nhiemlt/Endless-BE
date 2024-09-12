@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
 
 @Getter
 @Setter
@@ -14,6 +15,8 @@ import org.hibernate.annotations.ColumnDefault;
 public class Product {
     @Id
     @Size(max = 36)
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @ColumnDefault("(uuid())")
     @Column(name = "ProductID", nullable = false, length = 36)
     private String productID;
