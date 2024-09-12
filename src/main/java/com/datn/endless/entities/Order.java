@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,8 +17,10 @@ import java.time.LocalDate;
 @Table(name = "orders")
 public class Order {
     @Id
-    @Size(max = 36)
-    @ColumnDefault("(uuid())")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+//    @Size(max = 36)
+//    @ColumnDefault("(uuid())")
     @Column(name = "OrderID", nullable = false, length = 36)
     private String orderID;
 

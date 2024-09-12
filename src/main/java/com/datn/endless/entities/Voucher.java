@@ -1,14 +1,12 @@
 package com.datn.endless.entities;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,8 +17,10 @@ import java.time.LocalDate;
 @Table(name = "vouchers")
 public class Voucher {
     @Id
-    @Size(max = 36)
-    @ColumnDefault("(uuid())")
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+//    @Size(max = 36)
+//    @ColumnDefault("(uuid())")
     @Column(name = "VoucherID", nullable = false, length = 36)
     private String voucherID;
 

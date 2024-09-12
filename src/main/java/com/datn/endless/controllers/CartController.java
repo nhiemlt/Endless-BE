@@ -1,14 +1,10 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.CartDTO;
 import com.datn.endless.entities.Cart;
-import com.datn.endless.entities.Productversion;
 import com.datn.endless.entities.User;
-import com.datn.endless.repositories.CartRepository;
-import com.datn.endless.repositories.ProductversionRepository;
 import com.datn.endless.repositories.UserRepository;
-import jakarta.annotation.security.PermitAll;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import com.datn.endless.services.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -24,101 +21,97 @@ import java.util.List;
 public class CartController {
 
     @Autowired
-    HttpSession session;
+    private CartService cartService;
 
     @Autowired
-    CartRepository cartRepository;
+    private UserRepository userRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    private User getCurrentUser() {
+        //Lấy thông tin xác thực của người dùng
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        //Kiểm tra kiểu dữ liệu của principa
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            //Truy xuất thông tin người dùng từ cơ sở dữ liệu
+            return userRepository.findByUsername(username);
+        }
+        return null;
+    }
 
-    @Autowired
-    ProductversionRepository productVersionRepository;
-
-    @Autowired
-    HttpServletRequest req;
-
-    @GetMapping
-    public ResponseEntity<List<Cart>> getCarts() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = userDetails.getUsername();
-
-        User user = userRepository.findByUsername(username);
+   @GetMapping
+    public ResponseEntity<List<CartDTO>> getCarts() {
+        User user = getCurrentUser();
         if (user == null) {
+            System.out.println("User not found or unauthorized");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
+        System.out.println("User found: " + user.getUsername());
 
-        List<Cart> carts = cartRepository.findByUserID(user);
+        List<CartDTO> carts = cartService.getCartsByUser(user);
+        if (carts.isEmpty()) {
+            System.out.println("No carts found for user: " + user.getUsername());
+        }
         return ResponseEntity.ok(carts);
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addToCart(@RequestBody Cart cart) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = userDetails.getUsername();
-
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
-        }
-
-        Productversion productVersion = productVersionRepository.findById(cart.getProductVersionID().getProductVersionID()).orElse(null);
-        if (productVersion == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product version not found");
-        }
-
-        Cart existingCart = cartRepository.findByUserIDAndProductVersionID(user, productVersion);
-        if (existingCart != null) {
-            existingCart.setQuantity(existingCart.getQuantity() + cart.getQuantity());
-            cartRepository.save(existingCart);
-        } else {
-            cart.setUserID(user);
-            cart.setProductVersionID(productVersion);
-            cartRepository.save(cart);
-        }
-
-        return ResponseEntity.ok("Item added to cart for user: " + username);
-    }
+//    @PostMapping("/add-to-cart")
+//    public ResponseEntity<?> addToCart(@RequestBody CartDTO cartDTO) {
+//        User user = getCurrentUser();
+//        if (user == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+//        }
+//
+//        // Validate the input data (optional)
+//        if (cartDTO.getQuantity() <= 0 || cartDTO.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid quantity or price");
+//        }
+//
+//        try {
+//            CartDTO cart = new CartDTO();
+//            cart.setUser(user); // Đảm bảo dùng đúng phương thức setUser
+//            cart.setImage(cartDTO.getImage());
+//            cart.setVersionName(cartDTO.getVersionName());
+//            cart.setPurchasePrice(cartDTO.getPurchasePrice());
+//            cart.setPrice(cartDTO.getPrice());
+//            cart.setQuantity(cartDTO.getQuantity());
+//
+//            // Gọi service để thêm sản phẩm vào giỏ hàng
+//            cartService.addToCart(user, cart);
+//        } catch (IllegalArgumentException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+//        }
+//
+//        return ResponseEntity.ok("Item added to cart");
+//    }
 
     @PutMapping("/update")
-    public ResponseEntity<Cart> updateCart(@RequestParam String id, @RequestParam int quantityChange) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = userDetails.getUsername();
+    public ResponseEntity<CartDTO> updateCart(@RequestParam String id, @RequestParam int quantityChange) {
+        try {
+            Cart updatedCart = cartService.updateCartQuantity(id, quantityChange);
 
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+            // Convert updatedCart to CartDTO
+            CartDTO updatedCartDTO = new CartDTO(
+                    updatedCart.getProductVersionID().getImage(),
+                    updatedCart.getProductVersionID().getVersionName(),
+                    updatedCart.getProductVersionID().getPurchasePrice(),
+                    updatedCart.getProductVersionID().getPrice(),
+                    updatedCart.getQuantity()
+            );
 
-        Cart cart = cartRepository.findById(id).orElse(null);
-        if (cart == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(updatedCartDTO);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-
-        int newQuantity = cart.getQuantity() + quantityChange;
-        if (newQuantity < 1) {
-            newQuantity = 1;
-        }
-        cart.setQuantity(newQuantity);
-        cartRepository.save(cart);
-        return ResponseEntity.ok(cart);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCart(@PathVariable String id) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = userDetails.getUsername();
-
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        try {
+            cartService.deleteCart(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-
-        Cart cart = cartRepository.findById(id).orElse(null);
-        if (cart == null) {
-            return ResponseEntity.notFound().build();
-        }
-        cartRepository.delete(cart);
-        return ResponseEntity.noContent().build();
     }
+
 }

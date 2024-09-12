@@ -6,96 +6,122 @@ import com.datn.endless.entities.Voucher;
 import com.datn.endless.repositories.UservoucherRepository;
 import com.datn.endless.repositories.UserRepository;
 import com.datn.endless.repositories.VoucherRepository;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/uservouchers")
+@RequestMapping("/api/user-vouchers")
 @CrossOrigin(origins = "*")
 public class UserVoucherController {
 
     @Autowired
-    HttpSession session;
+    private UservoucherRepository userVoucherRepository;
 
     @Autowired
-    UservoucherRepository userVoucherRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    UserRepository userRepository;
+    private VoucherRepository voucherRepository;
 
-    @Autowired
-    VoucherRepository voucherRepository;
-
-    @Autowired
-    HttpServletRequest req;
-
+    // Lấy tất cả voucher của người dùng
     @GetMapping
-    public ResponseEntity<List<Uservoucher>> getUserVouchers() {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = userDetails.getUsername();
+    public ResponseEntity<?> getUserVouchers() {
+        // Lấy thông tin người dùng từ SecurityContext
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        // Kiểm tra kiểu của principal
+        if (!(principal instanceof UserDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User chưa đăng nhập.");
         }
 
+        UserDetails userDetails = (UserDetails) principal;
+        String username = userDetails.getUsername();
+
+        // Xác thực người dùng
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User không tồn tại.");
+        }
+
+        // Tìm tất cả các voucher của người dùng
         List<Uservoucher> userVouchers = userVoucherRepository.findByUserID(user);
+        if (userVouchers.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Không tìm thấy voucher nào.");
+        }
+
+        // Trả về danh sách Uservoucher
         return ResponseEntity.ok(userVouchers);
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addToUserVouchers(@RequestBody Uservoucher userVoucher) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = userDetails.getUsername();
 
-        User user = userRepository.findByUsername(username);
+    // Áp dụng voucher cho người dùng
+    @PostMapping("/apply/{voucherID}")
+    public ResponseEntity<String> applyVoucher(@PathVariable String voucherID, @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
+        }
+
+        User user = userRepository.findByUsername(userDetails.getUsername());
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
         }
 
-        Voucher voucher = voucherRepository.findById(userVoucher.getVoucherID().getVoucherID()).orElse(null);
-        if (voucher == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher not found");
+        Optional<Voucher> optionalVoucher = voucherRepository.findById(voucherID);
+        if (optionalVoucher.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher not found.");
         }
 
-        Uservoucher existingUserVoucher = userVoucherRepository.findByUserIDAndVoucherID(user, voucher);
-        if (existingUserVoucher != null) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Voucher already assigned to user");
-        } else {
-            userVoucher.setUserID(user);
-            userVoucher.setVoucherID(voucher);
-            userVoucherRepository.save(userVoucher);
+        Voucher voucher = optionalVoucher.get();
+        Uservoucher userVoucher = userVoucherRepository.findByUserIDAndVoucherID(user, voucher);
+
+        if (userVoucher != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Voucher already applied.");
         }
 
-        return ResponseEntity.ok("Voucher added to user: " + username);
+        Uservoucher newUserVoucher = new Uservoucher();
+        newUserVoucher.setUserID(user);
+        newUserVoucher.setVoucherID(voucher);
+        newUserVoucher.setStatus("APPLIED"); // Set status accordingly
+
+        userVoucherRepository.save(newUserVoucher);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Voucher applied successfully.");
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeUserVoucher(@PathVariable String id) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username = userDetails.getUsername();
+    // Hủy áp dụng voucher
+    @DeleteMapping("/remove/{voucherID}")
+    public ResponseEntity<String> removeVoucher(@PathVariable String voucherID, @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
+        }
 
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsername(userDetails.getUsername());
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
         }
 
-        // Tìm UserVoucher theo ID
-        Uservoucher userVoucher = userVoucherRepository.findById(id).orElse(null);
-        if (userVoucher == null || !userVoucher.getUserID().equals(user)) {
-            return ResponseEntity.notFound().build();
+        Optional<Voucher> optionalVoucher = voucherRepository.findById(voucherID);
+        if (optionalVoucher.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher not found.");
         }
 
-        // Xóa UserVoucher khỏi danh sách của người dùng
+        Voucher voucher = optionalVoucher.get();
+        Uservoucher userVoucher = userVoucherRepository.findByUserIDAndVoucherID(user, voucher);
+
+        if (userVoucher == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher not applied.");
+        }
+
         userVoucherRepository.delete(userVoucher);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Voucher removed successfully.");
     }
 }

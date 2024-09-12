@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface FavoriteRepository extends JpaRepository<Favorite, String> {
+    List<Favorite> findAll();
     List<Favorite> findByUserID(User user);
     Favorite findByUserIDAndProductID(User user, Product product);
 }

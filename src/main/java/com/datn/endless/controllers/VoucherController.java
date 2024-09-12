@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,8 +27,13 @@ public class VoucherController {
         return vouchers;
     }
 
+    // Thêm Voucher
     @PostMapping("/add")
     public ResponseEntity<String> addVoucher(@RequestBody Voucher voucher) {
+        String validationError = validateVoucher(voucher);
+        if (validationError != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
+        }
         // Kiểm tra xem voucher code đã tồn tại hay chưa
         Optional<Voucher> existingVoucher = voucherRepository.findByVoucherCode(voucher.getVoucherCode());
         if (existingVoucher.isPresent()) {
@@ -40,14 +46,25 @@ public class VoucherController {
 
     // Sửa Voucher
     @PutMapping("/update/{id}")
-    public ResponseEntity<Voucher> updateVoucher(@PathVariable String id, @RequestBody Voucher updatedVoucher) {
+    public ResponseEntity<String> updateVoucher(@PathVariable String id, @RequestBody Voucher updatedVoucher) {
+        String validationError = validateVoucher(updatedVoucher);
+        if (validationError != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
+        }
+        // Kiểm tra ID
+        System.out.println("Updating voucher with ID: " + id);
+
         Optional<Voucher> voucherOptional = voucherRepository.findById(id);
+
+        // Kiểm tra nếu voucher không tồn tại
         if (voucherOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            System.out.println("Voucher with ID: " + id + " not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher not found");
         }
 
         Voucher voucher = voucherOptional.get();
-        voucher.setVoucherCode(updatedVoucher.getVoucherCode());
+
+        // Cập nhật các thuộc tính của voucher, ngoại trừ voucherCode
         voucher.setLeastBill(updatedVoucher.getLeastBill());
         voucher.setLeastDiscount(updatedVoucher.getLeastDiscount());
         voucher.setBiggestDiscount(updatedVoucher.getBiggestDiscount());
@@ -56,8 +73,11 @@ public class VoucherController {
         voucher.setStartDate(updatedVoucher.getStartDate());
         voucher.setEndDate(updatedVoucher.getEndDate());
 
+        // Lưu voucher đã cập nhật
         voucherRepository.save(voucher);
-        return ResponseEntity.ok(voucher);
+
+        // Trả về thông báo đã cập nhật
+        return ResponseEntity.ok("Voucher updated successfully");
     }
 
     // Xóa Voucher
@@ -71,4 +91,36 @@ public class VoucherController {
         voucherRepository.deleteById(id);
         return ResponseEntity.ok("Voucher deleted successfully");
     }
+
+    private String validateVoucher(Voucher voucher) {
+        if (voucher.getVoucherCode() == null || voucher.getVoucherCode().trim().isEmpty()) {
+            return "VoucherCode must not be empty";
+        }
+        if (voucher.getLeastBill() == null || voucher.getLeastBill().compareTo(BigDecimal.ZERO) <= 0) {
+            return "LeastBill must be a positive number";
+        }
+        if (voucher.getLeastDiscount() == null || voucher.getLeastDiscount().compareTo(BigDecimal.ZERO) <= 0) {
+            return "LeastDiscount must be a positive number";
+        }
+        if (voucher.getBiggestDiscount() == null || voucher.getBiggestDiscount().compareTo(BigDecimal.ZERO) <= 0) {
+            return "BiggestDiscount must be a positive number";
+        }
+        if (voucher.getDiscountLevel() == null || voucher.getDiscountLevel() <= 0) {
+            return "DiscountLevel must be a positive number";
+        }
+        if (voucher.getDiscountForm() == null || voucher.getDiscountForm().trim().isEmpty()) {
+            return "DiscountForm must not be empty";
+        }
+        if (voucher.getStartDate() == null) {
+            return "StartDate must not be null";
+        }
+        if (voucher.getEndDate() == null) {
+            return "EndDate must not be null";
+        }
+        if (voucher.getStartDate().isAfter(voucher.getEndDate())) {
+            return "StartDate must be before EndDate";
+        }
+        return null; // Valid
+    }
+
 }
