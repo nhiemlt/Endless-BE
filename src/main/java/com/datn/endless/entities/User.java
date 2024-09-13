@@ -3,15 +3,19 @@ package com.datn.endless.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Set;
 
-@Getter
-@Setter
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -50,20 +54,19 @@ public class User {
     @Column(name = "Language", length = 50)
     private String language;
 
-    @ColumnDefault("1")
+    @ColumnDefault("true")
     @Column(name = "active")
     private Boolean active;
 
-    @ColumnDefault("0")
+    @ColumnDefault("false")
     @Column(name = "forgetPassword")
     private Boolean forgetPassword;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(
             name = "UserRoles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
-
 }

@@ -2,21 +2,25 @@ package com.datn.endless.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
-@Getter
-@Setter
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "userroles")
 public class Userrole {
+
     @Id
-    @Size(max = 36)
-    @ColumnDefault("(uuid())")
-    @Column(name = "Userrole_ID", nullable = false, length = 36)
-    private String userroleId;
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(name = "UserRole_ID", nullable = false, length = 36)
+    private String userRoleId;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -25,7 +29,6 @@ public class Userrole {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "role_Id", nullable = false)
+    @JoinColumn(name = "role_id", nullable = false)
     private Role role;
-
 }

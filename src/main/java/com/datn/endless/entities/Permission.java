@@ -3,20 +3,23 @@ package com.datn.endless.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "permissions")
 public class Permission {
     @Id
     @Size(max = 36)
-    @ColumnDefault("(uuid())")
     @Column(name = "PermissionID", nullable = false, length = 36)
     private String permissionID;
 
@@ -37,4 +40,7 @@ public class Permission {
     @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
     private Set<Role> roles;
 
+    public Permission(UUID permissionId) {
+        this.permissionID = permissionId.toString();
+    }
 }

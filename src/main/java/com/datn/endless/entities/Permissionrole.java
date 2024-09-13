@@ -1,21 +1,22 @@
 package com.datn.endless.entities;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
 @Entity
 @Table(name = "permissionrole")
 public class Permissionrole {
+
     @EmbeddedId
     private PermissionroleId id;
 
     @MapsId("permissionID")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PermissionID", nullable = false)
-    private Permission permissionID;
+    private Permission permission;
 
     @MapsId("roleId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
