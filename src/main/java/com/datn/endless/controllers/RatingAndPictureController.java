@@ -37,6 +37,7 @@ public class RatingAndPictureController {
     @GetMapping
     public List<Rating> getAllRatings() {
         return ratingRepository.findAll();
+
     }
 
     // Lấy đánh giá theo ID

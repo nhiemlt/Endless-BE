@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface UservoucherRepository extends JpaRepository<Uservoucher, String> {
+
     // Tìm UserVoucher dựa trên User và Voucher
     Uservoucher findByUserIDAndVoucherID(User userID, Voucher voucherID);
     // Tìm tất cả UserVoucher của một User

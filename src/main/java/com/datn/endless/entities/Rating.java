@@ -24,6 +24,7 @@ public class Rating {
     @Column(name = "RatingID", nullable = false, length = 36)
     private String ratingID;
 
+
     @JsonIgnore
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

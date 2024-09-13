@@ -25,6 +25,7 @@ public class VoucherController {
     public List<Voucher> getAllVouchers() {
         List<Voucher> vouchers = voucherRepository.findAll();
         return vouchers;
+
     }
 
     // Thêm Voucher

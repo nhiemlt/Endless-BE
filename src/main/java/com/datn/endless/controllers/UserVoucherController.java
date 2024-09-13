@@ -29,8 +29,6 @@ public class UserVoucherController {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private VoucherRepository voucherRepository;
 
     @GetMapping
     public ResponseEntity<?> getUserVouchers() {

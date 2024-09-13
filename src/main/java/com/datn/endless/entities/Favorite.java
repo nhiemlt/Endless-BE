@@ -21,6 +21,7 @@ public class Favorite {
     @Column(name = "FavoriteID", nullable = false, length = 36)
     private String favoriteID;
 
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)

@@ -58,6 +58,7 @@ public class Voucher {
     @Column(name = "EndDate", nullable = false)
     private LocalDate endDate;
 
+
 }
 
 

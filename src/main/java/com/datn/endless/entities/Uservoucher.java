@@ -22,6 +22,7 @@ public class Uservoucher {
     @Column(name = "UserVoucherID", nullable = false, length = 36)
     private String userVoucherID;
 
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)

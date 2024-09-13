@@ -21,6 +21,7 @@ public class Cart {
     @Column(name = "CartID", nullable = false, length = 36)
     private String cartID;
 
+
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)

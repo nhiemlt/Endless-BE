@@ -42,6 +42,7 @@ public class FavoriteController {
             return userRepository.findByUsername(username);
         }
         return null;
+
     }
 
     @GetMapping
