@@ -3,6 +3,7 @@ package com.datn.endless.configs;
 import com.datn.endless.services.Constant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -10,20 +11,21 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.GenericFilterBean;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.util.Date;
 
 public class JWTAuthenticationFilter extends GenericFilterBean {
 
     private final UserDetailsService userDetailsService;
-    private final String secretKey = new Constant().getAUTH_KEY();
+    SecretKey secretKey = new SecretKeySpec(new Constant().getAUTH_KEY().getBytes(), SignatureAlgorithm.HS256.getJcaName());
 
     private static final Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
 
@@ -41,7 +43,7 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7).trim(); // Xóa "Bearer " và khoảng trắng
 
-            if (!token.isEmpty() && !isTokenExpired(token)) { // Sửa điều kiện kiểm tra hết hạn token
+            if (!token.isEmpty() && !isTokenExpired(token)) {
                 String username = extractUsername(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
@@ -58,11 +60,11 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
 
     public Claims getClaims(String token) {
         try {
-            return Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey) // Đặt secret key
+                    .build() // Xây dựng parser
+                    .parseClaimsJws(token) // Phân tích token
+                    .getBody(); // Lấy thông tin Claims
         } catch (Exception e) {
             logger.error("Invalid JWT token", e);
             throw new RuntimeException("Invalid JWT token", e);
@@ -71,7 +73,7 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
 
     private boolean isTokenExpired(String token) {
         Date expirationDate = extractExpiration(token);
-        return expirationDate.before(new Date()); // Sửa điều kiện kiểm tra hết hạn token
+        return expirationDate.before(new Date());
     }
 
     private String extractUsername(String token) {
@@ -81,7 +83,7 @@ public class JWTAuthenticationFilter extends GenericFilterBean {
 
     private boolean validateToken(String token, UserDetails userDetails) {
         String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token)); // Sửa điều kiện kiểm tra token
+        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     private Date extractExpiration(String token) {
