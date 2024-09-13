@@ -29,7 +29,7 @@ public class Role {
     @Column(name = "EN_nameRole")
     private String enNamerole;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "PermissionRole",
             joinColumns = @JoinColumn(name = "role_id"),

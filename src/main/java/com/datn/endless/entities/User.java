@@ -57,7 +57,7 @@ public class User {
     @Column(name = "forgetPassword")
     private Boolean forgetPassword;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "UserRoles",
             joinColumns = @JoinColumn(name = "user_id"),
