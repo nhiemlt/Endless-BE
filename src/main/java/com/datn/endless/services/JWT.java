@@ -40,7 +40,7 @@ public class JWT {
 
     public Claims getClaims(String token) {
         try {
-            return Jwts.parser()
+            return Jwts.parserBuilder()  // Dành cho phiên bản mới hơn
                     .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token)

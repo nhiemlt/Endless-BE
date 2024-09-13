@@ -1,7 +1,5 @@
 package com.datn.endless.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -9,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Getter
@@ -32,11 +29,12 @@ public class Role {
     @Column(name = "EN_nameRole")
     private String enNamerole;
 
-    @JsonIgnore
-    @ManyToMany
-    @JoinTable(name = "permissionrole",
-            joinColumns = @JoinColumn(name = "Role_ID"),
-            inverseJoinColumns = @JoinColumn(name = "PermissionID"))
-    private Set<Permission> permissions = new LinkedHashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "PermissionRole",
+            joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns = @JoinColumn(name = "PermissionID")
+    )
+    private Set<Permission> permissions;
 
 }
