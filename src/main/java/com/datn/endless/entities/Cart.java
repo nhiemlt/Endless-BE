@@ -16,8 +16,8 @@ public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
-//    @Size(max = 36)
-//    @ColumnDefault("(uuid())")
+    @Size(max = 36)
+    @ColumnDefault("(uuid())")
     @Column(name = "CartID", nullable = false, length = 36)
     private String cartID;
 

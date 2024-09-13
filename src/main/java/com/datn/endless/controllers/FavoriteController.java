@@ -1,6 +1,5 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.dtos.FavoriteDTO;
 import com.datn.endless.entities.*;
 import com.datn.endless.repositories.FavoriteRepository;
 import com.datn.endless.repositories.ProductRepository;
@@ -14,8 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/favorites")
@@ -31,109 +29,111 @@ public class FavoriteController {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private ProductRepository productRepository;
 
-    @GetMapping
-    public ResponseEntity<?> getFavorites() {
-        // Lấy thông tin người dùng từ SecurityContext
+    private User getCurrentUser() {
+        //Lấy thông tin xác thực của người dùng
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        // Kiểm tra kiểu của principal
-        if (!(principal instanceof UserDetails)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
+        //Kiểm tra kiểu dữ liệu của principa
+        if (principal instanceof UserDetails) {
+            String username = ((UserDetails) principal).getUsername();
+            //Truy xuất thông tin người dùng từ cơ sở dữ liệu
+            return userRepository.findByUsername(username);
         }
+        return null;
+    }
 
-        UserDetails userDetails = (UserDetails) principal;
-        String username = userDetails.getUsername();
-
-        // Xác thực người dùng
-        User user = userRepository.findByUsername(username);
+    @GetMapping
+    public ResponseEntity<List<Map<String, Object>>> getFavorites() {
+        // Lấy thông tin người dùng hiện tại
+        User user = getCurrentUser();
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
+            System.out.println("User not found or unauthorized");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
+        System.out.println("User found: " + user.getUsername());
 
         // Tìm tất cả các sản phẩm yêu thích của người dùng
         List<Favorite> favorites = favoriteRepository.findByUserID(user);
+
         if (favorites.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No favorites found.");
+            System.out.println("No favorites found for user: " + user.getUsername());
+            return ResponseEntity.ok(Collections.emptyList());
         }
 
-        // Chuyển đổi danh sách Favorite thành danh sách FavoriteDTO
-        List<FavoriteDTO> favoriteDTOs = favorites.stream()
-                .map(favorite -> {
-                    Productversion productVersion = productversionRepository.findById(favorite.getProductID().getProductID()).orElse(null);
-                    if (productVersion != null) {
-                        String nameVersionName = productVersion.getProductID().getName() + " " + productVersion.getVersionName();
-                        return new FavoriteDTO(
-                                productVersion.getImage(),
-                                nameVersionName,
-                                productVersion.getPurchasePrice(),
-                                productVersion.getPrice()
-                        );
-                    }
-                    return null;
-                })
-                .filter(favoriteDTO -> favoriteDTO != null)
-                .collect(Collectors.toList());
+        // Tạo một danh sách để lưu trữ thông tin của Favorite
+        List<Map<String, Object>> favoriteInfoList = new ArrayList<>();
 
-        return ResponseEntity.ok(favoriteDTOs);
+        // Duyệt qua từng Favorite và trích xuất các trường cần thiết
+        for (Favorite favorite : favorites) {
+            Map<String, Object> favoriteInfo = new HashMap<>();
+            favoriteInfo.put("favorite", favorite.getFavoriteID());
+            favoriteInfo.put("userID", favorite.getUserID().getUserID());
+            favoriteInfo.put("productID", favorite.getProductID().getProductID());
+
+            // Thêm vào danh sách kết quả
+            favoriteInfoList.add(favoriteInfo);
+        }
+
+        return ResponseEntity.ok(favoriteInfoList);
     }
-
 
     @PostMapping("/add")
-    public ResponseEntity<String> addFavorite(
-            @RequestParam("productVersionID") String productVersionID,
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        // Xác thực người dùng
-        User user = userRepository.findByUsername(userDetails.getUsername());
+    public ResponseEntity<String> addFavorite(@RequestBody Map<String, Object> requestBody) {
+        // Lấy thông tin người dùng hiện tại đã đăng nhập
+        User user = getCurrentUser();
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
         }
 
-        // Kiểm tra nếu sản phẩm đã tồn tại trong danh sách yêu thích
-        Productversion productVersion = productversionRepository.findById(productVersionID).orElse(null);
-        if (productVersion == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product version not found.");
+        // Lấy productID từ requestBody
+        String productID = (String) requestBody.get("productID");
+        if (productID == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product ID is missing.");
         }
 
-        Favorite existingFavorite = favoriteRepository.findByUserIDAndProductID(user, productVersion.getProductID());
-        if (existingFavorite != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product already in favorites.");
+        // Tìm sản phẩm theo productID
+        Product product = productRepository.findById(productID).orElse(null);
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product not found.");
         }
 
-        // Tạo và lưu mới Favorite
+        // Kiểm tra xem sản phẩm đã có trong danh sách yêu thích chưa
+        Optional<Favorite> existingFavoriteOptional = favoriteRepository.findByUserIDAndProductID(user, product);
+        if (existingFavoriteOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is already in the favorites list.");
+        }
+
+        // Tạo đối tượng Favorite mới và lưu vào cơ sở dữ liệu
         Favorite favorite = new Favorite();
         favorite.setUserID(user);
-        favorite.setProductID(productVersion.getProductID());
+        favorite.setProductID(product);
         favoriteRepository.save(favorite);
 
-        return ResponseEntity.ok("Product added to favorites.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Product added to favorites successfully.");
     }
 
-    @DeleteMapping("/delete/{favoriteID}")
-    public ResponseEntity<String> removeFavorite(
-            @PathVariable("favoriteID") String favoriteID,
-            @AuthenticationPrincipal UserDetails userDetails) {
-
-        // Xác thực người dùng
-        User user = userRepository.findByUsername(userDetails.getUsername());
+    @DeleteMapping("/delete/{productID}")
+    public ResponseEntity<String> removeFavorite(@PathVariable String productID) {
+        User user = getCurrentUser();
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
         }
 
-        // Tìm Favorite để xóa
-        Favorite favorite = favoriteRepository.findById(favoriteID).orElse(null);
-        if (favorite == null || !favorite.getUserID().equals(user)) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Favorite not found.");
+        Product product = productRepository.findById(productID).orElse(null);
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product not found.");
         }
 
-        // Xóa Favorite
+        Optional<Favorite> existingFavoriteOptional = favoriteRepository.findByUserIDAndProductID(user, product);
+        if (!existingFavoriteOptional.isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product is not in the favorites list.");
+        }
+
+        Favorite favorite = existingFavoriteOptional.get();
         favoriteRepository.delete(favorite);
 
-        return ResponseEntity.ok("Product removed from favorites.");
+        return ResponseEntity.ok("Product removed from favorites successfully.");
     }
-
 }

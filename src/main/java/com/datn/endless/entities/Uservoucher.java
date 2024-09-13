@@ -1,5 +1,6 @@
 package com.datn.endless.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -16,8 +17,8 @@ public class Uservoucher {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
-//    @Size(max = 36)
-//    @ColumnDefault("(uuid())")
+    @Size(max = 36)
+    @ColumnDefault("(uuid())")
     @Column(name = "UserVoucherID", nullable = false, length = 36)
     private String userVoucherID;
 
@@ -26,6 +27,7 @@ public class Uservoucher {
     @JoinColumn(name = "UserID", nullable = false)
     private User userID;
 
+    @JsonIgnore
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "VoucherID", nullable = false)
