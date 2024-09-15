@@ -3,16 +3,19 @@ package com.datn.endless.controllers;
 import com.datn.endless.dtos.NotificationDTO;
 import com.datn.endless.dtos.NotificationRecipientDTO;
 import com.datn.endless.entities.Notification;
+import com.datn.endless.models.NotificationModel;
 import com.datn.endless.services.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -22,39 +25,39 @@ public class NotificationController {
     private NotificationService notificationService;
 
     @PostMapping("/send")
-    public ResponseEntity<String> sendNotification(@RequestBody @Valid NotificationDTO notificationDTO, BindingResult result) {
-        if (result.hasErrors()) {
-            String errorMessage = result.getAllErrors().stream()
-                    .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-            return ResponseEntity.badRequest().body("Invalid input: " + errorMessage);
-        }
-        notificationService.sendNotification(notificationDTO);
-        return ResponseEntity.ok("Notification sent successfully!");
+    public ResponseEntity<Map<String, Object>> sendNotification(
+            @Valid @RequestBody NotificationModel notificationModel,
+            BindingResult bindingResult) {
+        Map<String, Object> response = notificationService.sendNotification(notificationModel, bindingResult);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<NotificationRecipientDTO>> getNotificationsByUserId(@PathVariable String userId) {
-        List<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserId(userId);
+    public ResponseEntity<Page<NotificationRecipientDTO>> getNotificationsByUserId(
+            @PathVariable String userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "notification.notificationDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserId(userId, pageable);
         return ResponseEntity.ok(notifications);
     }
 
-
-    @PostMapping("/markAsRead/{notificationRecipientId}")
-    public ResponseEntity<String> markAsRead(@PathVariable String notificationRecipientId) {
-        notificationService.markAsRead(notificationRecipientId);
-        return ResponseEntity.ok("Notification marked as read.");
+    @PostMapping("/markAsRead")
+    public ResponseEntity<Map<String, Object>> markAsRead(@RequestBody Map<String, String> requestBody) {
+        String notificationRecipientId = requestBody.get("notificationRecipientId");
+        Map<String, Object> response = notificationService.markAsRead(notificationRecipientId);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<Notification>> getAllNotifications() {
-        List<Notification> notifications = notificationService.getAllNotifications();
-        return ResponseEntity.ok(notifications);
-    }
-
-    @DeleteMapping("/delete/{notificationId}")
-    public ResponseEntity<String> deleteNotification(@PathVariable String notificationId) {
-        notificationService.deleteNotification(notificationId);
-        return ResponseEntity.ok("Notification deleted.");
+    @DeleteMapping("/delete")
+    public ResponseEntity<Map<String, Object>> deleteNotification(@RequestBody Map<String, String> requestBody) {
+        String notificationId = requestBody.get("notificationId");
+        Map<String, Object> response = notificationService.deleteNotification(notificationId);
+        return ResponseEntity.ok(response);
     }
 }

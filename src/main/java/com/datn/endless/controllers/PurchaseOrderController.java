@@ -1,7 +1,7 @@
 package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.PurchaseOrderDTO;
-import com.datn.endless.entities.Purchaseorder;
+import com.datn.endless.dtos.PurchaseOrderDetailDTO;
 import com.datn.endless.services.PurchaseOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,16 +20,9 @@ public class PurchaseOrderController {
     @PostMapping
     public ResponseEntity<Object> createPurchaseOrder(@RequestBody PurchaseOrderDTO purchaseOrderDTO) {
         try {
-            Purchaseorder purchaseOrder = purchaseOrderService.createPurchaseOrder(purchaseOrderDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(purchaseOrder);
-        } catch (NoSuchElementException e) {
-            // Trả về lỗi khi không tìm thấy đối tượng cần thiết
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resource not found: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            // Trả về lỗi khi có vấn đề với đầu vào
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input: " + e.getMessage());
+            PurchaseOrderDTO createdOrder = purchaseOrderService.createPurchaseOrder(purchaseOrderDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
         } catch (Exception e) {
-            // Trả về lỗi chung khi có lỗi không xác định
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
@@ -37,7 +30,7 @@ public class PurchaseOrderController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getPurchaseOrderById(@PathVariable("id") String id) {
         try {
-            Purchaseorder purchaseOrder = purchaseOrderService.getPurchaseOrderById(id);
+            PurchaseOrderDTO purchaseOrder = purchaseOrderService.getPurchaseOrderById(id);
             if (purchaseOrder != null) {
                 return ResponseEntity.ok(purchaseOrder);
             } else {
@@ -49,12 +42,39 @@ public class PurchaseOrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Purchaseorder>> getAllPurchaseOrders() {
+    public ResponseEntity<List<PurchaseOrderDTO>> getAllPurchaseOrders() {
         try {
-            List<Purchaseorder> purchaseOrders = purchaseOrderService.getAllPurchaseOrders();
+            List<PurchaseOrderDTO> purchaseOrders = purchaseOrderService.getAllPurchaseOrders();
             return ResponseEntity.ok(purchaseOrders);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Object> searchPurchaseOrders(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        try {
+            List<PurchaseOrderDTO> purchaseOrders = purchaseOrderService.searchPurchaseOrders(status, startDate, endDate);
+            return ResponseEntity.ok(purchaseOrders);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<Object> getPurchaseOrderDetails(@PathVariable("id") String id) {
+        try {
+            List<PurchaseOrderDetailDTO> details = purchaseOrderService.getPurchaseOrderDetails(id);
+            if (details != null) {
+                return ResponseEntity.ok(details);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Purchase order not found with id: " + id);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
 }

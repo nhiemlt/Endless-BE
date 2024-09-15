@@ -9,6 +9,7 @@ import java.util.List;
 
 @Data
 public class PurchaseOrderDTO {
+    private String purchaseOrderID;
     private LocalDate purchaseDate;
     private String purchaseOrderStatus;
     private BigDecimal totalMoney;
