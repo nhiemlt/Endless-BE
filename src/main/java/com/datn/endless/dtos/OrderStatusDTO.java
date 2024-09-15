@@ -10,5 +10,6 @@ import java.time.Instant;
 public class OrderStatusDTO {
     private String orderID;
     private Integer statusID;
+    private String statusType;
     private Instant time;
 }
