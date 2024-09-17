@@ -37,7 +37,7 @@ public class NotificationController {
             @PathVariable String userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "notification.notificationDate") String sortBy,
+            @RequestParam(defaultValue = "NotificationDate") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir) {
 
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
@@ -46,6 +46,21 @@ public class NotificationController {
         Page<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserId(userId, pageable);
         return ResponseEntity.ok(notifications);
     }
+
+    @GetMapping("/user")
+    public ResponseEntity<Page<NotificationRecipientDTO>> getNotificationsByUserLogin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "NotificationDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserLogin(pageable);
+        return ResponseEntity.ok(notifications);
+    }
+
 
     @PostMapping("/markAsRead")
     public ResponseEntity<Map<String, Object>> markAsRead(@RequestBody Map<String, String> requestBody) {
