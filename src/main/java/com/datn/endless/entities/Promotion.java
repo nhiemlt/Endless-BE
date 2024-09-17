@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
 
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 public class Promotion {
     @Id
     @Size(max = 36)
-    @ColumnDefault("(uuid())")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.uuid.UuidGenerator")
     @Column(name = "PromotionID", nullable = false, length = 36)
     private String promotionID;
 

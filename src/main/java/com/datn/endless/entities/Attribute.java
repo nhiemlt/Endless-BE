@@ -1,5 +1,6 @@
 package com.datn.endless.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,12 +14,14 @@ import org.hibernate.annotations.ColumnDefault;
 @Getter
 @Setter
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "attributes")
 public class Attribute {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "AttributeID", nullable = false, length = 36)
+
     private String attributeID;
 
     @Size(max = 255)

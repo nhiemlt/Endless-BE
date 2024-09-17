@@ -1,5 +1,6 @@
 package com.datn.endless.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,11 +22,12 @@ public class Promotionproduct {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PromotionDetailID", nullable = false)
+    @JsonIgnore // Ignore this property during serialization
     private Promotiondetail promotionDetailID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ProductVersionID", nullable = false)
+    @JsonIgnore // Ignore this property during serialization
     private Productversion productVersionID;
-
 }
