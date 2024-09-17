@@ -1,16 +1,17 @@
 package com.datn.endless.dtos;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Getter
-@Setter
+@Data
 public class OrderDetailDTO {
     private String orderDetailID;
     private String orderID;
+    private String productName;
     private String productVersionID;
+    private String productVersionName;
+    private String productVersionImage;
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal discountPrice;

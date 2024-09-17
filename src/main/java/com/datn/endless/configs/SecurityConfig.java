@@ -3,6 +3,8 @@ package com.datn.endless.configs;
 import com.datn.endless.services.Constant;
 import com.datn.endless.services.CustomOAuth2UserService;
 import com.datn.endless.services.CustomUserDetailsService;
+import com.datn.endless.services.JWTService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,10 +22,12 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final JWTService jwtService;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomUserDetailsService customUserDetailsService) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomUserDetailsService customUserDetailsService, JWTService jwtService) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customUserDetailsService = customUserDetailsService;
+        this.jwtService = jwtService;
     }
 
     @Bean
@@ -70,7 +74,7 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService)
                         )
                 )
-                .addFilterBefore(new JWTAuthenticationFilter(customUserDetailsService),
+                .addFilterBefore(new JWTAuthenticationFilter(customUserDetailsService, jwtService),
                         UsernamePasswordAuthenticationFilter.class); // Thêm JWTAuthenticationFilter vào chuỗi bảo mật
 
         return http.build();

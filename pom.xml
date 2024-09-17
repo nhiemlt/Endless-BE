@@ -43,23 +43,22 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-
-
-        <!-- JSON Web Token (JWT) Dependencies -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
-            <version>0.12.3</version>
+            <version>0.11.2</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
-            <version>0.12.3</version>
+            <version>0.11.2</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
-            <version>0.12.3</version>
+            <version>0.11.2</version>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Lombok for reducing boilerplate code -->
@@ -104,7 +103,6 @@
         </dependency>
 
         <!-- Springdoc OpenAPI for API Documentation -->
-
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

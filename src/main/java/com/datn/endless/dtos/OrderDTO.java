@@ -1,21 +1,21 @@
 package com.datn.endless.dtos;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class OrderDTO {
     private String orderID;
-    private String userID;
-    private String voucherID;
+    private UserOderDTO customer;
+    private UserOderDTO creater;
+    private VoucherOrderDTO voucher;
     private LocalDate orderDate;
     private BigDecimal totalMoney;
-    private String orderStatus;
     private String orderAddress;
     private String orderPhone;
     private String orderName;
+    List<OrderDetailDTO> orderDetails;
 }

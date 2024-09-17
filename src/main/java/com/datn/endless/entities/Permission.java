@@ -1,5 +1,6 @@
 package com.datn.endless.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,6 +21,7 @@ public class Permission {
     @Column(name = "PermissionID", nullable = false, length = 36)
     private String permissionID;
 
+    @JsonIgnore
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "ModuleID", nullable = false)
@@ -34,7 +36,10 @@ public class Permission {
     @Column(name = "EN_PermissionName")
     private String enPermissionname;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "permissions", fetch = FetchType.LAZY)
     private Set<Role> roles;
+
+
 
 }

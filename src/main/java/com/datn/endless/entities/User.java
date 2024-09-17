@@ -17,7 +17,6 @@ import java.util.Set;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(name = "UserID", nullable = false, length = 36)
     private String userID;
 
@@ -58,7 +57,7 @@ public class User {
     @Column(name = "forgetPassword")
     private Boolean forgetPassword;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "UserRoles",
             joinColumns = @JoinColumn(name = "user_id"),
