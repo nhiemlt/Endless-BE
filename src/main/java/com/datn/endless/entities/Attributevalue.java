@@ -1,5 +1,6 @@
 package com.datn.endless.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,12 +11,14 @@ import org.hibernate.annotations.ColumnDefault;
 @Getter
 @Setter
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "attributevalues")
 public class Attributevalue {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "AttributeValueID", nullable = false, length = 36)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String attributeValueID;
 
     @NotNull
