@@ -135,6 +135,32 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/user")
+    public ResponseEntity<Map<String, Object>> getAllOrderByUserLogin(
+            @RequestParam(required = false) String orderAddress,
+            @RequestParam(required = false) String orderPhone,
+            @RequestParam(required = false) String orderName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Tạo đối tượng Pageable cho phân trang
+            Pageable pageable = PageRequest.of(page, size);
+
+            // Gọi service để lấy dữ liệu đơn hàng với lọc và phân trang
+            Page<OrderDTO> orders = orderService.getAllOrderDTOsByUserLogin( orderAddress, orderPhone, orderName, pageable);
+
+            response.put("success", true);
+            response.put("data", orders);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
 
     // Get Order Details by Order ID
     @GetMapping("/{id}/details")

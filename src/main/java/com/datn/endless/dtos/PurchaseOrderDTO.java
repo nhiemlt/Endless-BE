@@ -11,7 +11,6 @@ import java.util.List;
 public class PurchaseOrderDTO {
     private String purchaseOrderID;
     private LocalDate purchaseDate;
-    private String purchaseOrderStatus;
     private BigDecimal totalMoney;
     private List<PurchaseOrderDetailDTO> details;
 }

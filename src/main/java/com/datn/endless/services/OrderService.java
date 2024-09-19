@@ -10,6 +10,7 @@ import com.datn.endless.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -188,6 +189,15 @@ public class OrderService {
 
     // Lấy tất cả đơn hàng
     public Page<OrderDTO> getAllOrderDTOs(String userID, String orderAddress, String orderPhone, String orderName, Pageable pageable) {
+        return getAllOrderDTOS(orderAddress, orderPhone, orderName, pageable, userID);
+    }
+
+    public Page<OrderDTO> getAllOrderDTOsByUserLogin(String orderAddress, String orderPhone, String orderName, Pageable pageable) {
+        String userID = userRepository.findByUsername(userLoginInformation.getCurrentUsername()).getUserID();
+        return getAllOrderDTOS(orderAddress, orderPhone, orderName, pageable, userID);
+    }
+
+    private Page<OrderDTO> getAllOrderDTOS(String orderAddress, String orderPhone, String orderName, Pageable pageable, String userID) {
         Page<Order> orders = orderRepository.findAllByUserIDContainingAndOrderAddressContainingAndOrderPhoneContainingAndOrderNameContaining(
                 userID != null ? userID : "",
                 orderAddress != null ? orderAddress : "",
@@ -228,6 +238,12 @@ public class OrderService {
         // Lấy trạng thái hiện tại của đơn hàng
         Orderstatus currentStatus = orderstatusRepository.findTopByOrderIdOrderByTimeDesc(orderId)
                 .orElseThrow(() -> new StatusTypeNotFoundException("Current status not found"));
+
+        UserDetails userDetails = userLoginInformation.getCurrentUser();
+
+        if(!userDetails.getUsername().equals(order.getUserID().getUsername())) {
+            throw new OrderCannotBeUpdateException("This user is not allowed to update this order");
+        }
 
         // Kiểm tra xem trạng thái hiện tại có hợp lệ để chuyển đổi không
         if (!allowedCurrentStatusIds.contains(currentStatus.getStatusType().getId())) {

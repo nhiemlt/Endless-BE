@@ -12,9 +12,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface NotificationrecipientRepository extends JpaRepository<Notificationrecipient, String> {
-    @Query("SELECT r FROM Notificationrecipient r JOIN r.notificationID n WHERE r.userID = :userId ORDER BY n.notificationDate DESC")
-    Page<Notificationrecipient> findByUserID(@Param("userId") User user, Pageable pageable);
-
+    @Query(value = "SELECT nr.* " +
+            "FROM NotificationRecipients nr " +
+            "JOIN Notifications n ON nr.NotificationID = n.NotificationID " +
+            "WHERE nr.UserID = :userId " +
+            "ORDER BY n.NotificationDate DESC",
+            nativeQuery = true)
+    List<Notificationrecipient> findAllByUserID(@Param("userId") String userId);
 
     void deleteByNotificationID(Notification notification);
 }
