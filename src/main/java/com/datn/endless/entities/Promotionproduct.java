@@ -30,4 +30,10 @@ public class Promotionproduct {
     @JoinColumn(name = "ProductVersionID", nullable = false)
     @JsonIgnore // Ignore this property during serialization
     private Productversion productVersionID;
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "ProductVersionID", nullable = false)
+    private Productversion productVersionID1;
+
 }

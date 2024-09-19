@@ -6,9 +6,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,8 +19,6 @@ public class Productversion {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(name = "ProductVersionID", nullable = false, length = 36)
     private String productVersionID;
 
@@ -49,5 +48,8 @@ public class Productversion {
     @Lob
     @Column(name = "Image")
     private String image;
+
+    @OneToMany(mappedBy = "productVersionID")
+    private Set<Versionattribute> versionattributes = new LinkedHashSet<>();
 
 }
