@@ -1,6 +1,6 @@
 package com.datn.endless.models;
 
-import com.datn.endless.entities.Product;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -12,7 +12,7 @@ import java.util.List;
 public class ProductVersionModel {
 
     @NotNull(message = "Product ID cannot be null.")
-    private Product productID;
+    private String productID;
 
     @Size(max = 255, message = "Version name cannot exceed 255 characters.")
     @NotNull(message = "Version name cannot be null.")
@@ -28,5 +28,5 @@ public class ProductVersionModel {
     private String image;
 
     @NotNull(message = "please chose some Attributes")
-    List<String> AttributeID ;
+    List<String> AttributeValueID ;
 }

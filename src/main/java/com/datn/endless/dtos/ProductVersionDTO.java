@@ -1,18 +1,19 @@
 package com.datn.endless.dtos;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class ProductVersionDTO {
     private String productVersionID;
-    private String productName;
+    private ProductForProcVersionDTO product;
     private String versionName;
     private BigDecimal purchasePrice;
     private BigDecimal price;
     private String status;
     private String image;
+    private BigDecimal discountPrice;
+    List<VersionAttributeDTO> versionAttributes;
 }

@@ -41,9 +41,4 @@ public class Purchaseorderdetail {
     @Column(name = "Price", nullable = false, precision = 18, scale = 2)
     private BigDecimal price;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ProductVersionID", nullable = false)
-    private Productversion productVersionID1;
-
 }

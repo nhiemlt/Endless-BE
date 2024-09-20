@@ -21,7 +21,6 @@ public class Attribute {
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "AttributeID", nullable = false, length = 36)
-
     private String attributeID;
 
     @Size(max = 255)

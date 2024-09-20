@@ -36,9 +36,4 @@ public class Cart {
     @Column(name = "Quantity", nullable = false)
     private Integer quantity;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "ProductVersionID", nullable = false)
-    private Productversion productVersionID1;
-
 }

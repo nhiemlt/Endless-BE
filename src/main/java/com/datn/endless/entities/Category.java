@@ -25,10 +25,6 @@ public class Category {
     @Column(name = "Name", nullable = false)
     private String name;
 
-    public String getName() {
-        return name;
-    }
-
     @Size(max = 255)
     @Column(name = "EN_name")
     private String enName;

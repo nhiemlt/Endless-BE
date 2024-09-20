@@ -23,7 +23,7 @@ public class Productversion {
     private String productVersionID;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "ProductID", nullable = false)
     private Product productID;
 
@@ -49,7 +49,7 @@ public class Productversion {
     @Column(name = "Image")
     private String image;
 
-    @OneToMany(mappedBy = "productVersionID")
+    @OneToMany(mappedBy = "productVersionID", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Versionattribute> versionattributes = new LinkedHashSet<>();
 
 }
