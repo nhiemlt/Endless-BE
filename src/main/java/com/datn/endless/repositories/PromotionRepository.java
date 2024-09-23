@@ -19,6 +19,9 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
     Page<Promotion> findByNameContaining(String name, Pageable pageable);
 
 
+    @Query("SELECT p FROM Promotion p WHERE (p.startDate BETWEEN :startDate AND :endDate) OR (p.endDate BETWEEN :startDate AND :endDate)")
+    List<Promotion> findByDateRange(LocalDate startDate, LocalDate endDate);
+
     @Query("SELECT p FROM Promotion p WHERE "
             + "(:name IS NULL OR p.name LIKE %:name%) AND "
             + "(:startDate IS NULL OR p.startDate >= :startDate) AND "

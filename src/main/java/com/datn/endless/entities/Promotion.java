@@ -39,7 +39,7 @@ public class Promotion {
     @Column(name = "EndDate", nullable = false)
     private LocalDate endDate;
 
-    @Size(max = 255)
+    @Lob
     @Column(name = "Poster")
     private String poster;
 
