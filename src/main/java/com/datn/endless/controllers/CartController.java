@@ -1,19 +1,25 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.entities.Cart;
-import com.datn.endless.entities.Productversion;
-import com.datn.endless.entities.User;
-import com.datn.endless.repositories.CartRepository;
-import com.datn.endless.repositories.ProductversionRepository;
-import com.datn.endless.repositories.UserRepository;
+import com.datn.endless.dtos.CartDTO;
+import com.datn.endless.dtos.ErrorResponse;
+import com.datn.endless.models.CartModel;
+import com.datn.endless.services.CartService;
+import com.datn.endless.exceptions.CartItemNotFoundException;
+import com.datn.endless.exceptions.ProductVersionNotFoundException;
+import com.datn.endless.exceptions.UserNotFoundException;
+
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/carts")
@@ -21,160 +27,99 @@ import java.util.*;
 public class CartController {
 
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private CartRepository cartRepository;
-    @Autowired
-    private ProductversionRepository productversionRepository;
+    private CartService cartService;
 
-    private User getCurrentUser() {
-        //Lấy thông tin xác thực của người dùng
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //Kiểm tra kiểu dữ liệu của principa
-        if (principal instanceof UserDetails) {
-            String username = ((UserDetails) principal).getUsername();
-            //Truy xuất thông tin người dùng từ cơ sở dữ liệu
-            return userRepository.findByUsername(username);
-        }
-        return null;
-    }
-
+    // Lấy danh sách giỏ hàng
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getCarts() {
-        User user = getCurrentUser();
-        if (user == null) {
-            System.out.println("User not found or unauthorized");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+    public ResponseEntity<Object> getCarts() {
+        try {
+            List<CartDTO> carts = cartService.getCarts();
+            return ResponseEntity.ok(carts);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("User not found", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
         }
-        System.out.println("User found: " + user.getUsername());
-
-        // Lấy danh sách Cart từ cơ sở dữ liệu dựa trên User
-        List<Cart> carts = cartRepository.findByUserID(user);
-
-        if (carts.isEmpty()) {
-            System.out.println("No carts found for user: " + user.getUsername());
-            return ResponseEntity.ok(Collections.emptyList());
-        }
-
-        // Tạo một danh sách để lưu trữ thông tin của Cart
-        List<Map<String, Object>> cartInfoList = new ArrayList<>();
-
-        // Duyệt qua từng Cart và trích xuất các trường cần thiết
-        for (Cart cart : carts) {
-            Map<String, Object> cartInfo = new HashMap<>();
-            cartInfo.put("userID", cart.getUserID().getUserID());
-            cartInfo.put("productVersionID", cart.getProductVersionID().getProductVersionID());
-            cartInfo.put("quantity", cart.getQuantity());
-
-            // Thêm vào danh sách kết quả
-            cartInfoList.add(cartInfo);
-        }
-
-        return ResponseEntity.ok(cartInfoList);
     }
 
+    // Thêm sản phẩm vào giỏ hàng
     @PostMapping("/add-to-cart")
-    public ResponseEntity<String> addToCart(@RequestBody Map<String, Object> requestBody) {
-        String productVersionID = (String) requestBody.get("productVersionID");
-        Integer quantity = (Integer) requestBody.get("quantity");
-        // Lấy thông tin người dùng hiện tại đã đăng nhập
-        User user = getCurrentUser();
-        if (user == null) {
-            System.out.println("User not found or unauthorized");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found or unauthorized");
-        }
-
-        // Kiểm tra productVersionID có hợp lệ không
-        Productversion productVersion = productversionRepository.findById(productVersionID).orElse(null);
-        if (productVersion == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product version not found");
-        }
-
-        // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
-        Optional<Cart> existingCartOptional = cartRepository.findByUserIDAndProductVersionID(user, productVersion);
-
-        if (existingCartOptional.isPresent()) {
-            // Nếu sản phẩm đã có trong giỏ hàng, tăng thêm số lượng
-            Cart existingCart = existingCartOptional.get();
-            existingCart.setQuantity(existingCart.getQuantity() + quantity);
-            cartRepository.save(existingCart);
-            return ResponseEntity.ok("Quantity updated for existing product in cart");
-        } else {
-            // Nếu sản phẩm chưa có trong giỏ hàng, tạo mới sản phẩm trong giỏ hàng
-            Cart newCart = new Cart();
-            newCart.setUserID(user);
-            newCart.setProductVersionID(productVersion);
-            newCart.setQuantity(quantity);
-            cartRepository.save(newCart);
-            return ResponseEntity.ok("Product added to cart successfully");
+    public ResponseEntity<Object> addToCart(@Valid @RequestBody CartModel cartModel) {
+        try {
+            cartService.addToCart(cartModel);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Product added to cart successfully");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("User not found", e.getMessage()));
+        } catch (ProductVersionNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Product version not found", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
         }
     }
 
+    // Cập nhật số lượng sản phẩm trong giỏ hàng
     @PutMapping("/update")
-    public ResponseEntity<String> updateCartQuantity(@RequestBody Map<String, Object> payload) {
-        // Lấy giá trị từ payload
-        String productVersionID = (String) payload.get("productVersionID");
-        Integer quantity = (Integer) payload.get("quantity");
-
-        // Xác thực dữ liệu đầu vào
-        if (productVersionID == null || quantity == null || quantity < 1) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data.");
+    public ResponseEntity<Object> updateCartQuantity(@Valid @RequestBody CartModel cartModel) {
+        try {
+            cartService.updateCartQuantity(cartModel);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Cart quantity updated successfully");
+            return ResponseEntity.ok(response);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("User not found", e.getMessage()));
+        } catch (ProductVersionNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Product version not found", e.getMessage()));
+        } catch (CartItemNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Cart item not found", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
         }
+    }
 
-        // Lấy thông tin người dùng hiện tại
-        User user = getCurrentUser();
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found or unauthorized");
+    // Phương thức xử lý ngoại lệ để trả về thông báo lỗi xác thực
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.put(error.getField(), error.getDefaultMessage());
         }
-
-        // Tìm Productversion từ ID
-        Productversion productVersion = productversionRepository.findById(productVersionID).orElse(null);
-        if (productVersion == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product version not found");
-        }
-
-        // Tìm sản phẩm trong giỏ hàng
-        Optional<Cart> optionalCart = cartRepository.findByUserIDAndProductVersionID(user, productVersion);
-        if (optionalCart.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart item not found");
-        }
-
-        Cart cart = optionalCart.get();
-
-        // Cập nhật số lượng
-        cart.setQuantity(quantity);
-        cartRepository.save(cart);
-
-        return ResponseEntity.ok("Cart quantity updated successfully");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
     // Xóa sản phẩm khỏi giỏ hàng
     @DeleteMapping("/{productVersionID}")
-    public ResponseEntity<String> deleteCart(@PathVariable String productVersionID) {
-        // Lấy thông tin người dùng hiện tại
-        User user = getCurrentUser();
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found or unauthorized");
-        }
-
-        // Tìm Productversion từ ID
-        Productversion productVersion = productversionRepository.findById(productVersionID).orElse(null);
-        if (productVersion == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product version not found");
-        }
-
-        // Tìm sản phẩm trong giỏ hàng của người dùng
-        Optional<Cart> optionalCart = cartRepository.findByUserIDAndProductVersionID(user, productVersion);
-
-        if (optionalCart.isPresent()) {
-            Cart cart = optionalCart.get();
-            cartRepository.delete(cart);
-            return ResponseEntity.ok("Cart item deleted successfully");
-        } else {
-            // Nếu không tìm thấy sản phẩm trong giỏ hàng
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart item not found");
+    public ResponseEntity<Object> deleteCartItem(@PathVariable String productVersionID) {
+        try {
+            cartService.deleteCartItem(productVersionID);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Cart item deleted successfully");
+            return ResponseEntity.ok(response);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("User not found", e.getMessage()));
+        } catch (ProductVersionNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Product version not found", e.getMessage()));
+        } catch (CartItemNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Cart item not found", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
         }
     }
-
 }
-
