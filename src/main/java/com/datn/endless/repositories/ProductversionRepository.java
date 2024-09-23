@@ -16,4 +16,6 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
 
     @Query("SELECT pv FROM Productversion pv WHERE pv.versionName LIKE %:versionName%")
     Page<Productversion> findByVersionNameContaining(@Param("versionName") String versionName, Pageable pageable);
+
+    Productversion findFirstByProductID_ProductID(String productId);
 }
