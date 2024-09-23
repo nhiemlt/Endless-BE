@@ -50,4 +50,12 @@ public class CategoryController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<CategoryDTO> updateCategory(
+            @PathVariable("id") String categoryId,
+            @RequestBody CategoryModel categoryModel) {
+        CategoryDTO updatedCategory = categoryService.updateCategory(categoryId, categoryModel);
+        return ResponseEntity.ok(updatedCategory);
+    }
 }

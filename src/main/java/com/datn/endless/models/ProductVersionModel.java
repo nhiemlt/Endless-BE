@@ -18,6 +18,8 @@ public class ProductVersionModel {
     @NotNull(message = "Version name cannot be null.")
     private String versionName;
 
+    private String description;
+
     @NotNull(message = "Purchase price cannot be null.")
     private BigDecimal purchasePrice;
 

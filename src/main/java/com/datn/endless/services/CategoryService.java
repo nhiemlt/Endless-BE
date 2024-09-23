@@ -75,4 +75,18 @@ public class CategoryService {
         categoryDTO.setEnName(category.getEnName());
         return categoryDTO;
     }
+
+    public CategoryDTO updateCategory(String id, CategoryModel categoryModel) {
+        // Tìm danh mục theo ID
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + id));
+
+        // Cập nhật thông tin của danh mục
+        existingCategory.setName(categoryModel.getName());
+        existingCategory.setEnName(categoryModel.getEnName());
+
+        // Lưu danh mục đã cập nhật
+        return convertToDTO(categoryRepository.save(existingCategory));
+    }
+
 }

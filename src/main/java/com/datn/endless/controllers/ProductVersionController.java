@@ -9,7 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -45,8 +47,24 @@ public class ProductVersionController {
     }
     // Tạo mới ProductVersion
     @PostMapping
-    public ResponseEntity<ProductVersionDTO> createProductVersion(@Valid @RequestBody ProductVersionModel productVersionModel) {
-        ProductVersionDTO createdProductVersion = productVersionService.createProductVersion(productVersionModel);
+    public ResponseEntity<ProductVersionDTO> createProductVersion(
+            @RequestParam String productID,
+            @RequestParam String versionName,
+            @RequestParam String description,
+            @RequestParam double price,
+            @RequestParam double purchasePrice,
+            @RequestParam MultipartFile image,
+            @RequestParam List<String> attributeValueID) { // Thêm attributeValueID
+
+        ProductVersionModel model = new ProductVersionModel();
+        model.setProductID(productID);
+        model.setVersionName(versionName);
+        model.setPrice(BigDecimal.valueOf(price));
+        model.setPurchasePrice(BigDecimal.valueOf(purchasePrice));
+        model.setImage(image);
+        model.setAttributeValueID(attributeValueID);
+
+        ProductVersionDTO createdProductVersion = productVersionService.createProductVersion(model);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProductVersion);
     }
 
@@ -54,8 +72,24 @@ public class ProductVersionController {
     @PutMapping("/{id}")
     public ResponseEntity<ProductVersionDTO> updateProductVersion(
             @PathVariable("id") String productVersionID,
-            @Valid @RequestBody ProductVersionModel productVersionModel) {
-        ProductVersionDTO updatedProductVersion = productVersionService.updateProductVersion(productVersionID, productVersionModel);
+            @RequestParam String productID,
+            @RequestParam String versionName,
+            @RequestParam String description,
+            @RequestParam double price,
+            @RequestParam double purchasePrice,
+            @RequestParam MultipartFile image,
+            @RequestParam List<String> attributeValueID) {
+
+        ProductVersionModel model = new ProductVersionModel();
+        model.setProductID(productID);
+        model.setVersionName(versionName);
+        model.setDescription(description);
+        model.setPrice(BigDecimal.valueOf(price));
+        model.setPurchasePrice(BigDecimal.valueOf(purchasePrice));
+        model.setImage(image);
+        model.setAttributeValueID(attributeValueID);
+
+        ProductVersionDTO updatedProductVersion = productVersionService.updateProductVersion(productVersionID, model);
         return ResponseEntity.ok(updatedProductVersion);
     }
 
