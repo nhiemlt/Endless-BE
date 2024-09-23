@@ -16,10 +16,11 @@ import java.time.LocalDate;
 @Table(name = "promotions")
 public class Promotion {
     @Id
-    @Size(max = 36)
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.uuid.UuidGenerator")
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "PromotionID", nullable = false, length = 36)
     private String promotionID;
+
 
     @Size(max = 255)
     @NotNull

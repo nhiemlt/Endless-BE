@@ -20,25 +20,6 @@ public class ProductVersionController {
     private ProductVersionService productVersionService;
 
 
-//    // Lấy ProductVersion theo ID
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ProductVersionDTO> getProductVersionById(@PathVariable("id") String productVersionID) {
-//        ProductVersionDTO productVersion = productVersionService.getProductVersionById(productVersionID);
-//        return ResponseEntity.ok(productVersion);
-//    }
-//
-//    @GetMapping
-//    public ResponseEntity<Page<ProductVersionDTO>> getAllProductVersions(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size,
-//            @RequestParam(defaultValue = "versionName") String sortBy,
-//            @RequestParam(defaultValue = "ASC") String direction,
-//            @RequestParam(required = false) String versionName) {
-//        Page<ProductVersionDTO> productVersions = productVersionService.getProductVersions(page, size, sortBy, direction, versionName);
-//        return ResponseEntity.ok(productVersions);
-//    }
-
-
     @GetMapping
     public ResponseEntity<?> getProductVersions(
             @RequestParam(required = false) String id,

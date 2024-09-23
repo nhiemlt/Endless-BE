@@ -1,113 +1,46 @@
+// PromotionController.java
 package com.datn.endless.controllers;
 
-import com.datn.endless.entities.Promotion;
-import com.datn.endless.repositories.PromotionRepository;
+import com.datn.endless.dtos.PromotionDTO;
+import com.datn.endless.services.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/promotions")
 public class PromotionController {
-
     @Autowired
-    private PromotionRepository promotionRepository;
+    private PromotionService promotionService;
 
-    // Create a new promotion
-    @PostMapping
-    public ResponseEntity<String> createPromotion(@RequestBody Promotion promotion) {
-        // Validate promotion data
-        if (promotion.getName() == null || promotion.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Promotion name must not be null or empty.");
-        }
-
-        if (promotionRepository.existsByName(promotion.getName())) {
-            return ResponseEntity.badRequest().body("Promotion with this name already exists.");
-        }
-
-        if (promotion.getStartDate() == null || promotion.getEndDate() == null) {
-            return ResponseEntity.badRequest().body("Start date and end date must not be null.");
-        }
-
-        if (promotion.getStartDate().isAfter(promotion.getEndDate())) {
-            return ResponseEntity.badRequest().body("Start date must be before end date.");
-        }
-
-        // Set promotion ID if not already set
-        if (promotion.getPromotionID() == null || promotion.getPromotionID().isEmpty()) {
-            promotion.setPromotionID(UUID.randomUUID().toString());
-        }
-
-        Promotion createdPromotion = promotionRepository.save(promotion);
-        return ResponseEntity.ok("Promotion created successfully.");
-    }
-
-    // Get all promotions
     @GetMapping
-    public ResponseEntity<List<Promotion>> getAllPromotions() {
-        List<Promotion> promotions = promotionRepository.findAll();
-        return ResponseEntity.ok(promotions);
+    public Page<PromotionDTO> getAllPromotions(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sort) {
+        return promotionService.getPromotions(name, startDate, endDate, page, size, sort);
     }
 
-    // Get promotion by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Promotion> getPromotionById(@PathVariable String id) {
-        Optional<Promotion> promotion = promotionRepository.findById(id);
-        return promotion.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    @PostMapping
+    public PromotionDTO createPromotion(@RequestBody PromotionDTO dto) {
+        return promotionService.createPromotion(dto);
     }
 
-    // Update a promotion
     @PutMapping("/{id}")
-    public ResponseEntity<String> updatePromotion(@PathVariable String id, @RequestBody Promotion promotion) {
-        // Validate promotion data
-        if (promotion.getName() == null || promotion.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Promotion name must not be null or empty.");
-        }
-
-        if (promotionRepository.existsByNameAndPromotionIDNot(promotion.getName(), id)) {
-            return ResponseEntity.badRequest().body("Promotion with this name already exists.");
-        }
-
-        if (promotion.getStartDate() == null || promotion.getEndDate() == null) {
-            return ResponseEntity.badRequest().body("Start date and end date must not be null.");
-        }
-
-        if (promotion.getStartDate().isAfter(promotion.getEndDate())) {
-            return ResponseEntity.badRequest().body("Start date must be before end date.");
-        }
-
-        if (!promotionRepository.existsById(id)) {
-            return ResponseEntity.badRequest().body("Promotion not found with ID: " + id);
-        }
-
-        promotion.setPromotionID(id);
-        promotionRepository.save(promotion);
-        return ResponseEntity.ok("Promotion updated successfully.");
+    public PromotionDTO updatePromotion(@PathVariable String id, @RequestBody PromotionDTO dto) {
+        return promotionService.updatePromotion(id, dto);
     }
 
-    // Delete a promotion
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePromotion(@PathVariable String id) {
-        if (!promotionRepository.existsById(id)) {
-            return ResponseEntity.badRequest().body("Promotion not found with ID: " + id);
-        }
-        try {
-            promotionRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error deleting promotion: " + e.getMessage());
-        }
+    public void deletePromotion(@PathVariable String id) {
+        promotionService.deletePromotion(id);
     }
 
-    // Search promotions by name
-    @GetMapping("/search")
-    public ResponseEntity<List<Promotion>> searchPromotionsByName(@RequestParam String name) {
-        List<Promotion> promotions = promotionRepository.findByNameContainingIgnoreCase(name);
-        return ResponseEntity.ok(promotions);
-    }
 }
