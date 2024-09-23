@@ -91,8 +91,8 @@ public class OrderService {
         order.setVoucherID(voucher);
         order.setOrderDate(LocalDate.now()); // Current date
         order.setOrderAddress(orderModel.getOrderAddress());
-        order.setOrderPhone(orderModel.getOrderPhone());
-        order.setOrderName(orderModel.getOrderName());
+        order.setOrderPhone(user.getPhone());
+        order.setOrderName(user.getFullname().isEmpty()?user.getUsername():user.getFullname());
         order.setOrderDetails(new ArrayList<>()); // Initialize the orderDetails list
         BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), orderModel.getVoucherID());
         order.setTotalMoney(totalMoney);
