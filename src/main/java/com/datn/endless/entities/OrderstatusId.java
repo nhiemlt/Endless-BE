@@ -2,12 +2,18 @@ package com.datn.endless.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+@Setter
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Embeddable
 public class OrderstatusId implements Serializable {
     @Column(name = "OrderID")
@@ -15,21 +21,6 @@ public class OrderstatusId implements Serializable {
 
     @Column(name = "StatusID")
     private Integer statusID;
-
-    public OrderstatusId() {}
-
-    public OrderstatusId(String orderID, Integer statusID) {
-        this.orderID = orderID;
-        this.statusID = statusID;
-    }
-
-    public void setOrderID(String orderID) {
-        this.orderID = orderID;
-    }
-
-    public void setStatusID(Integer statusID) {
-        this.statusID = statusID;
-    }
 
     @Override
     public boolean equals(Object o) {

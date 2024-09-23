@@ -1,20 +1,26 @@
 package com.datn.endless.services;
 
-import com.datn.endless.dtos.NotificationDTO;
 import com.datn.endless.dtos.NotificationRecipientDTO;
 import com.datn.endless.entities.Notification;
 import com.datn.endless.entities.Notificationrecipient;
 import com.datn.endless.entities.User;
+import com.datn.endless.models.NotificationModel;
 import com.datn.endless.repositories.NotificationRepository;
 import com.datn.endless.repositories.NotificationrecipientRepository;
 import com.datn.endless.repositories.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,18 +35,39 @@ public class NotificationService {
     @Autowired
     private UserRepository userRepository;
 
-    public void sendNotification(NotificationDTO notificationDTO) {
+    @Autowired
+    private UserLoginInfomation userLoginInfomation;
+
+    public Map<String, Object> sendNotification(@Valid NotificationModel notificationModel, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return buildValidationErrorResponse(bindingResult);
+        }
+
+        try {
+            Notification notification = createNotification(notificationModel);
+            notificationRepository.save(notification);
+
+            saveNotificationRecipients(notification, notificationModel.getUserIds());
+
+            return buildSuccessResponse("Notification sent successfully!");
+        } catch (Exception e) {
+            return buildErrorResponse("Failed to send notification: " + e.getMessage());
+        }
+    }
+
+    private Notification createNotification(NotificationModel notificationModel) {
         Notification notification = new Notification();
         notification.setNotificationID(UUID.randomUUID().toString());
-        notification.setTitle(notificationDTO.getTitle());
-        notification.setContent(notificationDTO.getContent());
-        notification.setType(notificationDTO.getType());
+        notification.setTitle(notificationModel.getTitle());
+        notification.setContent(notificationModel.getContent());
+        notification.setType(notificationModel.getType());
         notification.setNotificationDate(Instant.now());
         notification.setStatus("SENT");
+        return notification;
+    }
 
-        notificationRepository.save(notification);
-
-        for (String userId : notificationDTO.getUserIds()) {
+    private void saveNotificationRecipients(Notification notification, List<String> userIds) {
+        userIds.forEach(userId -> {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid User ID: " + userId));
             Notificationrecipient recipient = new Notificationrecipient();
@@ -48,44 +75,98 @@ public class NotificationService {
             recipient.setNotificationID(notification);
             recipient.setUserID(user);
             recipient.setStatus("UNREAD");
-
             notificationRecipientRepository.save(recipient);
+        });
+    }
+
+    private Map<String, Object> buildValidationErrorResponse(BindingResult bindingResult) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", "Validation failed");
+        response.put("errors", bindingResult.getFieldErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
+        return response;
+    }
+
+    private Map<String, Object> buildSuccessResponse(String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", message);
+        return response;
+    }
+
+    private Map<String, Object> buildErrorResponse(String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", message);
+        return response;
+    }
+
+    public Map<String, Object> markAsRead(String notificationRecipientId) {
+        try {
+            Notificationrecipient recipient = notificationRecipientRepository.findById(notificationRecipientId)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid Notification Recipient ID: " + notificationRecipientId));
+            recipient.setStatus("READ");
+            notificationRecipientRepository.save(recipient);
+
+            return buildSuccessResponse("Notification marked as read.");
+        } catch (Exception e) {
+            return buildErrorResponse("Failed to mark notification as read: " + e.getMessage());
         }
     }
 
-    public List<NotificationRecipientDTO> getNotificationsByUserId(String userId) {
+    public Page<NotificationRecipientDTO> getNotificationsByUserId(String userId, Pageable pageable) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid User ID: " + userId));
-        List<Notificationrecipient> recipients = notificationRecipientRepository.findByUserID(user);
 
-        return recipients.stream().map(recipient -> {
+        List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(userId);
+        allRecipients.sort(Comparator.comparing((Notificationrecipient nr) -> nr.getNotificationID().getNotificationDate()).reversed());
+
+        return paginateAndConvertToDTO(allRecipients, pageable);
+    }
+
+    public Page<NotificationRecipientDTO> getNotificationsByUserLogin(Pageable pageable) {
+        String currentUsername = userLoginInfomation.getCurrentUsername();
+        User user = userRepository.findByUsername(currentUsername);
+
+        List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
+        allRecipients.sort(Comparator.comparing((Notificationrecipient nr) -> nr.getNotificationID().getNotificationDate()).reversed());
+
+        return paginateAndConvertToDTO(allRecipients, pageable);
+    }
+
+    private Page<NotificationRecipientDTO> paginateAndConvertToDTO(List<Notificationrecipient> recipients, Pageable pageable) {
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), recipients.size());
+        List<Notificationrecipient> pagedRecipients = recipients.subList(start, end);
+
+        List<NotificationRecipientDTO> dtoList = pagedRecipients.stream().map(recipient -> {
             NotificationRecipientDTO dto = new NotificationRecipientDTO();
             dto.setNotificationRecipientID(recipient.getNotificationRecipientID());
+            dto.setNotificationID(recipient.getNotificationID().getNotificationID());
             dto.setStatus(recipient.getStatus());
             dto.setNotificationTitle(recipient.getNotificationID().getTitle());
             dto.setUserName(recipient.getUserID().getUsername());
             return dto;
         }).collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, recipients.size());
     }
 
-    public void markAsRead(String notificationRecipientId) {
-        Notificationrecipient recipient = notificationRecipientRepository.findById(notificationRecipientId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Notification Recipient ID: " + notificationRecipientId));
-        recipient.setStatus("READ");
-        notificationRecipientRepository.save(recipient);
-    }
-
-    public List<Notification> getAllNotifications() {
-        return notificationRepository.findAll();
-    }
-
-    public void deleteNotification(String notificationId) {
+    @Transactional
+    public Map<String, Object> deleteNotification(String notificationId) {
         try {
             Notification notification = notificationRepository.findById(notificationId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Notification ID: " + notificationId));
+
+            notificationRecipientRepository.deleteByNotificationID(notification);
             notificationRepository.delete(notification);
+
+            return buildSuccessResponse("Notification deleted successfully.");
         } catch (EmptyResultDataAccessException e) {
-            throw new IllegalArgumentException("Notification not found: " + notificationId, e);
+            return buildErrorResponse("Notification not found: " + notificationId);
+        } catch (Exception e) {
+            return buildErrorResponse("Failed to delete notification: " + e.getMessage());
         }
     }
 }

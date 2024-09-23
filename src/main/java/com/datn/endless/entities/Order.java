@@ -25,10 +25,13 @@ public class Order {
     @Column(name = "OrderID", nullable = false, length = 36)
     private String orderID;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
     private User userID;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "Creater", nullable = true) // Sử dụng cột khác
+    private User creater;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "VoucherID")

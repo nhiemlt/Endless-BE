@@ -1,17 +1,21 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.dtos.OrderDTO;
-import com.datn.endless.dtos.OrderDetailDTO;
-import com.datn.endless.dtos.OrderStatusDTO;
+import com.datn.endless.dtos.*;
 import com.datn.endless.exceptions.*;
-import com.datn.endless.models.ErrorResponse;
+import com.datn.endless.models.OrderModel;
+import com.datn.endless.models.OrderModelForUser;
 import com.datn.endless.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/orders")
@@ -22,94 +26,354 @@ public class OrderController {
 
     // Create Order
     @PostMapping
-    public ResponseEntity<?> createOrder(@RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<Map<String, Object>> createOrder(@RequestBody OrderModel orderModel) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            // Gọi service để tạo đơn hàng
-            OrderDTO savedOrderDTO = orderService.createOrder(orderDTO);
-            // Trả về đơn hàng đã lưu với mã trạng thái CREATED (201)
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedOrderDTO);
+            OrderDTO savedOrderDTO = orderService.createOrder(orderModel);
+            response.put("success", true);
+            response.put("data", savedOrderDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (UserNotFoundException e) {
-            // Xử lý lỗi khi người dùng không tồn tại
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("User not found: " + e.getMessage()) {
-            });
+            response.put("success", false);
+            response.put("error", "User not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (VoucherNotFoundException e) {
-            // Xử lý lỗi khi voucher không tồn tại
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Voucher not found: " + e.getMessage()));
+            response.put("success", false);
+            response.put("error", "Voucher not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (AddressNotFoundException e) {
-            // Xử lý lỗi khi địa chỉ không tồn tại
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Address not found: " + e.getMessage()));
+            response.put("success", false);
+            response.put("error", "Address not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (ProductVersionNotFoundException e) {
-            // Xử lý lỗi khi phiên bản sản phẩm không tồn tại
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Product version not found: " + e.getMessage()));
+            response.put("success", false);
+            response.put("error", "Product version not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (StatusTypeNotFoundException e) {
-            // Xử lý lỗi khi loại trạng thái đơn hàng không tồn tại
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse("Order status type not found: " + e.getMessage()));
+            response.put("success", false);
+            response.put("error", "Order status type not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
-            // Xử lý các lỗi không dự đoán được khác
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("An unexpected error occurred: " + e.getMessage()));
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<Map<String, Object>> createOrderForUser(@RequestBody OrderModelForUser orderModel) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            OrderDTO savedOrderDTO = orderService.createOrderForUser(orderModel);
+            response.put("success", true);
+            response.put("data", savedOrderDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (AddressNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Address not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (VoucherNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Voucher not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (ProductVersionNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Product version not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     // Get Order by ID
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDTO> getOrderById(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getOrderById(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
         try {
             OrderDTO orderDTO = orderService.getOrderDTOById(id);
-            return ResponseEntity.ok(orderDTO);
+            response.put("success", true);
+            response.put("data", orderDTO);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Customize error handling as needed
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     // Get All Orders
     @GetMapping
-    public ResponseEntity<List<OrderDTO>> getAllOrders() {
+    public ResponseEntity<Map<String, Object>> getAllOrders(
+            @RequestParam(required = false) String userID,
+            @RequestParam(required = false) String orderAddress,
+            @RequestParam(required = false) String orderPhone,
+            @RequestParam(required = false) String orderName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Map<String, Object> response = new HashMap<>();
         try {
-            List<OrderDTO> orders = orderService.getAllOrderDTOs();
-            return ResponseEntity.ok(orders);
+            // Tạo đối tượng Pageable cho phân trang
+            Pageable pageable = PageRequest.of(page, size);
+
+            // Gọi service để lấy dữ liệu đơn hàng với lọc và phân trang
+            Page<OrderDTO> orders = orderService.getAllOrderDTOs(userID, orderAddress, orderPhone, orderName, pageable);
+
+            response.put("success", true);
+            response.put("data", orders);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Customize error handling as needed
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
+    @GetMapping("/user")
+    public ResponseEntity<Map<String, Object>> getAllOrderByUserLogin(
+            @RequestParam(required = false) String orderAddress,
+            @RequestParam(required = false) String orderPhone,
+            @RequestParam(required = false) String orderName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Tạo đối tượng Pageable cho phân trang
+            Pageable pageable = PageRequest.of(page, size);
+
+            // Gọi service để lấy dữ liệu đơn hàng với lọc và phân trang
+            Page<OrderDTO> orders = orderService.getAllOrderDTOsByUserLogin( orderAddress, orderPhone, orderName, pageable);
+
+            response.put("success", true);
+            response.put("data", orders);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
     // Get Order Details by Order ID
     @GetMapping("/{id}/details")
-    public ResponseEntity<List<OrderDetailDTO>> getOrderDetailsByOrderId(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getOrderDetailsByOrderId(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
         try {
             List<OrderDetailDTO> orderDetails = orderService.getOrderDetailsDTOByOrderId(id);
-            return ResponseEntity.ok(orderDetails);
+            response.put("success", true);
+            response.put("data", orderDetails);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Customize error handling as needed
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     // Get Order Status by Order ID
     @GetMapping("/{id}/status")
-    public ResponseEntity<List<OrderStatusDTO>> getOrderStatusByOrderId(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getOrderStatusByOrderId(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
         try {
             List<OrderStatusDTO> orderStatuses = orderService.getOrderStatusDTOByOrderId(id);
-            return ResponseEntity.ok(orderStatuses);
+            response.put("success", true);
+            response.put("data", orderStatuses);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Customize error handling as needed
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
     // Cancel Order
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelOrder(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> cancelOrder(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            // Giả định orderService.cancelOrder sẽ trả về trạng thái đơn hàng sau khi hủy thành công
             OrderStatusDTO cancelledStatus = orderService.cancelOrder(id);
-            return ResponseEntity.ok(cancelledStatus);
+            response.put("success", true);
+            response.put("data", cancelledStatus);
+            return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
-            // Xử lý trường hợp không tìm thấy đơn hàng
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Order not found with ID: " + id);
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (OrderCannotBeCancelledException e) {
-            // Xử lý trường hợp đơn hàng đã bị hủy
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Order can not be Cancel");
+            response.put("success", false);
+            response.put("error", "Order cannot be cancelled: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
-            // Xử lý các lỗi khác
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    @PostMapping("/cancel")
+    public ResponseEntity<Map<String, Object>> cancelOrder(@RequestBody Map<String, String> requestBody) {
+        Map<String, Object> response = new HashMap<>();
+        String orderId = requestBody.get("orderId");
+
+        try {
+            OrderStatusDTO cancelledStatus = orderService.cancelOrder(orderId);
+            response.put("success", true);
+            response.put("data", cancelledStatus);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (OrderCancellationNotAllowedException e) {
+            response.put("success", false);
+            response.put("error", "Order cannot be cancelled: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/mark-as-paid")
+    public ResponseEntity<Map<String, Object>> markOrderAsPaid(@RequestBody Map<String, String> requestBody) {
+        Map<String, Object> response = new HashMap<>();
+        String orderId = requestBody.get("orderId");
+
+        try {
+            OrderStatusDTO paidStatus = orderService.markOrderAsPaid(orderId);
+            response.put("success", true);
+            response.put("data", paidStatus);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (InvalidOrderStatusException e) {
+            response.put("success", false);
+            response.put("error", "Order cannot be marked as paid: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/mark-as-shipping")
+    public ResponseEntity<Map<String, Object>> markOrderAsShipping(@RequestBody Map<String, String> requestBody) {
+        Map<String, Object> response = new HashMap<>();
+        String orderId = requestBody.get("orderId");
+
+        try {
+            OrderStatusDTO shippingStatus = orderService.markOrderAsShipping(orderId);
+            response.put("success", true);
+            response.put("data", shippingStatus);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (InvalidOrderStatusException e) {
+            response.put("success", false);
+            response.put("error", "Order cannot be marked as shipping: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/mark-as-delivered")
+    public ResponseEntity<Map<String, Object>> markOrderAsDelivered(@RequestBody Map<String, String> requestBody) {
+        Map<String, Object> response = new HashMap<>();
+        String orderId = requestBody.get("orderId");
+
+        try {
+            OrderStatusDTO deliveredStatus = orderService.markOrderAsDelivered(orderId);
+            response.put("success", true);
+            response.put("data", deliveredStatus);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (InvalidOrderStatusException e) {
+            response.put("success", false);
+            response.put("error", "Order cannot be marked as delivered: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/mark-as-confirmed")
+    public ResponseEntity<Map<String, Object>> markOrderAsConfirmed(@RequestBody Map<String, String> requestBody) {
+        Map<String, Object> response = new HashMap<>();
+        String orderId = requestBody.get("orderId");
+
+        try {
+            OrderStatusDTO confirmedStatus = orderService.markOrderAsConfirmed(orderId);
+            response.put("success", true);
+            response.put("data", confirmedStatus);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (InvalidOrderStatusException e) {
+            response.put("success", false);
+            response.put("error", "Order cannot be marked as confirmed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/mark-as-pending")
+    public ResponseEntity<Map<String, Object>> markOrderAsPending(@RequestBody Map<String, String> requestBody) {
+        Map<String, Object> response = new HashMap<>();
+        String orderId = requestBody.get("orderId");
+
+        try {
+            OrderStatusDTO pendingStatus = orderService.markOrderAsPending(orderId);
+            response.put("success", true);
+            response.put("data", pendingStatus);
+            return ResponseEntity.ok(response);
+        } catch (OrderNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Order not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (InvalidOrderStatusException e) {
+            response.put("success", false);
+            response.put("error", "Order cannot be set to pending: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
 }

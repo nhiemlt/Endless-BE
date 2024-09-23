@@ -1,11 +1,11 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.VoucherDTO;
 import com.datn.endless.entities.Uservoucher;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Voucher;
 import com.datn.endless.repositories.UservoucherRepository;
 import com.datn.endless.repositories.UserRepository;
-import com.datn.endless.repositories.VoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,9 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -55,13 +53,24 @@ public class UserVoucherController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Không tìm thấy voucher nào.");
         }
 
-        // Tạo danh sách kết quả với thuộc tính userID và userVoucherID
-        List<Map<String, String>> result = userVouchers.stream()
+        // Tạo danh sách kết quả với VoucherDTO
+        List<VoucherDTO> result = userVouchers.stream()
                 .map(uv -> {
-                    Map<String, String> map = new HashMap<>();
-                    map.put("userID", uv.getUserID().getUserID()); // Lấy userID từ đối tượng User
-                    map.put("userVoucherID", uv.getUserVoucherID());
-                    return map;
+                    VoucherDTO voucherDTO = new VoucherDTO();
+                    // Giả sử bạn có một phương thức để lấy Voucher từ Uservoucher
+                    Voucher voucher = uv.getVoucherID(); // Lấy Voucher từ Uservoucher
+                    if (voucher != null) {
+                        voucherDTO.setVoucherID(voucher.getVoucherID());
+                        voucherDTO.setVoucherCode(voucher.getVoucherCode());
+                        voucherDTO.setLeastBill(voucher.getLeastBill());
+                        voucherDTO.setLeastDiscount(voucher.getLeastDiscount());
+                        voucherDTO.setBiggestDiscount(voucher.getBiggestDiscount());
+                        voucherDTO.setDiscountLevel(voucher.getDiscountLevel());
+                        voucherDTO.setDiscountForm(voucher.getDiscountForm());
+                        voucherDTO.setStartDate(voucher.getStartDate());
+                        voucherDTO.setEndDate(voucher.getEndDate());
+                    }
+                    return voucherDTO;
                 })
                 .collect(Collectors.toList());
 
@@ -69,65 +78,4 @@ public class UserVoucherController {
         return ResponseEntity.ok(result);
     }
 
-
-//    // Áp dụng voucher cho người dùng
-//    @PostMapping("/apply/{voucherID}")
-//    public ResponseEntity<String> applyVoucher(@PathVariable String voucherID, @AuthenticationPrincipal UserDetails userDetails) {
-//        if (userDetails == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
-//        }
-//
-//        User user = userRepository.findByUsername(userDetails.getUsername());
-//        if (user == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
-//        }
-//
-//        Optional<Voucher> optionalVoucher = voucherRepository.findById(voucherID);
-//        if (optionalVoucher.isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher not found.");
-//        }
-//
-//        Voucher voucher = optionalVoucher.get();
-//        Uservoucher userVoucher = userVoucherRepository.findByUserIDAndVoucherID(user, voucher);
-//
-//        if (userVoucher != null) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body("Voucher already applied.");
-//        }
-//
-//        Uservoucher newUserVoucher = new Uservoucher();
-//        newUserVoucher.setUserID(user);
-//        newUserVoucher.setVoucherID(voucher);
-//        newUserVoucher.setStatus("APPLIED"); // Set status accordingly
-//
-//        userVoucherRepository.save(newUserVoucher);
-//        return ResponseEntity.status(HttpStatus.CREATED).body("Voucher applied successfully.");
-//    }
-//
-//    // Hủy áp dụng voucher
-//    @DeleteMapping("/remove/{voucherID}")
-//    public ResponseEntity<String> removeVoucher(@PathVariable String voucherID, @AuthenticationPrincipal UserDetails userDetails) {
-//        if (userDetails == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
-//        }
-//
-//        User user = userRepository.findByUsername(userDetails.getUsername());
-//        if (user == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found.");
-//        }
-//
-//        Optional<Voucher> optionalVoucher = voucherRepository.findById(voucherID);
-//        if (optionalVoucher.isEmpty()) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher not found.");
-//        }
-//
-//        Voucher voucher = optionalVoucher.get();
-//        Uservoucher userVoucher = userVoucherRepository.findByUserIDAndVoucherID(user, voucher);
-//
-//        if (userVoucher == null) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Voucher not applied.");
-//        }
-//
-//        userVoucherRepository.delete(userVoucher);
-//        return ResponseEntity.ok("Voucher removed successfully.");
-//    }
 }

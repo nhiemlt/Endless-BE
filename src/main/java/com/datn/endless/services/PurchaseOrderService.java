@@ -5,59 +5,114 @@ import com.datn.endless.dtos.PurchaseOrderDetailDTO;
 import com.datn.endless.entities.Productversion;
 import com.datn.endless.entities.Purchaseorder;
 import com.datn.endless.entities.Purchaseorderdetail;
+import com.datn.endless.models.PurchaseOrderDetailModel;
+import com.datn.endless.models.PurchaseOrderModel;
 import com.datn.endless.repositories.ProductversionRepository;
 import com.datn.endless.repositories.PurchaseorderRepository;
 import com.datn.endless.repositories.PurchaseorderdetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class PurchaseOrderService {
+
     @Autowired
     private PurchaseorderRepository purchaseOrderRepository;
 
-    @Autowired
-    private PurchaseorderdetailRepository purchaseOrderDetailRepository;
 
     @Autowired
     private ProductversionRepository productversionRepository;
 
-    public Purchaseorder createPurchaseOrder(PurchaseOrderDTO purchaseOrderDTO) {
-        // Tạo mới đơn nhập hàng
+    public PurchaseOrderDTO createPurchaseOrder(PurchaseOrderModel purchaseOrderModel) {
         Purchaseorder purchaseOrder = new Purchaseorder();
-        purchaseOrder.setPurchaseDate(purchaseOrderDTO.getPurchaseDate());
-        purchaseOrder.setPurchaseOrderStatus(purchaseOrderDTO.getPurchaseOrderStatus());
-        purchaseOrder.setTotalMoney(purchaseOrderDTO.getTotalMoney());
+        purchaseOrder.setPurchaseOrderID(UUID.randomUUID().toString());
+        purchaseOrder.setPurchaseDate(LocalDate.now());
+        purchaseOrder.setTotalMoney(BigDecimal.ZERO);
 
-        // Lưu đơn nhập hàng vào cơ sở dữ liệu
-        Purchaseorder savedPurchaseOrder = purchaseOrderRepository.save(purchaseOrder);
+        List<Purchaseorderdetail> orderDetails = purchaseOrderModel.getDetails().stream()
+                .map(detailModel -> {
+                    Productversion productVersion = productversionRepository.findById(detailModel.getProductVersionID())
+                            .orElseThrow(() -> new NoSuchElementException("Product version not found"));
 
-        // Tạo và lưu các chi tiết đơn nhập hàng
-        for (PurchaseOrderDetailDTO detailDTO : purchaseOrderDTO.getDetails()) {
-            // Kiểm tra sự tồn tại của ProductVersion
-            Productversion productVersion = productversionRepository.findById(detailDTO.getProductVersionID())
-                    .orElseThrow(() -> new RuntimeException("Product version not found: " + detailDTO.getProductVersionID()));
+                    BigDecimal price = productVersion.getPurchasePrice();
+                    BigDecimal detailTotal = price.multiply(new BigDecimal(detailModel.getQuantity()));
 
-            Purchaseorderdetail detail = new Purchaseorderdetail();
-            detail.setPurchaseOrderID(savedPurchaseOrder);
-            detail.setProductVersionID(productVersion);
-            detail.setQuantity(detailDTO.getQuantity());
-            detail.setPrice(detailDTO.getPrice());
+                    Purchaseorderdetail detail = new Purchaseorderdetail();
+                    detail.setPurchaseOrderDetailID(UUID.randomUUID().toString());
+                    detail.setProductVersionID(productVersion);
+                    detail.setQuantity(detailModel.getQuantity());
+                    detail.setPrice(price);
+                    detail.setPurchaseOrderID(purchaseOrder);
 
-            purchaseOrderDetailRepository.save(detail);
-        }
+                    return detail;
+                }).collect(Collectors.toList());
 
-        return savedPurchaseOrder;
+        BigDecimal totalMoney = orderDetails.stream()
+                .map(detail -> detail.getPrice().multiply(new BigDecimal(detail.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        purchaseOrder.setDetails(orderDetails);
+        purchaseOrder.setTotalMoney(totalMoney);
+
+        Purchaseorder savedOrder = purchaseOrderRepository.save(purchaseOrder);
+
+        return mapToDTO(savedOrder);
     }
 
-    public Purchaseorder getPurchaseOrderById(String id) {
-        return purchaseOrderRepository.findById(id).orElse(null);
+    public PurchaseOrderDTO getPurchaseOrderById(String id) {
+        return purchaseOrderRepository.findById(id)
+                .map(this::mapToDTO)
+                .orElse(null);
     }
 
-    public List<Purchaseorder> getAllPurchaseOrders() {
-        return purchaseOrderRepository.findAll();
+    public Page<PurchaseOrderDTO> getAllPurchaseOrders(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        return purchaseOrderRepository.findByPurchaseDateBetween(
+                        startDate, endDate, pageable)
+                .map(this::mapToDTO);
+    }
+
+    public List<PurchaseOrderDetailDTO> getPurchaseOrderDetails(String id) {
+        Purchaseorder order = purchaseOrderRepository.findById(id).orElse(null);
+        return (order != null) ? order.getDetails().stream()
+                .map(detail -> {
+                    PurchaseOrderDetailDTO detailDTO = new PurchaseOrderDetailDTO();
+                    detailDTO.setPurchaseOrderDetailID(detail.getPurchaseOrderDetailID());
+                    detailDTO.setProductVersionID(detail.getProductVersionID().getProductVersionID());
+                    detailDTO.setProductVersionName(detail.getProductVersionID().getVersionName());
+                    detailDTO.setQuantity(detail.getQuantity());
+                    detailDTO.setPrice(detail.getPrice());
+                    return detailDTO;
+                }).collect(Collectors.toList()) : null;
+    }
+
+    private PurchaseOrderDTO mapToDTO(Purchaseorder purchaseOrder) {
+        PurchaseOrderDTO dto = new PurchaseOrderDTO();
+        dto.setPurchaseOrderID(purchaseOrder.getPurchaseOrderID());
+        dto.setPurchaseDate(purchaseOrder.getPurchaseDate());
+        dto.setTotalMoney(purchaseOrder.getTotalMoney());
+
+        List<PurchaseOrderDetailDTO> detailDTOs = purchaseOrder.getDetails().stream()
+                .map(detail -> {
+                    PurchaseOrderDetailDTO detailDTO = new PurchaseOrderDetailDTO();
+                    detailDTO.setPurchaseOrderDetailID(detail.getPurchaseOrderDetailID());
+                    detailDTO.setProductVersionID(detail.getProductVersionID().getProductVersionID());
+                    detailDTO.setProductVersionName(detail.getProductVersionID().getVersionName());
+                    detailDTO.setQuantity(detail.getQuantity());
+                    detailDTO.setPrice(detail.getPrice());
+                    return detailDTO;
+                }).collect(Collectors.toList());
+
+        dto.setDetails(detailDTOs);
+        return dto;
     }
 }
-

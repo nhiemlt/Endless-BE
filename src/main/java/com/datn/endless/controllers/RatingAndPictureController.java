@@ -1,106 +1,104 @@
 package com.datn.endless.controllers;
-import com.datn.endless.entities.Orderdetail;
-import com.datn.endless.entities.Rating;
-import com.datn.endless.entities.User;
-import com.datn.endless.repositories.OrderRepository;
-import com.datn.endless.repositories.OrderdetailRepository;
-import com.datn.endless.repositories.RatingRepository;
+
+import com.datn.endless.dtos.RatingDTO;
+import com.datn.endless.exceptions.EntityNotFoundException;
+import com.datn.endless.models.RatingModel;
 import com.datn.endless.repositories.UserRepository;
-import jakarta.validation.constraints.NotNull;
+import com.datn.endless.services.RatingService;
+import com.datn.endless.exceptions.UserNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ratings")
 public class RatingAndPictureController {
 
     @Autowired
-    private RatingRepository ratingRepository;
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private OrderdetailRepository orderdetailRepository;
+    private RatingService ratingService;
 
-    // Lấy tất cả các đánh giá
+    // Lấy tất cả đánh giá với lọc và phân trang
     @GetMapping
-    public List<Rating> getAllRatings() {
-        return ratingRepository.findAll();
+    public ResponseEntity<Map<String, Object>> getAllRatings(
+            @RequestParam(required = false) String userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
+        Map<String, Object> response = new HashMap<>();
+        try {
+            PageRequest pageable = PageRequest.of(page, size);
+            Page<RatingDTO> ratings = ratingService.getAllRatings(userId, pageable);
+
+            response.put("success", true);
+            response.put("data", ratings.getContent());
+            response.put("totalPages", ratings.getTotalPages());
+            response.put("totalElements", ratings.getTotalElements());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     // Lấy đánh giá theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<Rating> getRatingById(@PathVariable("id") String id) {
-        Optional<Rating> rating = ratingRepository.findById(id);
-        return rating.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    private User getCurrentUser() {
-        //Lấy thông tin xác thực của người dùng
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //Kiểm tra kiểu dữ liệu của principa
-        if (principal instanceof UserDetails) {
-            String username = ((UserDetails) principal).getUsername();
-            //Truy xuất thông tin người dùng từ cơ sở dữ liệu
-            return userRepository.findByUsername(username);
-        }
-        return null;
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<String> createRating(@RequestBody Rating rating) {
-        // Kiểm tra thông tin người dùng hiện tại
-        User currentUser = getCurrentUser();
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("User is not logged in. Please log in to submit a rating.");
-        }
-
-        // Kiểm tra nếu ratingValue hợp lệ
-        if (rating.getRatingValue() == null || rating.getRatingValue() < 1 || rating.getRatingValue() > 5) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Invalid rating value. The rating must be between 1 and 5.");
-        }
-
-        // Kiểm tra nếu orderDetailID hợp lệ
-        if (rating.getOrderDetailID() == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("OrderDetailID cannot be null.");
-        }
-
-        // Gán thông tin người dùng vào đánh giá
-        rating.setUserID(currentUser);
-
-        // Save rating to the database
+    public ResponseEntity<Map<String, Object>> getRatingById(@PathVariable("id") String id) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            Rating savedRating = ratingRepository.save(rating);
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body("Rating has been successfully added.");
+            RatingDTO rating = ratingService.getRatingById(id);
+            response.put("success", true);
+            response.put("data", rating);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("An error occurred while saving the rating: " + e.getMessage());
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    // Lưu đánh giá vào cơ sở dữ liệu
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRating(@PathVariable("id") String id) {
-        if (!ratingRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+    // Thêm đánh giá
+    @PostMapping("/add")
+    public ResponseEntity<Map<String, String>> addRating(
+            @RequestParam("orderDetailId") String orderDetailId,
+            @RequestParam("ratingValue") int ratingValue,
+            @RequestParam("comment") String comment,
+            @RequestParam(value = "pictures", required = false) MultipartFile[] pictures) {
+
+        Map<String, String> response = new HashMap<>();
+        try {
+            RatingModel ratingModel = new RatingModel();
+            ratingModel.setOrderDetailId(orderDetailId);
+            ratingModel.setRatingValue(ratingValue);
+            ratingModel.setComment(comment);
+            ratingModel.setPictures(pictures);
+
+            RatingDTO newRating = ratingService.addRating(ratingModel);
+            response.put("success", "true");
+            response.put("message", "Rating added successfully");
+            response.put("ratingID", newRating.getRatingID());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (UserNotFoundException e) {
+            response.put("success", "false");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            response.put("success", "false");
+            response.put("message", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-        ratingRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
+
 }

@@ -9,6 +9,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -25,11 +26,6 @@ public class Purchaseorder {
     @NotNull
     @Column(name = "PurchaseDate", nullable = false)
     private LocalDate purchaseDate;
-
-    @Size(max = 50)
-    @NotNull
-    @Column(name = "PurchaseOrderStatus", nullable = false, length = 50)
-    private String purchaseOrderStatus;
 
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)

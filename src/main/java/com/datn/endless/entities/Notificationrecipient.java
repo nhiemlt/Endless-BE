@@ -22,11 +22,9 @@ public class Notificationrecipient {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "NotificationID", nullable = false)
-    @JsonIgnore
     private Notification notificationID;
 
     @NotNull
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
     private User userID;

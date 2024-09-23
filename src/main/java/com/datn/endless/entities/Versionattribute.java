@@ -19,12 +19,12 @@ public class Versionattribute {
     private String versionAttributeID;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "ProductVersionID", nullable = false)
     private Productversion productVersionID;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "AttributeValueID", nullable = false)
     private Attributevalue attributeValueID;
 

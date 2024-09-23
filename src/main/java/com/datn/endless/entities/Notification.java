@@ -8,6 +8,8 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -43,5 +45,8 @@ public class Notification {
     @NotNull
     @Column(name = "Status", nullable = false, length = 50)
     private String status;
+
+    @OneToMany(mappedBy = "notificationID")
+    private Set<Notificationrecipient> notificationrecipients = new LinkedHashSet<>();
 
 }

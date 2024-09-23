@@ -32,6 +32,4 @@ public class RegisterModel {
     )
     private String password;
 
-    @NotBlank(message = "Please repeat the password")
-    private String repeatPassword;
 }
