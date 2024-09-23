@@ -19,31 +19,49 @@ public class ProductVersionController {
     @Autowired
     private ProductVersionService productVersionService;
 
-//    // Lấy tất cả ProductVersions
+
+//    // Lấy ProductVersion theo ID
+//    @GetMapping("/{id}")
+//    public ResponseEntity<ProductVersionDTO> getProductVersionById(@PathVariable("id") String productVersionID) {
+//        ProductVersionDTO productVersion = productVersionService.getProductVersionById(productVersionID);
+//        return ResponseEntity.ok(productVersion);
+//    }
+//
 //    @GetMapping
-//    public ResponseEntity<List<ProductVersionDTO>> getAllProductVersions() {
-//        List<ProductVersionDTO> productVersions = productVersionService.getAllProductVersions();
+//    public ResponseEntity<Page<ProductVersionDTO>> getAllProductVersions(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "10") int size,
+//            @RequestParam(defaultValue = "versionName") String sortBy,
+//            @RequestParam(defaultValue = "ASC") String direction,
+//            @RequestParam(required = false) String versionName) {
+//        Page<ProductVersionDTO> productVersions = productVersionService.getProductVersions(page, size, sortBy, direction, versionName);
 //        return ResponseEntity.ok(productVersions);
 //    }
 
-    // Lấy ProductVersion theo ID
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductVersionDTO> getProductVersionById(@PathVariable("id") String productVersionID) {
-        ProductVersionDTO productVersion = productVersionService.getProductVersionById(productVersionID);
-        return ResponseEntity.ok(productVersion);
-    }
 
     @GetMapping
-    public ResponseEntity<Page<ProductVersionDTO>> getAllProductVersions(
+    public ResponseEntity<?> getProductVersions(
+            @RequestParam(required = false) String id,
+            @RequestParam(required = false) String versionName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "versionName") String sortBy,
-            @RequestParam(defaultValue = "ASC") String direction,
-            @RequestParam(required = false) String versionName) {
-        Page<ProductVersionDTO> productVersions = productVersionService.getProductVersions(page, size, sortBy, direction, versionName);
-        return ResponseEntity.ok(productVersions);
-    }
+            @RequestParam(defaultValue = "ASC") String direction) {
 
+        if (id != null) {
+            // Lấy ProductVersion theo ID
+            ProductVersionDTO productVersion = productVersionService.getProductVersionById(id);
+            return ResponseEntity.ok(productVersion);
+        } else if (versionName != null) {
+            // Lấy ProductVersions có phân trang, sort, tìm theo tên phiên bản
+            Page<ProductVersionDTO> productVersions = productVersionService.getProductVersions(page, size, sortBy, direction, versionName);
+            return ResponseEntity.ok(productVersions);
+        } else {
+            // Nếu không có tham số, trả về tất cả ProductVersions có phân trang và sort
+            Page<ProductVersionDTO> productVersions = productVersionService.getProductVersions(page, size, sortBy, direction, null);
+            return ResponseEntity.ok(productVersions);
+        }
+    }
     // Tạo mới ProductVersion
     @PostMapping
     public ResponseEntity<ProductVersionDTO> createProductVersion(@Valid @RequestBody ProductVersionModel productVersionModel) {

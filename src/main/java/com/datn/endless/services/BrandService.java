@@ -1,12 +1,18 @@
 package com.datn.endless.services;
 
+import com.datn.endless.dtos.BrandDTO;
 import com.datn.endless.entities.Brand;
+import com.datn.endless.exceptions.ConvertImageException;
+import com.datn.endless.models.BrandModel;
 import com.datn.endless.repositories.BrandRepository;
+import com.datn.endless.utils.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class BrandService {
@@ -14,28 +20,49 @@ public class BrandService {
     @Autowired
     private BrandRepository brandRepository;
 
-    public Brand createBrand(Brand brand) {
-        // Set default UUID if it's not provided
-        if (brand.getBrandID() == null || brand.getBrandID().isEmpty()) {
-            brand.setBrandID(java.util.UUID.randomUUID().toString());
+    public BrandDTO createBrand(BrandModel brandModel) {
+        Brand newBrand = new Brand();
+        newBrand.setBrandID(UUID.randomUUID().toString());
+        newBrand.setName(brandModel.getName());
+
+        if (brandModel.getLogo() != null && !brandModel.getLogo().isEmpty()) {
+            try {
+                newBrand.setLogo(ImageUtil.convertToBase64(brandModel.getLogo()));
+            } catch (IOException e) {
+                throw new ConvertImageException("Could not convert logo to Base64");
+            }
+        } else {
+            newBrand.setLogo(null); // Hoặc có thể để trống
         }
-        return brandRepository.save(brand);
+
+        return convertToDTO(brandRepository.save(newBrand));
     }
 
-    public List<Brand> getAllBrands() {
-        return brandRepository.findAll();
-    }
+    public BrandDTO updateBrand(String id, BrandModel brandModel) {
+        Brand existingBrand = brandRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Brand not found with ID: " + id));
 
-    public Optional<Brand> getBrandById(String id) {
-        return brandRepository.findById(id);
-    }
+        existingBrand.setName(brandModel.getName());
 
-    public Brand updateBrand(String id, Brand brand) {
-        if (!brandRepository.existsById(id)) {
-            throw new RuntimeException("Brand not found with ID: " + id);
+        if (brandModel.getLogo() != null && !brandModel.getLogo().isEmpty()) {
+            try {
+                existingBrand.setLogo(ImageUtil.convertToBase64(brandModel.getLogo()));
+            } catch (IOException e) {
+                throw new ConvertImageException("Could not convert logo to Base64");
+            }
         }
-        brand.setBrandID(id);
-        return brandRepository.save(brand);
+
+        return convertToDTO(brandRepository.save(existingBrand));
+    }
+
+    public List<BrandDTO> getAllBrands() {
+        return brandRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+    public Optional<BrandDTO> getBrandById(String id) {
+        return brandRepository.findById(id).map(this::convertToDTO);
     }
 
     public void deleteBrand(String id) {
@@ -43,5 +70,14 @@ public class BrandService {
             throw new RuntimeException("Brand not found with ID: " + id);
         }
         brandRepository.deleteById(id);
+    }
+
+    private BrandDTO convertToDTO(Brand brand) {
+        BrandDTO brandDTO = new BrandDTO();
+        brandDTO.setBrandID(brand.getBrandID());
+        brandDTO.setBrandName(brand.getName());
+        brandDTO.setLogo(brand.getLogo());
+        // Thêm các thuộc tính khác nếu cần
+        return brandDTO;
     }
 }

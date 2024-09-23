@@ -1,110 +1,53 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.entities.Category;
-import com.datn.endless.repositories.CategoryRepository;
+import com.datn.endless.dtos.CategoryDTO;
+import com.datn.endless.models.CategoryModel;
+import com.datn.endless.services.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/categories")
 public class CategoryController {
 
     @Autowired
-    private CategoryRepository categoryRepository;
+    private CategoryService categoryService;
 
-    // 1. Create a new category
+    // Tạo danh mục mới
     @PostMapping
-    public ResponseEntity<String> createCategory(@RequestBody Category category) {
-        if (category.getName() == null || category.getName().isEmpty()) {
-            return ResponseEntity.badRequest().body("Category name cannot be empty.");
-        }
-
-        // Kiểm tra nếu tên danh mục đã tồn tại
-        Optional<Category> existingCategory = categoryRepository.findByName(category.getName());
-        if (existingCategory.isPresent()) {
-            return ResponseEntity.badRequest().body("Category name already exists.");
-        }
-
-        Category savedCategory = categoryRepository.save(category);
-        return ResponseEntity.ok("Category created successfully.");
+    public ResponseEntity<CategoryDTO> createCategory(@RequestBody CategoryModel categoryModel) {
+        CategoryDTO createdCategory = categoryService.createCategory(categoryModel);
+        return ResponseEntity.ok(createdCategory);
     }
 
-
-    // 2. Get all categories
+    // Lấy danh mục với filter, phân trang, tìm kiếm
     @GetMapping
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public ResponseEntity<List<CategoryDTO>> getCategories(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String enName,
+            @RequestParam(required = false) String id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        List<CategoryDTO> categories = categoryService.getCategories(name, enName, id, page, size);
+        return ResponseEntity.ok(categories);
     }
 
-    // 3. Get category by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getCategoryById(@PathVariable String id) {
-        Optional<Category> category = categoryRepository.findById(id);
-        if (category.isPresent()) {
-            return ResponseEntity.ok(category.get());
-        } else {
-            // Bắt lỗi ID không tồn tại
-            return ResponseEntity.status(404).body("Category not found with ID: " + id);
-        }
-    }
-
-    // 4. Update category
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateCategory(
-            @PathVariable String id,
-            @RequestBody Category updatedCategory) {
-        Optional<Category> existingCategory = categoryRepository.findById(id);
-
-        if (existingCategory.isPresent()) {
-            Category category = existingCategory.get();
-
-            // Kiểm tra nếu tên danh mục mới đã tồn tại (trừ trường hợp trùng với chính danh mục hiện tại)
-            if (!category.getName().equals(updatedCategory.getName())) {
-                Optional<Category> categoryWithSameName = categoryRepository.findByName(updatedCategory.getName());
-                if (categoryWithSameName.isPresent()) {
-                    return ResponseEntity.badRequest().body("Category name already exists.");
-                }
-            }
-
-            if (updatedCategory.getName() == null || updatedCategory.getName().isEmpty()) {
-                return ResponseEntity.badRequest().body("Category name cannot be empty.");
-            }
-
-            category.setName(updatedCategory.getName());
-            if (updatedCategory.getEnName() != null) {
-                category.setEnName(updatedCategory.getEnName());
-            }
-            categoryRepository.save(category);
-            return ResponseEntity.ok("Category updated successfully.");
-        } else {
-            return ResponseEntity.status(404).body("Category not found with ID: " + id);
-        }
-    }
-
-
-    // 5. Delete category
+    // Xóa danh mục
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCategory(@PathVariable String id) {
-        if (categoryRepository.existsById(id)) {
-            categoryRepository.deleteById(id);
-            return ResponseEntity.ok("Category deleted successfully.");
-        } else {
-            // Bắt lỗi ID không tồn tại
-            return ResponseEntity.status(404).body("Category not found with ID: " + id);
-        }
+        categoryService.deleteCategory(id);
+        return ResponseEntity.ok("Category deleted successfully.");
     }
-    // 6. Get category by name
-    @GetMapping("/name/{name}")
-    public ResponseEntity<?> getCategoryByName(@PathVariable String name) {
-        Optional<Category> category = categoryRepository.findByName(name);
-        if (category.isPresent()) {
-            return ResponseEntity.ok(category.get());
-        } else {
-            return ResponseEntity.status(404).body("Category not found with name: " + name);
-        }
+
+    // Lấy danh mục theo ID
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable String id) {
+        return categoryService.getCategoryById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
