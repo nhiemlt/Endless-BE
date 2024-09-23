@@ -123,7 +123,6 @@ public class ProductVersionService {
         productVersionRepository.delete(productVersion);
     }
 
-    // Chuyển đổi từ Productversion entity sang DTO
     private ProductVersionDTO convertToDTO(Productversion productVersion) {
         ProductForProcVersionDTO productDTO = new ProductForProcVersionDTO();
         productDTO.setProductID(productVersion.getProductID().getProductID());
@@ -149,7 +148,7 @@ public class ProductVersionService {
                 .map(va -> {
                     VersionAttributeDTO vaDTO = new VersionAttributeDTO();
                     vaDTO.setVersionAttributeID(va.getVersionAttributeID());
-                    vaDTO.setAttributeName(va.getAttributeValueID().getAttributeID().getAttributeName());
+                    vaDTO.setAttributeName(va.getAttributeValueID().getAttribute().getAttributeName());
                     vaDTO.setAttributeValue(va.getAttributeValueID().getValue());
                     return vaDTO;
                 })
@@ -158,6 +157,7 @@ public class ProductVersionService {
         dto.setVersionAttributes(versionAttributes);
         return dto;
     }
+
 
 
     private BigDecimal calculateDiscountPrice(String productVersionID) {
