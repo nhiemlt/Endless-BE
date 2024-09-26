@@ -59,7 +59,7 @@
             <artifactId>jjwt-jackson</artifactId>
             <version>0.11.2</version>
             <scope>runtime</scope>
-        </dependency>
+        </dependency>   
 
         <!-- Lombok for reducing boilerplate code -->
         <dependency>
