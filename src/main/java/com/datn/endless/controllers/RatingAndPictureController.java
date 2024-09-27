@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -67,6 +68,12 @@ public class RatingAndPictureController {
             response.put("error", "An unexpected error occurred: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+
+    // Lấy danh sách đánh giá theo productVersionID
+    @GetMapping("/productVersion/{productVersionID}")
+    public List<RatingDTO> getRatingsByProductVersionId(@PathVariable String productVersionID) {
+        return ratingService.getRatingsByProductVersionId(productVersionID);
     }
 
     // Thêm đánh giá

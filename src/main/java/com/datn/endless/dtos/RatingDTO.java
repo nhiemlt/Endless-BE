@@ -14,5 +14,6 @@ public class RatingDTO {
     private Integer ratingValue;
     private String comment;
     private Instant ratingDate;
+    private double averageRating;
     private List<RatingPictureDTO> pictures;
 }
