@@ -26,7 +26,7 @@ public class CustomUserDetails implements UserDetails {
 
             // Thêm từng Permission của Role như một GrantedAuthority
             for (Permission permission : role.getPermissions()) {
-                authorities.add(new SimpleGrantedAuthority(permission.getPermissionName()));
+                authorities.add(new SimpleGrantedAuthority(permission.getCode()));
             }
         }
     }

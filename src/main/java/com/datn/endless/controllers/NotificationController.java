@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/notifications")
 public class NotificationController {
 
     @Autowired
@@ -43,7 +43,7 @@ public class NotificationController {
         Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserId(userId, pageable);
+        Page<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserId(pageable);
         return ResponseEntity.ok(notifications);
     }
 
@@ -67,6 +67,20 @@ public class NotificationController {
         String notificationRecipientId = requestBody.get("notificationRecipientId");
         Map<String, Object> response = notificationService.markAsRead(notificationRecipientId);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/markAllAsRead")
+    public ResponseEntity<Page<NotificationRecipientDTO>> markAllAsRead(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "NotificationDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<NotificationRecipientDTO> notifications = notificationService.markAllAsRead(pageable);
+        return ResponseEntity.ok(notifications);
     }
 
     @DeleteMapping("/delete")
