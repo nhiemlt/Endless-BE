@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers("/favorites").authenticated()  // Sử dụng quyền view_favorites
                         .requestMatchers("/carts").authenticated()  // Sử dụng quyền view_carts
                         .requestMatchers(HttpMethod.POST, "/orders/create").authenticated()  // Sử dụng quyền orders/create
+                        .requestMatchers(HttpMethod.POST, "/ratings/add").authenticated()  // Sử dụng quyền ratings/add
 
                         // Các API yêu cầu quyền (dựa theo permission code)
                         .requestMatchers(HttpMethod.POST, "/notifications/send").hasAuthority("send_notifications")

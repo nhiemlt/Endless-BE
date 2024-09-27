@@ -57,6 +57,9 @@ public class OrderService {
     @Autowired
     UserLoginInfomation userLoginInformation;
 
+    @Autowired
+    PurchaseOrderService purchaseOrderService;
+
 
     // Tạo đơn hàng
     public OrderDTO createOrder(OrderModel orderModel) {
@@ -102,8 +105,13 @@ public class OrderService {
 
         // Create and save order details
         for (OrderDetailModel detailModel : orderModel.getOrderDetails()) {
-            Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
-            order.getOrderDetails().add(orderDetail);
+            if (detailModel.getQuantity()>purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())){
+                throw new ProductVersionQuantityException("Product version quantity is greater than product version quantity in shop");
+            }
+            else{
+                Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
+                order.getOrderDetails().add(orderDetail);
+            }
         }
 
         // Save order with details
@@ -159,8 +167,13 @@ public class OrderService {
 
         // Tạo và lưu thông tin chi tiết đơn hàng
         for (OrderDetailModel detailModel : orderModel.getOrderDetails()) {
-            Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
-            order.getOrderDetails().add(orderDetail);
+            if (detailModel.getQuantity()>purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())){
+                throw new ProductVersionQuantityException("Product version quantity is greater than product version quantity in shop");
+            }
+            else{
+                Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
+                order.getOrderDetails().add(orderDetail);
+            }
         }
 
         // Lưu đơn hàng và thông tin chi tiết
