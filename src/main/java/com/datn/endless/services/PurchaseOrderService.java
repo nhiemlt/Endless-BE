@@ -7,6 +7,7 @@ import com.datn.endless.entities.Purchaseorder;
 import com.datn.endless.entities.Purchaseorderdetail;
 import com.datn.endless.models.PurchaseOrderDetailModel;
 import com.datn.endless.models.PurchaseOrderModel;
+import com.datn.endless.repositories.OrderdetailRepository;
 import com.datn.endless.repositories.ProductversionRepository;
 import com.datn.endless.repositories.PurchaseorderRepository;
 import com.datn.endless.repositories.PurchaseorderdetailRepository;
@@ -29,6 +30,11 @@ public class PurchaseOrderService {
     @Autowired
     private PurchaseorderRepository purchaseOrderRepository;
 
+    @Autowired
+    private PurchaseorderdetailRepository purchaseorderdetailRepository;
+
+    @Autowired
+    private OrderdetailRepository orderdetailRepository;
 
     @Autowired
     private ProductversionRepository productversionRepository;
@@ -114,5 +120,19 @@ public class PurchaseOrderService {
 
         dto.setDetails(detailDTOs);
         return dto;
+    }
+
+    Integer getProductVersionPurchaseQuantity(String productVersionID){
+        Integer quantity = quantity = purchaseorderdetailRepository.findTotalPurchasedQuantityByProductVersion(productVersionID);
+        return quantity == null ? 0 : quantity;
+    }
+
+    Integer getProductVersionOrderQuantity(String productVersionID){
+        Integer quantity = quantity = orderdetailRepository.findTotalSoldQuantityByProductVersion(productVersionID);
+        return quantity == null ? 0 : quantity;
+    }
+
+    Integer getProductVersionQuantity(String productVersionID){
+        return getProductVersionPurchaseQuantity(productVersionID) - getProductVersionOrderQuantity(productVersionID);
     }
 }
