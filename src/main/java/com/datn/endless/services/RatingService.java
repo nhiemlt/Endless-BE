@@ -152,4 +152,9 @@ public class RatingService {
 
         return ratingDTOs;
     }
+
+    // Hàm tính số lượng đánh giá của phiên bản sản phẩm
+    public long getRatingCountByProductVersionId(String productVersionID) {
+        return ratingRepository.countByOrderDetailID_ProductVersionID_ProductVersionID(productVersionID);
+    }
 }

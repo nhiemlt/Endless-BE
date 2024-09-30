@@ -18,4 +18,6 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
     Page<Productversion> findByVersionNameContaining(@Param("versionName") String versionName, Pageable pageable);
 
     Productversion findFirstByProductID_ProductID(String productId);
+
+   
 }
