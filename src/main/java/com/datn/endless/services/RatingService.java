@@ -132,6 +132,11 @@ public class RatingService {
         return convertToDTO(rating);
     }
 
+    // Lấy điểm trung bình rating theo productVersionID
+    public double getAverageRatingByProductVersionId(String productVersionID) {
+        return ratingRepository.findAverageRatingByProductVersionId(productVersionID).orElse(0.0);
+    }
+
     // Lấy đánh giá theo productVersionID và tính trung bình rating
     public List<RatingDTO> getRatingsByProductVersionId(String productVersionID) {
         List<Rating> ratings = ratingRepository.findByOrderDetailID_ProductVersionID_ProductVersionID(productVersionID);

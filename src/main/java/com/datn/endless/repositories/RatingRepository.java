@@ -11,6 +11,4 @@ public interface RatingRepository extends JpaRepository<Rating, String> {
     Page<Rating> findByUserID_UserID(String userId, Pageable pageable);
     List<Rating> findByOrderDetailID_ProductVersionID_ProductVersionID(String productVersionID);
 
-    // Đếm số lượng đánh giá theo productVersionID
-    long countByOrderDetailID_ProductVersionID_ProductVersionID(String productVersionID);
 }
