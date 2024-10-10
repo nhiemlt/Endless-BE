@@ -89,7 +89,7 @@ public class OrderController {
 
     // Get Order by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getOrderById(@PathVariable String id) {
+        public ResponseEntity<Map<String, Object>> getOrderById(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
         try {
             OrderDTO orderDTO = orderService.getOrderDTOById(id);

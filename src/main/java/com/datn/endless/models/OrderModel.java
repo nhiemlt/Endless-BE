@@ -17,11 +17,5 @@ public class OrderModel {
     @NotBlank(message = "Order address cannot be empty")
     private String orderAddress;
 
-    @NotBlank(message = "Order phone cannot be empty")
-    private String orderPhone;
-
-    @NotBlank(message = "Order name cannot be empty")
-    private String orderName;
-
     private List<OrderDetailModel> orderDetails;
 }

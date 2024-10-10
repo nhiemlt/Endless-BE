@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -129,5 +130,31 @@ public class RatingService {
                 .orElseThrow(() -> new EntityNotFoundException("Rating not found"));
 
         return convertToDTO(rating);
+    }
+
+    // Lấy điểm trung bình rating theo productVersionID
+    public double getAverageRatingByProductVersionId(String productVersionID) {
+        return ratingRepository.findAverageRatingByProductVersionId(productVersionID).orElse(0.0);
+    }
+
+    // Lấy đánh giá theo productVersionID và tính trung bình rating
+    public List<RatingDTO> getRatingsByProductVersionId(String productVersionID) {
+        List<Rating> ratings = ratingRepository.findByOrderDetailID_ProductVersionID_ProductVersionID(productVersionID);
+
+        // Tính tổng trung bình rating
+        OptionalDouble averageRating = ratings.stream()
+                .mapToDouble(Rating::getRatingValue)
+                .average();
+
+        double average = averageRating.isPresent() ? averageRating.getAsDouble() : 0;
+
+        // Chuyển đổi các đối tượng Rating sang RatingDTO và đặt giá trị averageRating
+        List<RatingDTO> ratingDTOs = ratings.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        ratingDTOs.forEach(dto -> dto.setAverageRating(average));
+
+        return ratingDTOs;
     }
 }

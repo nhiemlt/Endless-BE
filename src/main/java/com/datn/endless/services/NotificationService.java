@@ -4,6 +4,7 @@ import com.datn.endless.dtos.NotificationRecipientDTO;
 import com.datn.endless.entities.Notification;
 import com.datn.endless.entities.Notificationrecipient;
 import com.datn.endless.entities.User;
+import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.NotificationModel;
 import com.datn.endless.repositories.NotificationRepository;
 import com.datn.endless.repositories.NotificationrecipientRepository;
@@ -106,6 +107,9 @@ public class NotificationService {
         try {
             Notificationrecipient recipient = notificationRecipientRepository.findById(notificationRecipientId)
                     .orElseThrow(() -> new IllegalArgumentException("Invalid Notification Recipient ID: " + notificationRecipientId));
+            if(!recipient.getUserID().getUsername().equals(userLoginInfomation.getCurrentUsername())){
+                throw new UserNotFoundException("User not found!");
+            }
             recipient.setStatus("READ");
             notificationRecipientRepository.save(recipient);
 
@@ -115,19 +119,37 @@ public class NotificationService {
         }
     }
 
-    public Page<NotificationRecipientDTO> getNotificationsByUserId(String userId, Pageable pageable) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid User ID: " + userId));
+    public Page<NotificationRecipientDTO> getNotificationsByUserId(Pageable pageable) {
+        User user = userRepository.findByUsername(userLoginInfomation.getCurrentUsername());
+        if(user==null){
+            throw new UserNotFoundException("User not found");
+        }
+        List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
+        allRecipients.sort(Comparator.comparing((Notificationrecipient nr) -> nr.getNotificationID().getNotificationDate()).reversed());
 
-        List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(userId);
+        return paginateAndConvertToDTO(allRecipients, pageable);
+    }
+
+    public Page<NotificationRecipientDTO> markAllAsRead(Pageable pageable) {
+        User user = userRepository.findByUsername(userLoginInfomation.getCurrentUsername());
+        if(user==null){
+            throw new UserNotFoundException("User not found");
+        }
+        List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
+        for(Notificationrecipient recipient : allRecipients) {
+            recipient.setStatus("READ");
+            notificationRecipientRepository.save(recipient);
+        }
         allRecipients.sort(Comparator.comparing((Notificationrecipient nr) -> nr.getNotificationID().getNotificationDate()).reversed());
 
         return paginateAndConvertToDTO(allRecipients, pageable);
     }
 
     public Page<NotificationRecipientDTO> getNotificationsByUserLogin(Pageable pageable) {
-        String currentUsername = userLoginInfomation.getCurrentUsername();
-        User user = userRepository.findByUsername(currentUsername);
+        User user = userRepository.findByUsername(userLoginInfomation.getCurrentUsername());
+        if(user==null){
+            throw new UserNotFoundException("User not found");
+        }
 
         List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
         allRecipients.sort(Comparator.comparing((Notificationrecipient nr) -> nr.getNotificationID().getNotificationDate()).reversed());
