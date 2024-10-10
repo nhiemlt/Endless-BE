@@ -1,5 +1,6 @@
 package com.datn.endless.repositories;
 
+import com.datn.endless.entities.Product;
 import com.datn.endless.entities.Productversion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,6 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
     Page<Productversion> findByVersionNameContaining(@Param("versionName") String versionName, Pageable pageable);
 
     Productversion findFirstByProductID_ProductID(String productId);
+    List<Productversion> findByProductID(Product product);
 
-   
 }

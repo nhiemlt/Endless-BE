@@ -52,4 +52,9 @@ public class Productversion {
     @OneToMany(mappedBy = "productVersionID", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Versionattribute> versionattributes = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "productVersionID", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Promotionproduct> promotionproduct = new LinkedHashSet<>();
+
+
+
 }

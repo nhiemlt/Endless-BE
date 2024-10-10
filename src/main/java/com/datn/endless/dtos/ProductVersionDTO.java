@@ -27,7 +27,6 @@ public class ProductVersionDTO {
 
     List<RatingDTO> ratings;
     List<VersionAttributeDTO> versionAttributes;
-    private List<ProductVersionDTO> productVersions; // Danh sách các phiên bản của sản phẩm
     private List<PromotionDTO> promotions; // Danh sách các chương trình khuyến mãi áp dụng cho sản phẩm
 
 

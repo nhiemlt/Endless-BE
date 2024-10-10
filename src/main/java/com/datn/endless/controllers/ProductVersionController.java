@@ -21,6 +21,12 @@ public class ProductVersionController {
     @Autowired
     private ProductVersionService productVersionService;
 
+    @GetMapping("/by-product")
+    public ResponseEntity<List<ProductVersionDTO>> getProductVersionsByProductId(@RequestParam String productID) {
+        List<ProductVersionDTO> productVersions = productVersionService.getProductVersionsByProductId(productID);
+        return ResponseEntity.ok(productVersions);
+    }
+
 
     @GetMapping
     public ResponseEntity<?> getProductVersions(
