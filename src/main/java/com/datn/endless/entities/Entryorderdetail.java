@@ -1,7 +1,6 @@
 package com.datn.endless.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -15,7 +14,7 @@ import java.math.BigDecimal;
 @Setter
 @Entity
 @Table(name = "purchaseorderdetails")
-public class Purchaseorderdetail {
+public class Entryorderdetail {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
@@ -26,7 +25,7 @@ public class Purchaseorderdetail {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "PurchaseOrderID", nullable = false)
     @JsonIgnore
-    private Purchaseorder purchaseOrderID;
+    private Entryorder purchaseOrderID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

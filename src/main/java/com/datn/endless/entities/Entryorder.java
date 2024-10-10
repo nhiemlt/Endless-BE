@@ -9,14 +9,13 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "purchaseorders")
-public class Purchaseorder {
+public class Entryorder {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
@@ -32,6 +31,6 @@ public class Purchaseorder {
     private BigDecimal totalMoney;
 
     @OneToMany(mappedBy = "purchaseOrderID", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Purchaseorderdetail> details;
+    private List<Entryorderdetail> details;
 
 }
