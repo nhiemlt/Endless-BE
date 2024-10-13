@@ -1,10 +1,10 @@
 package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.ErrorResponse;
-import com.datn.endless.dtos.EntryOrderDTO;
-import com.datn.endless.dtos.EntryOrderDetailDTO;
-import com.datn.endless.models.EntryOrderModel;
-import com.datn.endless.services.PurchaseOrderService;
+import com.datn.endless.dtos.EntryDTO;
+import com.datn.endless.dtos.EntryDetailDTO;
+import com.datn.endless.models.EntryModel;
+import com.datn.endless.services.EntryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,15 +18,15 @@ import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/purchase-orders")
-public class EntryOrderController {
+public class EntryController {
 
     @Autowired
-    private PurchaseOrderService purchaseOrderService;
+    private EntryService entryService;
 
     @PostMapping
-    public ResponseEntity<Object> createPurchaseOrder(@RequestBody EntryOrderModel purchaseOrderModel) {
+    public ResponseEntity<Object> createPurchaseOrder(@RequestBody EntryModel purchaseOrderModel) {
         try {
-            EntryOrderDTO createdOrder = purchaseOrderService.createPurchaseOrder(purchaseOrderModel);
+            EntryDTO createdOrder = entryService.createPurchaseOrder(purchaseOrderModel);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -42,7 +42,7 @@ public class EntryOrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> getPurchaseOrderById(@PathVariable("id") String id) {
-        EntryOrderDTO purchaseOrder = purchaseOrderService.getPurchaseOrderById(id);
+        EntryDTO purchaseOrder = entryService.getPurchaseOrderById(id);
         if (purchaseOrder != null) {
             return ResponseEntity.ok(purchaseOrder);
         } else {
@@ -57,7 +57,7 @@ public class EntryOrderController {
             @RequestParam(required = false) LocalDate endDate,
             Pageable pageable) {
         try {
-            Page<EntryOrderDTO> purchaseOrders = purchaseOrderService.getAllPurchaseOrders(startDate, endDate, pageable);
+            Page<EntryDTO> purchaseOrders = entryService.getAllPurchaseOrders(startDate, endDate, pageable);
             return ResponseEntity.ok(purchaseOrders);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -67,7 +67,7 @@ public class EntryOrderController {
 
     @GetMapping("/{id}/details")
     public ResponseEntity<Object> getPurchaseOrderDetails(@PathVariable("id") String id) {
-        List<EntryOrderDetailDTO> details = purchaseOrderService.getPurchaseOrderDetails(id);
+        List<EntryDetailDTO> details = entryService.getPurchaseOrderDetails(id);
         if (details != null) {
             return ResponseEntity.ok(details);
         } else {

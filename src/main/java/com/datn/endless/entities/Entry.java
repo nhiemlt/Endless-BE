@@ -14,23 +14,22 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(name = "purchaseorders")
-public class Entryorder {
+@Table(name = "entries")
+public class Entry {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
-    @Column(name = "PurchaseOrderID", nullable = false, length = 36)
-    private String purchaseOrderID;
+    @Column(name = "EntryID", nullable = false, length = 36)
+    private String entryID;
 
     @NotNull
-    @Column(name = "PurchaseDate", nullable = false)
-    private LocalDate purchaseDate;
+    @Column(name = "OrderDate", nullable = false)
+    private LocalDate orderDate;
 
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalMoney;
 
-    @OneToMany(mappedBy = "purchaseOrderID", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Entryorderdetail> details;
-
+    @OneToMany(mappedBy = "entry", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Entrydetail> details;
 }

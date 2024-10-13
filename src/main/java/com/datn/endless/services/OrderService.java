@@ -58,7 +58,7 @@ public class OrderService {
     UserLoginInfomation userLoginInformation;
 
     @Autowired
-    PurchaseOrderService purchaseOrderService;
+    EntryService purchaseOrderService;
 
 
     // Tạo đơn hàng

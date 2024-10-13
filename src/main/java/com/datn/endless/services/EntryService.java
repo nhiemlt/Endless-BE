@@ -1,15 +1,15 @@
 package com.datn.endless.services;
 
-import com.datn.endless.dtos.EntryOrderDTO;
-import com.datn.endless.dtos.EntryOrderDetailDTO;
+import com.datn.endless.dtos.EntryDTO;
+import com.datn.endless.dtos.EntryDetailDTO;
 import com.datn.endless.entities.Productversion;
-import com.datn.endless.entities.Entryorder;
-import com.datn.endless.entities.Entryorderdetail;
-import com.datn.endless.models.EntryOrderModel;
+import com.datn.endless.entities.Entry;
+import com.datn.endless.entities.Entrydetail;
+import com.datn.endless.models.EntryModel;
 import com.datn.endless.repositories.OrderdetailRepository;
 import com.datn.endless.repositories.ProductversionRepository;
-import com.datn.endless.repositories.EntryorderRepository;
-import com.datn.endless.repositories.EntryorderdetailRepository;
+import com.datn.endless.repositories.EntryRepository;
+import com.datn.endless.repositories.EntrydetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,13 +23,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class PurchaseOrderService {
+public class EntryService {
 
     @Autowired
-    private EntryorderRepository entryorderRepository; 
+    private EntryRepository entryRepository;
 
     @Autowired
-    private EntryorderdetailRepository entryorderdetailRepository; 
+    private EntrydetailRepository entrydetailRepository;
 
     @Autowired
     private OrderdetailRepository orderdetailRepository;
@@ -37,13 +37,13 @@ public class PurchaseOrderService {
     @Autowired
     private ProductversionRepository productversionRepository;
 
-    public EntryOrderDTO createPurchaseOrder(EntryOrderModel purchaseOrderModel) {
-        Entryorder purchaseOrder = new Entryorder();
-        purchaseOrder.setPurchaseOrderID(UUID.randomUUID().toString());
-        purchaseOrder.setPurchaseDate(LocalDate.now());
-        purchaseOrder.setTotalMoney(BigDecimal.ZERO);
+    public EntryDTO createPurchaseOrder(EntryModel purchaseOrderModel) {
+        Entry entry = new Entry();
+        entry.setEntryID(UUID.randomUUID().toString());
+        entry.setOrderDate(LocalDate.now());
+        entry.setTotalMoney(BigDecimal.ZERO);
 
-        List<Entryorderdetail> orderDetails = purchaseOrderModel.getDetails().stream()
+        List<Entrydetail> orderDetails = purchaseOrderModel.getDetails().stream()
                 .map(detailModel -> {
                     Productversion productVersion = productversionRepository.findById(detailModel.getProductVersionID())
                             .orElseThrow(() -> new NoSuchElementException("Product version not found"));
@@ -51,12 +51,12 @@ public class PurchaseOrderService {
                     BigDecimal price = productVersion.getPurchasePrice();
                     BigDecimal detailTotal = price.multiply(new BigDecimal(detailModel.getQuantity()));
 
-                    Entryorderdetail detail = new Entryorderdetail();
-                    detail.setPurchaseOrderDetailID(UUID.randomUUID().toString());
+                    Entrydetail detail = new Entrydetail();
+                    detail.setEntryDetailID(UUID.randomUUID().toString());
                     detail.setProductVersionID(productVersion);
                     detail.setQuantity(detailModel.getQuantity());
                     detail.setPrice(price);
-                    detail.setPurchaseOrderID(purchaseOrder);
+                    detail.setEntry(entry); // Thay đổi liên kết đúng entity
 
                     return detail;
                 }).collect(Collectors.toList());
@@ -65,32 +65,32 @@ public class PurchaseOrderService {
                 .map(detail -> detail.getPrice().multiply(new BigDecimal(detail.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        purchaseOrder.setDetails(orderDetails);
-        purchaseOrder.setTotalMoney(totalMoney);
+        entry.setDetails(orderDetails);
+        entry.setTotalMoney(totalMoney);
 
-        Entryorder savedOrder = entryorderRepository.save(purchaseOrder);
+        Entry savedOrder = entryRepository.save(entry);
 
         return mapToDTO(savedOrder);
     }
 
-    public EntryOrderDTO getPurchaseOrderById(String id) {
-        return entryorderRepository.findById(id)
+    public EntryDTO getPurchaseOrderById(String id) {
+        return entryRepository.findById(id)
                 .map(this::mapToDTO)
                 .orElse(null);
     }
 
-    public Page<EntryOrderDTO> getAllPurchaseOrders(LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        return entryorderRepository.findByPurchaseDateBetween(
+    public Page<EntryDTO> getAllPurchaseOrders(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        return entryRepository.findByPurchaseDateBetween(
                         startDate, endDate, pageable)
                 .map(this::mapToDTO);
     }
 
-    public List<EntryOrderDetailDTO> getPurchaseOrderDetails(String id) {
-        Entryorder order = entryorderRepository.findById(id).orElse(null);
+    public List<EntryDetailDTO> getPurchaseOrderDetails(String id) {
+        Entry order = entryRepository.findById(id).orElse(null);
         return (order != null) ? order.getDetails().stream()
                 .map(detail -> {
-                    EntryOrderDetailDTO detailDTO = new EntryOrderDetailDTO();
-                    detailDTO.setPurchaseOrderDetailID(detail.getPurchaseOrderDetailID());
+                    EntryDetailDTO detailDTO = new EntryDetailDTO();
+                    detailDTO.setPurchaseOrderDetailID(detail.getEntryDetailID());
                     detailDTO.setProductVersionID(detail.getProductVersionID().getProductVersionID());
                     detailDTO.setProductVersionName(detail.getProductVersionID().getVersionName());
                     detailDTO.setQuantity(detail.getQuantity());
@@ -99,16 +99,17 @@ public class PurchaseOrderService {
                 }).collect(Collectors.toList()) : null;
     }
 
-    private EntryOrderDTO mapToDTO(Entryorder purchaseOrder) {
-        EntryOrderDTO dto = new EntryOrderDTO();
-        dto.setPurchaseOrderID(purchaseOrder.getPurchaseOrderID());
-        dto.setPurchaseDate(purchaseOrder.getPurchaseDate());
-        dto.setTotalMoney(purchaseOrder.getTotalMoney());
+    private EntryDTO mapToDTO(Entry entry) {
+        EntryDTO dto = new EntryDTO();
+        dto.setPurchaseOrderID(entry.getEntryID());
+        dto.setPurchaseDate(entry.getOrderDate());
+        dto.setTotalMoney(entry.getTotalMoney());
 
-        List<EntryOrderDetailDTO> detailDTOs = purchaseOrder.getDetails().stream()
+
+        List<EntryDetailDTO> detailDTOs = entry.getDetails().stream()
                 .map(detail -> {
-                    EntryOrderDetailDTO detailDTO = new EntryOrderDetailDTO();
-                    detailDTO.setPurchaseOrderDetailID(detail.getPurchaseOrderDetailID());
+                    EntryDetailDTO detailDTO = new EntryDetailDTO();
+                    detailDTO.setPurchaseOrderDetailID(detail.getEntryDetailID());
                     detailDTO.setProductVersionID(detail.getProductVersionID().getProductVersionID());
                     detailDTO.setProductVersionName(detail.getProductVersionID().getVersionName());
                     detailDTO.setQuantity(detail.getQuantity());
@@ -121,7 +122,7 @@ public class PurchaseOrderService {
     }
 
     Integer getProductVersionPurchaseQuantity(String productVersionID){
-        Integer quantity = quantity = entryorderdetailRepository.findTotalPurchasedQuantityByProductVersion(productVersionID);
+        Integer quantity = quantity = entrydetailRepository.findTotalPurchasedQuantityByProductVersion(productVersionID);
         return quantity == null ? 0 : quantity;
     }
 

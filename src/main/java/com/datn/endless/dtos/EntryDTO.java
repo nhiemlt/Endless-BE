@@ -7,9 +7,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
-public class EntryOrderDTO {
+public class EntryDTO {
     private String purchaseOrderID;
     private LocalDate purchaseDate;
     private BigDecimal totalMoney;
-    private List<EntryOrderDetailDTO> details;
+    private List<EntryDetailDTO> details;
 }

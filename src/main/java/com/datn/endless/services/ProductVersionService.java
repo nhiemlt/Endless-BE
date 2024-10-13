@@ -42,7 +42,7 @@ public class ProductVersionService {
     private PromotionproductRepository promotionproductRepository;
 
     @Autowired
-    private PurchaseOrderService purchaseOrderService;
+    private EntryService purchaseOrderService;
 
     @Autowired
     private RatingService ratingService;

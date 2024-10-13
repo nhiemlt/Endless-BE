@@ -13,19 +13,19 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
-@Table(name = "purchaseorderdetails")
-public class Entryorderdetail {
+@Table(name = "entrydetails")
+public class Entrydetail {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
-    @Column(name = "PurchaseOrderDetailID", nullable = false, length = 36)
-    private String purchaseOrderDetailID;
+    @Column(name = "EntryDetailID", nullable = false, length = 36)
+    private String entryDetailID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "PurchaseOrderID", nullable = false)
+    @JoinColumn(name = "EntryID", nullable = false)
     @JsonIgnore
-    private Entryorder purchaseOrderID;
+    private Entry entry;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -41,3 +41,5 @@ public class Entryorderdetail {
     private BigDecimal price;
 
 }
+
+
