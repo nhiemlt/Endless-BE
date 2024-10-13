@@ -33,7 +33,7 @@ public class Productversion {
     private String versionName;
 
     @NotNull
-    @Column(name = "PurchasePrice", nullable = false, precision = 18, scale = 2)
+    @Column(name = "CostPrice", nullable = false, precision = 18, scale = 2)
     private BigDecimal purchasePrice;
 
     @NotNull
