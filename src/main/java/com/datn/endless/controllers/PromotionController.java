@@ -1,113 +1,101 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.entities.Promotion;
-import com.datn.endless.repositories.PromotionRepository;
+import com.datn.endless.dtos.PromotionDTO;
+import com.datn.endless.models.PromotionModel;
+import com.datn.endless.services.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/promotions")
 public class PromotionController {
 
     @Autowired
-    private PromotionRepository promotionRepository;
+    private PromotionService promotionService;
 
-    // Create a new promotion
+    // Tạo mới một promotion
     @PostMapping
-    public ResponseEntity<String> createPromotion(@RequestBody Promotion promotion) {
-        // Validate promotion data
-        if (promotion.getName() == null || promotion.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Promotion name must not be null or empty.");
-        }
+    public ResponseEntity<PromotionDTO> createPromotion(
+            @RequestParam String name,
+            @RequestParam String enName,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) MultipartFile poster,
+            @RequestParam String enDescription) {
 
-        if (promotionRepository.existsByName(promotion.getName())) {
-            return ResponseEntity.badRequest().body("Promotion with this name already exists.");
-        }
+        PromotionModel promotionModel = new PromotionModel();
+        promotionModel.setName(name);
+        promotionModel.setEnName(enName);
+        promotionModel.setStartDate(startDate);
+        promotionModel.setEndDate(endDate);
+        promotionModel.setPoster(poster);
+        promotionModel.setEnDescription(enDescription);
 
-        if (promotion.getStartDate() == null || promotion.getEndDate() == null) {
-            return ResponseEntity.badRequest().body("Start date and end date must not be null.");
-        }
-
-        if (promotion.getStartDate().isAfter(promotion.getEndDate())) {
-            return ResponseEntity.badRequest().body("Start date must be before end date.");
-        }
-
-        // Set promotion ID if not already set
-        if (promotion.getPromotionID() == null || promotion.getPromotionID().isEmpty()) {
-            promotion.setPromotionID(UUID.randomUUID().toString());
-        }
-
-        Promotion createdPromotion = promotionRepository.save(promotion);
-        return ResponseEntity.ok("Promotion created successfully.");
+        PromotionDTO createdPromotion = promotionService.createPromotion(promotionModel);
+        return ResponseEntity.ok(createdPromotion);
     }
 
-    // Get all promotions
+    // Cập nhật promotion theo ID
+    @PutMapping("/{id}")
+    public ResponseEntity<PromotionDTO> updatePromotion(
+            @PathVariable String id,
+            @RequestParam String name,
+            @RequestParam String enName,
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            @RequestParam(required = false) MultipartFile poster,
+            @RequestParam String enDescription) {
+
+        PromotionModel promotionModel = new PromotionModel();
+        promotionModel.setName(name);
+        promotionModel.setEnName(enName);
+        promotionModel.setStartDate(startDate);
+        promotionModel.setEndDate(endDate);
+        promotionModel.setPoster(poster);
+        promotionModel.setEnDescription(enDescription);
+
+        PromotionDTO updatedPromotion = promotionService.updatePromotion(id, promotionModel);
+        return ResponseEntity.ok(updatedPromotion);
+    }
+
+    // Lấy tất cả các promotion
     @GetMapping
-    public ResponseEntity<List<Promotion>> getAllPromotions() {
-        List<Promotion> promotions = promotionRepository.findAll();
+    public ResponseEntity<List<PromotionDTO>> getAllPromotions() {
+        List<PromotionDTO> promotions = promotionService.getAllPromotions();
         return ResponseEntity.ok(promotions);
     }
 
-    // Get promotion by ID
+    // Lấy promotion theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<Promotion> getPromotionById(@PathVariable String id) {
-        Optional<Promotion> promotion = promotionRepository.findById(id);
+    public ResponseEntity<PromotionDTO> getPromotionById(@PathVariable String id) {
+        Optional<PromotionDTO> promotion = promotionService.getPromotionById(id);
         return promotion.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // Update a promotion
-    @PutMapping("/{id}")
-    public ResponseEntity<String> updatePromotion(@PathVariable String id, @RequestBody Promotion promotion) {
-        // Validate promotion data
-        if (promotion.getName() == null || promotion.getName().trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Promotion name must not be null or empty.");
-        }
-
-        if (promotionRepository.existsByNameAndPromotionIDNot(promotion.getName(), id)) {
-            return ResponseEntity.badRequest().body("Promotion with this name already exists.");
-        }
-
-        if (promotion.getStartDate() == null || promotion.getEndDate() == null) {
-            return ResponseEntity.badRequest().body("Start date and end date must not be null.");
-        }
-
-        if (promotion.getStartDate().isAfter(promotion.getEndDate())) {
-            return ResponseEntity.badRequest().body("Start date must be before end date.");
-        }
-
-        if (!promotionRepository.existsById(id)) {
-            return ResponseEntity.badRequest().body("Promotion not found with ID: " + id);
-        }
-
-        promotion.setPromotionID(id);
-        promotionRepository.save(promotion);
-        return ResponseEntity.ok("Promotion updated successfully.");
-    }
-
-    // Delete a promotion
+    // Xóa promotion theo ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePromotion(@PathVariable String id) {
-        if (!promotionRepository.existsById(id)) {
-            return ResponseEntity.badRequest().body("Promotion not found with ID: " + id);
-        }
-        try {
-            promotionRepository.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error deleting promotion: " + e.getMessage());
-        }
+    public ResponseEntity<Void> deletePromotion(@PathVariable String id) {
+        promotionService.deletePromotion(id);
+        return ResponseEntity.noContent().build();
     }
 
-    // Search promotions by name
+    // Lọc promotion theo tiêu chí
     @GetMapping("/search")
-    public ResponseEntity<List<Promotion>> searchPromotionsByName(@RequestParam String name) {
-        List<Promotion> promotions = promotionRepository.findByNameContainingIgnoreCase(name);
+    public ResponseEntity<Page<PromotionDTO>> searchPromotions(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            Pageable pageable) {
+
+        Page<PromotionDTO> promotions = promotionService.findPromotionsByCriteria(name, startDate, endDate, pageable);
         return ResponseEntity.ok(promotions);
     }
 }

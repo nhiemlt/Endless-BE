@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @Entity
@@ -17,7 +19,7 @@ public class Promotionproduct {
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "PromotionProductID", nullable = false, length = 36)
-    private String promotionProductID;
+    private String promotionProductID = UUID.randomUUID().toString(); // Tự sinh UUID
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

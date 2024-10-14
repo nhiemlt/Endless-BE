@@ -14,6 +14,21 @@ public class ProductVersionDTO {
     private BigDecimal price;
     private String status;
     private String image;
+
+    private double discountPercentage;
+
+    private  double quantityAvailable;
+    private  double   quantitySold;
+
     private BigDecimal discountPrice;
+    private double averageRating;
+    private long    NumberOfReviews;
+
+
+    List<RatingDTO> ratings;
     List<VersionAttributeDTO> versionAttributes;
+    private List<PromotionDTO> promotions; // Danh sách các chương trình khuyến mãi áp dụng cho sản phẩm
+
+
+
 }

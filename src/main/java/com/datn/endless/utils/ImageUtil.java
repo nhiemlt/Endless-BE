@@ -13,6 +13,10 @@ public class ImageUtil {
     public static String convertToBase64(MultipartFile file) throws IOException {
         BufferedImage originalImage = ImageIO.read(file.getInputStream());
 
+        if (originalImage == null) {
+            throw new IOException("Invalid image file");
+        }
+
         // Thay đổi kích thước
         int newWidth = originalImage.getWidth() / 2; // Giảm kích thước 50%
         int newHeight = originalImage.getHeight() / 2; // Giảm kích thước 50%

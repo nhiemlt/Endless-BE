@@ -9,29 +9,27 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "purchaseorders")
-public class Purchaseorder {
+@Table(name = "entries")
+public class Entry {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
-    @Column(name = "PurchaseOrderID", nullable = false, length = 36)
-    private String purchaseOrderID;
+    @Column(name = "EntryID", nullable = false, length = 36)
+    private String entryID;
 
     @NotNull
-    @Column(name = "PurchaseDate", nullable = false)
-    private LocalDate purchaseDate;
+    @Column(name = "OrderDate", nullable = false)
+    private LocalDate orderDate;
 
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalMoney;
 
-    @OneToMany(mappedBy = "purchaseOrderID", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Purchaseorderdetail> details;
-
+    @OneToMany(mappedBy = "entry", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Entrydetail> details;
 }
