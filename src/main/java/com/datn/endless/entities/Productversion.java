@@ -33,7 +33,7 @@ public class Productversion {
     private String versionName;
 
     @NotNull
-    @Column(name = "PurchasePrice", nullable = false, precision = 18, scale = 2)
+    @Column(name = "CostPrice", nullable = false, precision = 18, scale = 2)
     private BigDecimal purchasePrice;
 
     @NotNull
@@ -51,5 +51,10 @@ public class Productversion {
 
     @OneToMany(mappedBy = "productVersionID", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Versionattribute> versionattributes = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "productVersionID", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Promotionproduct> promotionproduct = new LinkedHashSet<>();
+
+
 
 }
