@@ -17,5 +17,6 @@ public class OrderDTO {
     private String orderAddress;
     private String orderPhone;
     private String orderName;
+    private String status;
     List<OrderDetailDTO> orderDetails;
 }
