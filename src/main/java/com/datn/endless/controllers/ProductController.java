@@ -1,104 +1,57 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.entities.Product;
-import com.datn.endless.repositories.ProductRepository;
+import com.datn.endless.dtos.ProductDTO;
+import com.datn.endless.models.ProductModel;
+import com.datn.endless.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
 
     @Autowired
-    private ProductRepository productRepository;
+    private ProductService productService;
 
-    // Create a new product
     @PostMapping
-    public ResponseEntity<String> createProduct(@RequestBody Product product) {
-        if (product.getName() == null || product.getName().isEmpty()) {
-            return ResponseEntity.badRequest().body("Product name cannot be empty.");
-        }
-
-        // Set default UUID if not provided
-        if (product.getProductID() == null || product.getProductID().isEmpty()) {
-            product.setProductID(UUID.randomUUID().toString());
-        }
-
-        try {
-            productRepository.save(product);
-            return ResponseEntity.ok("Product created successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error creating product: " + e.getMessage());
-        }
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody ProductModel productModel) {
+        ProductDTO createdProduct = productService.createProduct(productModel);
+        return ResponseEntity.ok(createdProduct);
     }
 
-    // Get all products
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productRepository.findAll();
-        if (products.isEmpty()) {
-            return ResponseEntity.status(404).body(null); // No products found
+    public ResponseEntity<?> getProductsOrProductById(
+            @RequestParam(required = false) String id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String nameEn,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        if (id != null && !id.isEmpty()) {
+            // Nếu id được truyền, trả về thông tin chi tiết của một sản phẩm
+            return productService.getProductById(id)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        } else {
+            // Nếu không có id, trả về danh sách sản phẩm với filter
+            List<ProductDTO> products = productService.getProducts(name, nameEn, page, size);
+            return ResponseEntity.ok(products);
         }
-        return ResponseEntity.ok(products);
     }
 
-    // Get a product by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable String id) {
-        Optional<Product> product = productRepository.findById(id);
-        if (product.isEmpty()) {
-            return ResponseEntity.status(404).body(null); // Product not found
-        }
-        return ResponseEntity.ok(product.get());
-    }
-
-    // Search products by name
-    @GetMapping("/search")
-    public ResponseEntity<List<Product>> searchProductByName(@RequestParam String name) {
-        List<Product> products = productRepository.findByNameContainingIgnoreCase(name);
-        if (products.isEmpty()) {
-            return ResponseEntity.status(404).body(null); // No products found with the given name
-        }
-        return ResponseEntity.ok(products);
-    }
-
-    // Update a product
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateProduct(@PathVariable String id, @RequestBody Product product) {
-        if (!productRepository.existsById(id)) {
-            return ResponseEntity.status(404).body("Product not found with ID: " + id);
-        }
-
-        if (product.getName() == null || product.getName().isEmpty()) {
-            return ResponseEntity.badRequest().body("Product name cannot be empty.");
-        }
-
-        product.setProductID(id); // Ensure ID is correct
-        try {
-            productRepository.save(product);
-            return ResponseEntity.ok("Product updated successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error updating product: " + e.getMessage());
-        }
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable String id, @RequestBody ProductModel productModel) {
+        ProductDTO updatedProduct = productService.updateProduct(id, productModel);
+        return ResponseEntity.ok(updatedProduct);
     }
 
-    // Delete a product
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProduct(@PathVariable String id) {
-        if (!productRepository.existsById(id)) {
-            return ResponseEntity.status(404).body("Product not found with ID: " + id);
-        }
-
-        try {
-            productRepository.deleteById(id);
-            return ResponseEntity.ok("Product deleted successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error deleting product: " + e.getMessage());
-        }
+        productService.deleteProduct(id);
+        return ResponseEntity.ok("Product deleted successfully.");
     }
 }

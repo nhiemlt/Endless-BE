@@ -25,14 +25,15 @@ public class Product {
     private String productID;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "CategoryID", nullable = false)
     private Category categoryID;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "BrandID", nullable = false)
     private Brand brandID;
+
 
     @Size(max = 255)
     @NotNull

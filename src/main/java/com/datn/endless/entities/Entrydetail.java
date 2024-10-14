@@ -1,5 +1,6 @@
 package com.datn.endless.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -23,7 +24,8 @@ public class Entrydetail {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "EntryID", nullable = false)
-    private Entry entryID;
+    @JsonIgnore
+    private Entry entry;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -39,3 +41,5 @@ public class Entrydetail {
     private BigDecimal price;
 
 }
+
+
