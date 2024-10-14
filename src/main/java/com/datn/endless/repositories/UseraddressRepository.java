@@ -6,9 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface UseraddressRepository extends JpaRepository<Useraddress, UUID> {
+public interface UseraddressRepository extends JpaRepository<Useraddress, String> {
     @Query("SELECT ur FROM Useraddress ur WHERE ur.userID.userID = :userID")
     List<Useraddress> findByUserID(String userID);
+
+    Useraddress findByUserIDAndAddressID(User userid, String addressID);
 }

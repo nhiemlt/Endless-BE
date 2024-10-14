@@ -71,7 +71,7 @@ public class UserAddressService {
     }
 
     // Xóa địa chỉ người dùng theo ID
-    public void deleteUserAddress(UUID addressId) {
+    public void deleteUserAddress(String addressId) {
         userAddressRepository.deleteById(addressId);
     }
 }

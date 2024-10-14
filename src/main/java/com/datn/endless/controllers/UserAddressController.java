@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/useraddresses")
@@ -30,7 +29,7 @@ public class UserAddressController {
     }
 
     // Thêm địa chỉ mới cho người dùng
-    @PostMapping("/")
+    @PostMapping("")
     public ResponseEntity<UseraddressDTO> addUserAddress(@RequestBody UseraddressDTO userAddressDTO) {
         try {
             UseraddressDTO savedAddress = userAddressService.saveUserAddress(userAddressDTO);
@@ -49,7 +48,6 @@ public class UserAddressController {
             if (addressId == null || addressId.isEmpty()) {
                 return ResponseEntity.badRequest().body(null);
             }
-
             userAddressDTO.setAddressID(addressId);
             userAddressDTO.setUserID(userId); // Đặt userId cho địa chỉ
             UseraddressDTO updatedAddress = userAddressService.saveUserAddress(userAddressDTO);
@@ -63,10 +61,9 @@ public class UserAddressController {
         }
     }
 
-
     // Xóa địa chỉ của người dùng
     @DeleteMapping("/{addressId}")
-    public ResponseEntity<Void> deleteUserAddress(@PathVariable("addressId") UUID addressId) {
+    public ResponseEntity<Void> deleteUserAddress(@PathVariable("addressId") String addressId) {
         try {
             userAddressService.deleteUserAddress(addressId);
             return ResponseEntity.noContent().build();
