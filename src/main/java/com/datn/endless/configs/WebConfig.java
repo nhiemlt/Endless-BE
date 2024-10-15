@@ -10,7 +10,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:3000") // Địa chỉ frontend của bạn
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
-                .exposedHeaders("Authorization")
                 .allowCredentials(true);
     }
 }

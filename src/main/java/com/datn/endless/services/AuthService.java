@@ -183,6 +183,40 @@ public class AuthService {
         }
     }
 
+    public ResponseEntity<Map<String, Object>> verifyAuthToken(String token) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            String secret = new Constant().getAUTH_KEY(); // Có thể inject vào constructor
+            SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+            JWT jwt = new JWT(secretKey, 24 * 60 * 60 * 1000L); // Thời gian có thể cấu hình
+
+            if (!jwt.isTokenValid(token)) {
+                response.put("error", "Invalid or expired token.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            Claims claims = jwt.getClaims(token);
+            String username = claims.getSubject(); // Lấy username từ subject
+
+            // Kiểm tra người dùng
+            Optional<User> userOpt = Optional.ofNullable(userRepository.findByUsername(username));
+            if (userOpt.isEmpty()) {
+                response.put("error", "User not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            response.put("success", true);
+            response.put("message", "Token verified successfully. You can now log in.");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            // Ghi log lỗi (nếu cần thiết)
+            response.put("error", "Internal server error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
     public ResponseEntity<Map<String, Object>> googleLogin(GoogleLoginModel googleLoginModel) {
         String googleId = googleLoginModel.getGoogleId();
         String email = googleLoginModel.getEmail();
