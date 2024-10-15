@@ -148,6 +148,12 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService)
                         )
                 )
+                .headers(headers -> headers
+                        .addHeaderWriter((request, response) -> {
+                            response.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+                            response.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+                        })
+                )
                 .addFilterBefore(new JWTAuthenticationFilter(customUserDetailsService, jwtService),
                         UsernamePasswordAuthenticationFilter.class); // Thêm JWTAuthenticationFilter vào chuỗi bảo mật
 
