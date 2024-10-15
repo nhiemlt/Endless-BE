@@ -42,6 +42,7 @@ public class AuthService {
 
         Map<String, Object> response = new HashMap<>();
 
+        // Kiểm tra thông tin đăng nhập
         if (username == null || username.isEmpty()) {
             response.put("error", "Username is required.");
             return ResponseEntity.badRequest().body(response);
@@ -52,6 +53,7 @@ public class AuthService {
             return ResponseEntity.badRequest().body(response);
         }
 
+        // Kiểm tra user trong database
         Optional<User> userOpt = Optional.ofNullable(userRepository.findByUsername(username));
         if (userOpt.isEmpty()) {
             response.put("error", "User not found.");
@@ -65,7 +67,9 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
 
+        // Kiểm tra mật khẩu
         if (Encode.checkCode(password, user.getPassword())) {
+            // Tạo JWT token
             String secret = new Constant().getAUTH_KEY();
             SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
             long expirationTimeMillis = remember ? 7 * 24 * 60 * 60 * 1000L : 30 * 60 * 1000L;
@@ -77,20 +81,21 @@ public class AuthService {
 
             CustomUserDetails userDetails = new CustomUserDetails(user);
 
+            // Thêm dữ liệu vào body phản hồi
             response.put("role", roleName);
             response.put("permissions", userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority).collect(Collectors.toList()));
+            response.put("token", token); // Thêm token vào body
             response.put("success", true);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
-
-            return ResponseEntity.ok().headers(headers).body(response);
+            // Trả về phản hồi với body chứa token
+            return ResponseEntity.ok().body(response);
         } else {
             response.put("error", "Invalid password.");
             return ResponseEntity.badRequest().body(response);
         }
     }
+
 
     public ResponseEntity<Map<String, Object>> register(RegisterModel registerModel) {
         Map<String, Object> response = new HashMap<>();
