@@ -34,6 +34,11 @@ public class AuthController {
         return authService.verifyEmail(token);
     }
 
+    @GetMapping("/verify-auth-token")
+    public ResponseEntity<Map<String, Object>> verifyAuthToken(@RequestParam("token") String token) {
+        return authService.verifyAuthToken(token);
+    }
+
     @PostMapping("/login/google")
     public ResponseEntity<Map<String, Object>> googleLogin(@RequestBody GoogleLoginModel googleLoginModel) {
         return authService.googleLogin(googleLoginModel);

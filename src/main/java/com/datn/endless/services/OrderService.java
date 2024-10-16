@@ -471,7 +471,7 @@ public class OrderService {
         dto.setOrderAddress(formatAddress(order.getOrderAddress()));
         dto.setOrderPhone(order.getOrderPhone());
         dto.setOrderName(order.getOrderName());
-
+        dto.setStatus(orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID()).get().getStatusType().getName());
         List<OrderDetailDTO> orderDetailDTOs = order.getOrderDetails() != null ?
                 order.getOrderDetails().stream().map(this::convertToOrderDetailDTO).collect(Collectors.toList()) :
                 new ArrayList<>();
