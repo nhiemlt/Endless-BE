@@ -145,8 +145,10 @@ public class AuthService {
         }
     }
 
-    public ResponseEntity<Map<String, Object>> verifyEmail(String token) {
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<String> verifyEmail(String token) {
+        String title = "Xác minh thất bại!";
+        String message = "Có lỗi xảy ra.";
+        String content = "Vui lòng thử lại sau vài phút.";
 
         try {
             String secret = new Constant().getAUTH_KEY();
@@ -154,8 +156,7 @@ public class AuthService {
             JWT jwt = new JWT(secretKey, 24 * 60 * 60 * 1000L);
 
             if (!jwt.isTokenValid(token)) {
-                response.put("error", "Invalid or expired token.");
-                return ResponseEntity.badRequest().body(response);
+                return ResponseEntity.badRequest().body(generateHtml(title, "Token không chính xác hoặc đã hết hạn", content));
             }
 
             Claims claims = jwt.getClaims(token);
@@ -165,8 +166,7 @@ public class AuthService {
 
             Optional<User> userOpt = Optional.ofNullable(userRepository.findByUsername(username));
             if (userOpt.isEmpty()) {
-                response.put("error", "User not found.");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(generateHtml(title, "Không tìm thấy người dùng phù hợp", content));
             }
 
             User user = userOpt.get();
@@ -174,14 +174,41 @@ public class AuthService {
             user.setPassword(Encode.hashCode(password));
             userRepository.save(user);
 
-            response.put("success", true);
-            response.put("message", "Email successfully verified. You can now log in.");
-            return ResponseEntity.ok(response);
+            title = "Xác minh thành công!";
+            message = "Cảm ơn bạn!";
+            content = "Email của bạn đã được xác minh thành công. Bạn có thể đăng nhập ngay bây giờ.";
+            return ResponseEntity.ok(generateHtml(title, message, content));
         } catch (Exception e) {
-            response.put("error", "Internal server error: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(generateHtml("Lỗi hệ thống!", "Internal server error: " + e.getMessage(), content));
         }
     }
+
+
+    private String generateHtml(String title, String message,String content) {
+        return "<!DOCTYPE html>" +
+                "<html lang=\"vi\">" +
+                "<head>" +
+                "<meta charset=\"UTF-8\">" +
+                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+                "<title>" + title + "</title>" +
+                "<link href=\"https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css\" rel=\"stylesheet\">" +
+                "</head>" +
+                "<body>" +
+                "<div class=\"grid h-screen place-content-center bg-white px-4\">" +
+                "<div class=\"text-center\">" +
+                "<h1 class=\"text-9xl font-black text-gray-200\">" + title + "</h1>" +
+                "<p class=\"text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl\">" + message + "</p>" +
+                "<p class=\"mt-4 text-gray-500\">" + content + "</p>" +
+                "<a href=\"http://localhost:3000/login\" class=\"mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring\">" +
+                "Đi đến trang đăng nhập" +
+                "</a>" +
+                "</div>" +
+                "</div>" +
+                "</body>" +
+                "</html>";
+    }
+
+
 
     public ResponseEntity<Map<String, Object>> verifyAuthToken(String token) {
         Map<String, Object> response = new HashMap<>();
@@ -255,34 +282,34 @@ public class AuthService {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<Map<String, Object>> forgotPassword(String email) throws MessagingException {
-        Map<String, Object> response = new HashMap<>();
+    public String forgotPassword(String email) throws MessagingException {
+        StringBuilder response = new StringBuilder();
 
         Optional<User> userOpt = Optional.ofNullable(userRepository.findByKeyword(email));
         if (userOpt.isEmpty()) {
-            response.put("error", "Email not found.");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            response.append(generateHtml("Lỗi", "Email không tồn tại.", "Vui lòng thử lại sau ít phút"));
+            return response.toString();
         }
 
         User user = userOpt.get();
-
         String secret = new Constant().getAUTH_KEY();
         SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
         long expirationTimeMillis = 24 * 60 * 60 * 1000L;
         JWT jwt = new JWT(secretKey, expirationTimeMillis);
 
         String resetToken = jwt.generateToken(user.getUsername());
-
         String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
         mailService.sendResetPasswordMail(user.getUsername(), user.getEmail(), resetLink);
 
-        response.put("success", true);
-        response.put("message", "Password reset email sent. Please check your email.");
-        return ResponseEntity.ok(response);
+        response.append(generateHtml("Thành công", "Email đặt lại mật khẩu đã được gửi. ", "Vui lòng kiểm tra email của bạn."));
+        return response.toString();
     }
 
-    public ResponseEntity<Map<String, Object>> resetPassword(String token) {
-        Map<String, Object> response = new HashMap<>();
+
+    public String resetPassword(String token) {
+        String title;
+        String message;
+        String content;
 
         try {
             String secret = new Constant().getAUTH_KEY();
@@ -290,30 +317,36 @@ public class AuthService {
             JWT jwt = new JWT(secretKey, 0);
 
             String username = jwt.getUsername(token);
-
             Optional<User> userOpt = Optional.ofNullable(userRepository.findByUsername(username));
+
             if (userOpt.isEmpty()) {
-                response.put("error", "User not found.");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                title = "Lỗi";
+                message = "Người dùng không tồn tại.";
+                content = "Vui lòng thử lại sau ít phút";
+                return generateHtml(title, message, content);
             }
 
             User user = userOpt.get();
             String newPassword = RandomUtil.generateComplexRandomString();
-
             user.setPassword(Encode.hashCode(newPassword));
             user.setForgetPassword(true);
             userRepository.save(user);
 
             mailService.sendTemporaryPasswordMail(user.getUsername(), user.getEmail(), newPassword);
 
-            response.put("success", true);
-            response.put("message", "Password has been reset successfully and sent to your email.");
-            return ResponseEntity.ok(response);
+            title = "Thành công";
+            message = "Mật khẩu đã được đặt lại thành công và đã được gửi đến email của bạn.";
+            content = "Vui lòng kiểm tra email để xác thực!";
+            return generateHtml(title, message, content);
         } catch (Exception e) {
-            response.put("error", "Invalid or expired token.");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            title = "Lỗi";
+            message = "Token không hợp lệ hoặc đã hết hạn.";
+            content = "Vui lòng thử lại sau ít phút";
+            return generateHtml(title, message, content);
         }
     }
+
+
 
     public ResponseEntity<Map<String, Object>> validateToken(String token) {
         Map<String, Object> response = new HashMap<>();

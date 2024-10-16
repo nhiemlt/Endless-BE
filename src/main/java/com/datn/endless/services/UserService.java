@@ -39,15 +39,15 @@ public class UserService {
 
     // Lưu người dùng mới hoặc cập nhật người dùng hiện tại
     public UserDTO saveUser(UserDTO userDTO) {
-        User user = User.builder()
-                .userID(userDTO.getUserID())
-                .username(userDTO.getUsername())
-                .fullname(userDTO.getFullname())
-                .phone(userDTO.getPhone())
-                .email(userDTO.getEmail())
-                .avatar(userDTO.getAvatar())
-                .language(userDTO.getLanguage())
-                .build();
+        User user = new User();
+        user.setUserID(userDTO.getUserID());
+        user.setUsername(userDTO.getUsername());
+        user.setFullname(userDTO.getFullname());
+        user.setPhone(userDTO.getPhone());
+        user.setEmail(userDTO.getEmail());
+        user.setAvatar(userDTO.getAvatar());
+        user.setLanguage(userDTO.getLanguage());
+
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }

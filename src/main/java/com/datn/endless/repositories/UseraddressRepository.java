@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface UseraddressRepository extends JpaRepository<Useraddress, UUID> {
     @Query("SELECT ur FROM Useraddress ur WHERE ur.userID.userID = :userID")
     List<Useraddress> findByUserID(String userID);
+
+    Useraddress findByUserIDAndAddressID(User userid, String addressID);
 }
