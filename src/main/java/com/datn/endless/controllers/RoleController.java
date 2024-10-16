@@ -2,8 +2,10 @@ package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.entities.Role;
+import com.datn.endless.models.RoleModel;
 import com.datn.endless.services.RoleService;
 import com.datn.endless.services.UserRoleService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -38,15 +40,15 @@ public class RoleController {
     }
 
     @PostMapping
-    public ResponseEntity<RoleDTO> createRole(@RequestBody RoleDTO roleDTO) {
-        Role createdRole = roleService.createRole(roleDTO);
+    public ResponseEntity<RoleDTO> createRole(@RequestBody @Valid RoleModel roleModel) {
+        Role createdRole = roleService.createRole(roleModel);
         return ResponseEntity.ok(roleService.toDto(createdRole));
     }
 
     @PutMapping
-    public ResponseEntity<RoleDTO> updateRole(@RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<RoleDTO> updateRole(@RequestBody @Valid RoleModel roleModel) {
         try {
-            Role updatedRole = roleService.updateRole(roleDTO);
+            Role updatedRole = roleService.updateRole(roleModel);
             return updatedRole != null ? ResponseEntity.ok(roleService.toDto(updatedRole)) : ResponseEntity.notFound().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();

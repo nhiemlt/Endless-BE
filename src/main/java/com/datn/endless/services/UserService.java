@@ -1,7 +1,8 @@
 package com.datn.endless.services;
 
-import com.datn.endless.entities.User;
 import com.datn.endless.dtos.UserDTO;
+import com.datn.endless.entities.User;
+import com.datn.endless.models.UserModel;
 import com.datn.endless.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -40,15 +41,15 @@ public class UserService {
     }
 
     // Lưu người dùng mới hoặc cập nhật người dùng hiện tại
-    public UserDTO saveUser(UserDTO userDTO) {
+    public UserDTO saveUser(UserModel userModel) {
         User user = new User();
-        user.setUserID(userDTO.getUserID());
-        user.setUsername(userDTO.getUsername());
-        user.setFullname(userDTO.getFullname());
-        user.setPhone(userDTO.getPhone());
-        user.setEmail(userDTO.getEmail());
-        user.setAvatar(userDTO.getAvatar());
-        user.setLanguage(userDTO.getLanguage());
+        user.setUserID(userModel.getUserID());
+        user.setUsername(userModel.getUsername());
+        user.setFullname(userModel.getFullname());
+        user.setPhone(userModel.getPhone());
+        user.setEmail(userModel.getEmail());
+        user.setAvatar(userModel.getAvatar());
+        user.setLanguage(userModel.getLanguage());
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }

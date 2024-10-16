@@ -1,7 +1,6 @@
 package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.RoleDTO;
-import com.datn.endless.services.RoleService;
 import com.datn.endless.services.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,8 +16,6 @@ public class UserRoleController {
 
     @Autowired
     private UserRoleService userRoleService;
-    @Autowired
-    private RoleService roleService;
 
     @GetMapping
     public ResponseEntity<List<RoleDTO>> getRolesByUser(@PathVariable String userId) {
@@ -37,9 +34,7 @@ public class UserRoleController {
             userRoleService.deleteUserRole(userId, roleId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
 }

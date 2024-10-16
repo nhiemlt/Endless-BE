@@ -4,6 +4,7 @@ import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.entities.Permission;
 import com.datn.endless.entities.Role;
+import com.datn.endless.models.RoleModel;
 import com.datn.endless.repositories.PermissionRepository;
 import com.datn.endless.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,39 +35,39 @@ public class RoleService {
         return toDto(roleRepository.findById(roleId).orElse(null));
     }
 
-    public Role createRole(RoleDTO roleDTO) {
-        // Tạo vai trò mới với ID ngẫu nhiên
+    public Role createRole(RoleModel roleModel) {
         Role role = new Role();
-        role.setRoleId(UUID.randomUUID().toString());
-        role.setRoleName(roleDTO.getRoleName());
-        role.setEnNamerole(roleDTO.getEnNamerole());
+        role.setRoleId(roleModel.getRoleId());
+        role.setRoleName(roleModel.getRoleName());
+        role.setEnNamerole(roleModel.getEnNamerole());
 
-        // Lấy danh sách các quyền từ cơ sở dữ liệu dựa trên permissionId mà người dùng đã chọn
+        // Xử lý danh sách permissions dựa trên permissionIds từ Model
         Set<Permission> permissions = new HashSet<>(
-                permissionRepository.findAllById(
-                        roleDTO.getPermissions().stream()
-                                .map(PermissionDTO::getPermissionId)
-                                .collect(Collectors.toList())
-                )
+                permissionRepository.findAllById(roleModel.getPermissionIds())
         );
-
-        // Gán các quyền cho vai trò
         role.setPermissions(permissions);
 
-        // Lưu vai trò mới cùng với các quyền vào cơ sở dữ liệu
         return roleRepository.save(role);
     }
 
-    public Role updateRole(RoleDTO roleDTO) {
-        Optional<Role> existingRoleOpt = roleRepository.findById(roleDTO.getRoleId());
+    public Role updateRole(RoleModel roleModel) {
+        Optional<Role> existingRoleOpt = roleRepository.findById(roleModel.getRoleId());
         if (existingRoleOpt.isPresent()) {
             Role existingRole = existingRoleOpt.get();
-            existingRole.setRoleName(roleDTO.getRoleName());;
-            existingRole.setEnNamerole(roleDTO.getEnNamerole());
+            existingRole.setRoleName(roleModel.getRoleName());
+            existingRole.setEnNamerole(roleModel.getEnNamerole());
+
+            // Cập nhật lại permissions
+            Set<Permission> permissions = new HashSet<>(
+                    permissionRepository.findAllById(roleModel.getPermissionIds())
+            );
+            existingRole.setPermissions(permissions);
+
             return roleRepository.save(existingRole);
         }
         return null;
     }
+
 
     public void deleteRole(String roleId) {
         roleRepository.deleteById(roleId);

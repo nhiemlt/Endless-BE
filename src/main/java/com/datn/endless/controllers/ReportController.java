@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -33,8 +34,10 @@ public class ReportController {
 
     // Thống kê doanh thu
     @GetMapping("/revenue")
-    public ResponseEntity<RevenueReportDTO> getRevenueReport() {
-        RevenueReportDTO revenueReport = reportService.getRevenueReport();
+    public ResponseEntity<RevenueReportDTO> getRevenueReport(
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        RevenueReportDTO revenueReport = reportService.getRevenueReport(startDate, endDate);
         return ResponseEntity.ok(revenueReport);
     }
 }
