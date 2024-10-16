@@ -4,18 +4,20 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.Hibernate;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.UUID;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Embeddable
 public class PermissionroleId implements Serializable {
     private static final long serialVersionUID = -1058579061975791561L;
+
     @Size(max = 36)
     @NotNull
     @Column(name = "PermissionID", nullable = false, length = 36)
@@ -26,18 +28,8 @@ public class PermissionroleId implements Serializable {
     @Column(name = "Role_ID", nullable = false, length = 36)
     private String roleId;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        PermissionroleId entity = (PermissionroleId) o;
-        return Objects.equals(this.permissionID, entity.permissionID) &&
-                Objects.equals(this.roleId, entity.roleId);
+    public PermissionroleId(UUID permissionId, UUID roleId) {
+        this.permissionID = permissionId.toString();
+        this.roleId = roleId.toString();
     }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(permissionID, roleId);
-    }
-
 }
