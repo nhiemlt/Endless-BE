@@ -1,7 +1,6 @@
 package com.datn.endless.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,19 +13,19 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Entity
-@Table(name = "purchaseorderdetails")
-public class Purchaseorderdetail {
+@Table(name = "entrydetails")
+public class Entrydetail {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
-    @Column(name = "PurchaseOrderDetailID", nullable = false, length = 36)
-    private String purchaseOrderDetailID;
+    @Column(name = "EntryDetailID", nullable = false, length = 36)
+    private String entryDetailID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "PurchaseOrderID", nullable = false)
+    @JoinColumn(name = "EntryID", nullable = false)
     @JsonIgnore
-    private Purchaseorder purchaseOrderID;
+    private Entry entry;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -42,3 +41,5 @@ public class Purchaseorderdetail {
     private BigDecimal price;
 
 }
+
+

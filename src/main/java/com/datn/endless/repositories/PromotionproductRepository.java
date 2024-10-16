@@ -10,4 +10,6 @@ import java.util.List;
 public interface PromotionproductRepository extends JpaRepository<Promotionproduct, String> {
     @Query("SELECT pp FROM Promotionproduct pp WHERE pp.productVersionID.productVersionID = :productVersionID")
     List<Promotionproduct> findByProductVersionID(@Param("productVersionID") String productVersionID);
+
+
 }

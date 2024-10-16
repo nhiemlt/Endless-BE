@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/login").permitAll()  // Sử dụng quyền login
                         .requestMatchers("/register").permitAll()  // Sử dụng quyền register
                         .requestMatchers("/verify").permitAll()  // Sử dụng quyền verify
+                        .requestMatchers("/verify-auth-token").permitAll()  // Sử dụng quyền verify
                         .requestMatchers("/login/google").permitAll()  // Sử dụng quyền login/google
                         .requestMatchers("/forgot-password").permitAll()  // Sử dụng quyền forgot-password
                         .requestMatchers("/reset-password").permitAll()  // Sử dụng quyền reset-password
@@ -147,6 +148,12 @@ public class SecurityConfig {
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService)
                         )
+                )
+                .headers(headers -> headers
+                        .addHeaderWriter((request, response) -> {
+                            response.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+                            response.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+                        })
                 )
                 .addFilterBefore(new JWTAuthenticationFilter(customUserDetailsService, jwtService),
                         UsernamePasswordAuthenticationFilter.class); // Thêm JWTAuthenticationFilter vào chuỗi bảo mật

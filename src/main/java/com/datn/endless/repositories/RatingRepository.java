@@ -16,6 +16,9 @@ public interface RatingRepository extends JpaRepository<Rating, String> {
 
     // Phương thức để tìm điểm trung bình rating theo productVersionID
     @Query("SELECT AVG(r.ratingValue) FROM Rating r WHERE r.orderDetailID.productVersionID.productVersionID = :productVersionID")
+
     Optional<Double> findAverageRatingByProductVersionId(@Param("productVersionID") String productVersionID);
 
+    // Đếm số lượng đánh giá theo productVersionID
+    long countByOrderDetailID_ProductVersionID_ProductVersionID(String productVersionID);
 }
