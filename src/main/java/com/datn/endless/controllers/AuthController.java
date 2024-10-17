@@ -8,6 +8,7 @@ import com.datn.endless.services.AuthService;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,7 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<Map<String, Object>> verifyEmail(@RequestParam("token") String token) {
+    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
         return authService.verifyEmail(token);
     }
 
@@ -57,14 +58,21 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestParam String email) throws MessagingException {
-        return authService.forgotPassword(email);
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) throws MessagingException {
+        String htmlResponse = authService.forgotPassword(email);
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(htmlResponse);
     }
 
     @GetMapping("/reset-password")
-    public ResponseEntity<Map<String, Object>> resetPassword(@RequestParam String token) {
-        return authService.resetPassword(token);
+    public ResponseEntity<String> resetPassword(@RequestParam String token) {
+        String htmlResponse = authService.resetPassword(token);
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(htmlResponse);
     }
+
 
     @PostMapping("/token/validate")
     public ResponseEntity<Map<String, Object>> validateToken(@RequestParam String token) {

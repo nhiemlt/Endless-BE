@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/users")
+    @RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -28,6 +28,11 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size);
         Page<UserDTO> users = userService.getUsersWithPaginationAndSearch(keyword, pageable);
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/current")
+    public UserDTO getCurrentUser() {
+        return userService.getCurrentUser();
     }
 
     // Lấy người dùng theo ID
