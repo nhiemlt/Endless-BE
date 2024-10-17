@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+    @RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -21,6 +21,11 @@ public class UserController {
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/current")
+    public UserDTO getCurrentUser() {
+        return userService.getCurrentUser();
     }
 
     // Lấy người dùng theo ID
