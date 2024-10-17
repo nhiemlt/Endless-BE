@@ -89,4 +89,16 @@ public class NotificationController {
         Map<String, Object> response = notificationService.deleteNotification(notificationId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/unread-count")
+    public ResponseEntity<Long> getUnreadNotificationCount() {
+        Long unreadCount = notificationService.getUnreadNotificationCount();
+        return ResponseEntity.ok(unreadCount);
+    }
+
+    @DeleteMapping("/delete/{notificationRecipientID}")
+    public ResponseEntity<String> deleteNotificationReception(@PathVariable String notificationRecipientID) {
+        return notificationService.deleteNotificationReception(notificationRecipientID);
+    }
+
 }
