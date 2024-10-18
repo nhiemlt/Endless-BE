@@ -1,8 +1,10 @@
 package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.UseraddressDTO;
+import com.datn.endless.entities.Useraddress;
 import com.datn.endless.models.UserAddressModel;
 import com.datn.endless.services.UserAddressService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +19,6 @@ public class UserAddressController {
     @Autowired
     private UserAddressService userAddressService;
 
-    // Lấy tất cả địa chỉ của người dùng
     @GetMapping("/{userId}")
     public ResponseEntity<List<UseraddressDTO>> getAllUserAddresses(@PathVariable("userId") String userId) {
         try {
@@ -29,7 +30,6 @@ public class UserAddressController {
         }
     }
 
-    // Thêm địa chỉ mới cho người dùng
     @PostMapping("")
     public ResponseEntity<UseraddressDTO> addUserAddress(@RequestBody UserAddressModel userAddressModel) {
         try {
@@ -41,7 +41,6 @@ public class UserAddressController {
         }
     }
 
-    // Cập nhật địa chỉ của người dùng
     @PutMapping("/{userId}/{addressId}")
     public ResponseEntity<UseraddressDTO> updateUserAddress(@PathVariable("userId") String userId, @PathVariable("addressId") String addressId, @RequestBody UserAddressModel userAddressModel) {
         try {
@@ -56,7 +55,7 @@ public class UserAddressController {
         }
     }
 
-    // Xóa địa chỉ của người dùng
+
     @DeleteMapping("/{addressId}")
     public ResponseEntity<Void> deleteUserAddress(@PathVariable("addressId") String addressId) {
         try {
@@ -68,3 +67,4 @@ public class UserAddressController {
         }
     }
 }
+

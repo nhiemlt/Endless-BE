@@ -23,36 +23,35 @@ public class UserAddressService {
     @Autowired
     private WardRepository wardRepository;
 
-    private UseraddressDTO convertToDTO(Useraddress userAddress) {
-        Ward ward = userAddress.getWardCode();
-        District district = ward.getDistrictCode();
-        Province province = district.getProvinceCode();
-        return UseraddressDTO.builder()
-                .addressID(userAddress.getAddressID())
-                .userID(userAddress.getUserID().getUserID())
-                .provinceCode(province.getCode())
-                .districtCode(district.getCode())
-                .wardCode(ward.getCode())
-                .houseNumberStreet(userAddress.getHouseNumberStreet())
-                .build();
+    // Chuyển đổi Useraddress thành UseraddressDTO
+    private UseraddressDTO convertToDTO(Useraddress address) {
+        return new UseraddressDTO(
+                address.getAddressID(),
+                address.getUserID().getUserID(),
+                address.getProvinceCode() != null ? address.getProvinceCode().getCode() : null,
+                address.getProvinceCode() != null ? address.getProvinceCode().getName() : null,
+                address.getDistrictCode() != null ? address.getDistrictCode().getCode() : null,
+                address.getDistrictCode() != null ? address.getDistrictCode().getName() : null,
+                address.getWardCode() != null ? address.getWardCode().getCode() : null,
+                address.getWardCode() != null ? address.getWardCode().getName() : null,
+                address.getHouseNumberStreet()
+        );
     }
 
-    // Chuyển đổi danh sách Useraddress thành danh sách UseraddressDTO
     private List<UseraddressDTO> convertToDTOList(List<Useraddress> userAddresses) {
         return userAddresses.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    // Lấy tất cả địa chỉ của người dùng theo ID người dùng
     public List<UseraddressDTO> getUserAddressesByUserId(String userId) {
         User user = userRepository.findById(userId).orElse(null);
         if (user == null) {
             throw new IllegalArgumentException("User not found");
         }
-        List<Useraddress> userAddresses = userAddressRepository.findByUserID(userId);
+        List<Useraddress> userAddresses = userAddressRepository.findByUser(user);
         return convertToDTOList(userAddresses);
     }
 
-    // Lưu địa chỉ người dùng mới hoặc cập nhật địa chỉ người dùng hiện tại (using UserAddressModel)
+    // Lưu địa chỉ người dùng mới hoặc cập nhật địa chỉ người dùng hiện tại
     public UseraddressDTO addUserAddress(UserAddressModel userAddressModel) {
         User user = userRepository.findById(userAddressModel.getUserID())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -92,7 +91,6 @@ public class UserAddressService {
         return convertToDTO(updatedUserAddress);
     }
 
-    // Xóa địa chỉ người dùng theo ID
     public void deleteUserAddress(String addressId) {
         if (!userAddressRepository.existsById(addressId)) {
             throw new IllegalArgumentException("Address not found");

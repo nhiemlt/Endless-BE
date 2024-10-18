@@ -42,4 +42,7 @@ public class District {
     @Column(name = "Administrative_Unit_ID")
     private Integer administrativeUnitId;
 
+    public String getDistrictCode() {
+        return code;
+    }
 }
