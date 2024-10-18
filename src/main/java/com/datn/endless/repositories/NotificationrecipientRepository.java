@@ -6,8 +6,10 @@ import com.datn.endless.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,4 +23,12 @@ public interface NotificationrecipientRepository extends JpaRepository<Notificat
     List<Notificationrecipient> findAllByUserID(@Param("userId") String userId);
 
     void deleteByNotificationID(Notification notification);
+
+    @Query("SELECT COUNT(nr) FROM Notificationrecipient nr WHERE nr.userID.username = :userId AND nr.status = 'UNREAD'")
+    Long countUnreadNotifications(@Param("userId") String username);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Notificationrecipient nr WHERE nr.notificationRecipientID = :notificationRecipientID")
+    void deleteNotificationReceptionByRecipientID(@Param("notificationRecipientID") String notificationRecipientID);
 }
