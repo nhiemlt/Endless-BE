@@ -46,5 +46,4 @@ public class Orderdetail {
     @NotNull
     @Column(name = "DiscountPrice", nullable = false, precision = 18, scale = 2)
     private BigDecimal discountPrice;
-
 }

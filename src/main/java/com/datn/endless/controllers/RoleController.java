@@ -2,8 +2,10 @@ package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.entities.Role;
+import com.datn.endless.models.RoleModel;
 import com.datn.endless.services.RoleService;
 import com.datn.endless.services.UserRoleService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -38,15 +40,15 @@ public class RoleController {
     }
 
     @PostMapping
-    public ResponseEntity<RoleDTO> createRole(@RequestBody RoleDTO roleDTO) {
-        Role createdRole = roleService.createRole(roleDTO);
+    public ResponseEntity<RoleDTO> createRole(@RequestBody @Valid RoleModel roleModel) {
+        Role createdRole = roleService.createRole(roleModel);
         return ResponseEntity.ok(roleService.toDto(createdRole));
     }
 
     @PutMapping
-    public ResponseEntity<RoleDTO> updateRole(@RequestBody RoleDTO roleDTO) {
+    public ResponseEntity<RoleDTO> updateRole(@RequestBody @Valid RoleModel roleModel) {
         try {
-            Role updatedRole = roleService.updateRole(roleDTO);
+            Role updatedRole = roleService.updateRole(roleModel);
             return updatedRole != null ? ResponseEntity.ok(roleService.toDto(updatedRole)) : ResponseEntity.notFound().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -59,23 +61,19 @@ public class RoleController {
             roleService.deleteRole(roleId);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();  // Nếu UUID không hợp lệ, trả về lỗi 400
+            return ResponseEntity.badRequest().build();
         }
     }
 
 
-    @GetMapping("get-all-user-roles")
+    @GetMapping("get-all-user-roles-permission")
     public ResponseEntity<List<RoleDTO>> getAllUserRoles() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(authentication.getName()+"\n\n\n\n");
         if (authentication == null) {
             return ResponseEntity.noContent().build();
         }
         else{
             List<RoleDTO> roleDtos = userRoleService.getRolesByUsername(authentication.getName());
-            for (RoleDTO roleDto : roleDtos) {
-                System.out.println(roleDto.getRoleName());
-            }
             if (roleDtos.isEmpty()) {
                 return ResponseEntity.noContent().build();
             }
@@ -84,4 +82,21 @@ public class RoleController {
             }
         }
     }
+
+    @GetMapping("/get-user-roles-permission/{userId}")
+    public ResponseEntity<List<RoleDTO>> getUserRolesById(@PathVariable("userId") String userId) {
+        List<RoleDTO> roleDtos = userRoleService.getRolesByUser(userId);
+        if (roleDtos.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.ok(roleDtos);
+        }
+    }
+
+    @GetMapping("/{roleId}/permissions")
+    public ResponseEntity<RoleDTO> getRoleWithPermissions(@PathVariable("roleId") String roleId) {
+        RoleDTO roleDTO = roleService.getRoleWithPermissions(roleId);
+        return roleDTO != null ? ResponseEntity.ok(roleDTO) : ResponseEntity.notFound().build();
+    }
+
 }

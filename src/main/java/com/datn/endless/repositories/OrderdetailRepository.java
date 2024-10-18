@@ -14,4 +14,5 @@ public interface OrderdetailRepository extends JpaRepository<Orderdetail, String
     // Tính tổng số lượng sản phẩm đã bán
     @Query("SELECT SUM(od.quantity) FROM Orderdetail od WHERE od.productVersionID.productVersionID = :productVersionID")
     Integer findTotalSoldQuantityByProductVersion(@Param("productVersionID") String productVersionID);
+
 }

@@ -1,9 +1,12 @@
 package com.datn.endless.services;
 
-import com.datn.endless.entities.User;
 import com.datn.endless.dtos.UserDTO;
+import com.datn.endless.entities.User;
+import com.datn.endless.models.UserModel;
 import com.datn.endless.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,16 +54,15 @@ public class UserService {
         return user != null ? convertToDTO(user) : null;
     }
 
-    // Lưu người dùng mới hoặc cập nhật người dùng hiện tại
-    public UserDTO saveUser(UserDTO userDTO) {
+    public UserDTO saveUser(UserModel userModel) {
         User user = new User();
-        user.setUserID(userDTO.getUserID());
-        user.setUsername(userDTO.getUsername());
-        user.setFullname(userDTO.getFullname());
-        user.setPhone(userDTO.getPhone());
-        user.setEmail(userDTO.getEmail());
-        user.setAvatar(userDTO.getAvatar());
-        user.setLanguage(userDTO.getLanguage());
+        user.setUserID(userModel.getUserID());
+        user.setUsername(userModel.getUsername());
+        user.setFullname(userModel.getFullname());
+        user.setPhone(userModel.getPhone());
+        user.setEmail(userModel.getEmail());
+        user.setAvatar(userModel.getAvatar());
+        user.setLanguage(userModel.getLanguage());
 
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
@@ -69,5 +71,16 @@ public class UserService {
     // Xóa người dùng theo ID
     public void deleteUser(String id) {
         userRepository.deleteById(id);
+    }
+
+    // Lấy tất cả người dùng với phân trang và tìm kiếm theo tên
+    public Page<UserDTO> getUsersWithPaginationAndSearch(String keyword, Pageable pageable) {
+        Page<User> users;
+        if (keyword != null && !keyword.isEmpty()) {
+            users = userRepository.searchByFullname(keyword, pageable);
+        } else {
+            users = userRepository.findAll(pageable);
+        }
+        return users.map(this::convertToDTO);
     }
 }
