@@ -44,4 +44,7 @@ public class Province {
     @Column(name = "Administrative_Region_ID")
     private Integer administrativeRegionId;
 
+    public String getProvinceCode() {
+        return code;
+    }
 }

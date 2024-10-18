@@ -1,5 +1,6 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.UserRoleDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.services.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users/{userId}/roles")
@@ -22,9 +22,9 @@ public class UserRoleController {
         return ResponseEntity.ok(userRoleService.getRolesByUser(userId));
     }
 
-    @PostMapping("/{roleId}")
-    public ResponseEntity<Void> assignRoleToUser(@PathVariable UUID userId, @PathVariable UUID roleId) {
-        userRoleService.assignRoleToUser(userId, roleId);
+    @PostMapping
+    public ResponseEntity<Void> assignRolesToUser(@PathVariable String userId, @RequestBody UserRoleDTO userRoleDTO) {
+        userRoleService.assignRolesToUser(userId, userRoleDTO.getRoleIds());
         return ResponseEntity.noContent().build();
     }
 

@@ -42,4 +42,8 @@ public class Ward {
     @Column(name = "Administrative_Unit_ID")
     private Integer administrativeUnitId;
 
+    public String getWardCode() {
+        return code;
+    }
+
 }

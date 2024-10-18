@@ -1,15 +1,15 @@
 package com.datn.endless.dtos;
 
-import com.datn.endless.entities.User;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Data
-@NoArgsConstructor
+@Builder
 @AllArgsConstructor
 public class UserDTO {
-
     private String userID;
     private String username;
     private String fullname;
@@ -17,15 +17,6 @@ public class UserDTO {
     private String email;
     private String avatar;
     private String language;
-
-    // Constructor to initialize from User entity
-    public UserDTO(User user) {
-        this.userID = user.getUserID();
-        this.username = user.getUsername();
-        this.fullname = user.getFullname();
-        this.phone = user.getPhone();
-        this.email = user.getEmail();
-        this.avatar = user.getAvatar();
-        this.language = user.getLanguage();
-    }
+    private List<RoleDTO> roles;
+    private List<UseraddressDTO> addresses;
 }

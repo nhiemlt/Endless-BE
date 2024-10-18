@@ -37,4 +37,8 @@ public class Role {
     )
     private Set<Permission> permissions;
 
+    public String getName() {
+        return roleName;
+    }
+
 }

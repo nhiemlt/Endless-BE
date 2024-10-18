@@ -2,11 +2,9 @@ package com.datn.endless.services;
 
 import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
-import com.datn.endless.entities.Permission;
 import com.datn.endless.entities.Role;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Userrole;
-import com.datn.endless.repositories.PermissionRepository;
 import com.datn.endless.repositories.RoleRepository;
 import com.datn.endless.repositories.UserRepository;
 import com.datn.endless.repositories.UserroleRepository;
@@ -21,9 +19,6 @@ public class UserRoleService {
 
     @Autowired
     private UserroleRepository userRoleRepository;
-
-    @Autowired
-    private PermissionRepository permissionRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -41,16 +36,17 @@ public class UserRoleService {
         return roles.stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    public void assignRoleToUser(UUID userID, UUID roleId) {
-        User user = userRepository.findById(userID.toString())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Role role = roleRepository.findById(roleId.toString())
-                .orElseThrow(() -> new RuntimeException("Role not found"));
+    public void assignRolesToUser(String userId, List<String> roleIds) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
-        Userrole userrole = new Userrole();
-        userrole.setUser(user);
-        userrole.setRole(role);
-        userRoleRepository.save(userrole);
+        for (String roleId : roleIds) {
+            Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Role not found"));
+
+            Userrole userrole = new Userrole();
+            userrole.setUser(user);
+            userrole.setRole(role);
+            userRoleRepository.save(userrole);
+        }
     }
 
     public void deleteUserRole(String userId, String roleId) {
@@ -85,18 +81,4 @@ public class UserRoleService {
         return dto;
     }
 
-    public Role toEntity(RoleDTO dto) {
-        Role role = new Role();
-        role.setRoleId(dto.getRoleId());
-        role.setRoleName(dto.getRoleName());
-        role.setEnNamerole(dto.getEnNamerole());
-
-        Set<Permission> permissions = dto.getPermissions().stream()
-                .map(permissionDTO -> permissionRepository.findById(permissionDTO.getPermissionId())
-                        .orElseThrow(() -> new RuntimeException("Permission not found")))
-                .collect(Collectors.toSet());
-
-        role.setPermissions(permissions);
-        return role;
-    }
 }
