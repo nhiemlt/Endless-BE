@@ -8,5 +8,6 @@ public class NotificationRecipientDTO {
     private String notificationID;
     private String status;
     private String notificationTitle;
+    private String content;
     private String userName;
 }

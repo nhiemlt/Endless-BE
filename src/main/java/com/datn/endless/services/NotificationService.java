@@ -4,6 +4,7 @@ import com.datn.endless.dtos.NotificationRecipientDTO;
 import com.datn.endless.entities.Notification;
 import com.datn.endless.entities.Notificationrecipient;
 import com.datn.endless.entities.User;
+import com.datn.endless.exceptions.ResourceNotFoundException;
 import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.NotificationModel;
 import com.datn.endless.repositories.NotificationRepository;
@@ -15,6 +16,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -38,6 +40,8 @@ public class NotificationService {
 
     @Autowired
     private UserLoginInfomation userLoginInfomation;
+    @Autowired
+    private NotificationrecipientRepository notificationrecipientRepository;
 
     public Map<String, Object> sendNotification(@Valid NotificationModel notificationModel, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
@@ -169,6 +173,7 @@ public class NotificationService {
             dto.setStatus(recipient.getStatus());
             dto.setNotificationTitle(recipient.getNotificationID().getTitle());
             dto.setUserName(recipient.getUserID().getUsername());
+            dto.setContent(recipient.getNotificationID().getContent());
             return dto;
         }).collect(Collectors.toList());
 
@@ -191,4 +196,22 @@ public class NotificationService {
             return buildErrorResponse("Failed to delete notification: " + e.getMessage());
         }
     }
+
+    public Long getUnreadNotificationCount() {
+        return notificationRecipientRepository.countUnreadNotifications(userLoginInfomation.getCurrentUsername());
+    }
+
+    @Transactional
+    public ResponseEntity<String> deleteNotificationReception(String notificationRecipientID) {
+        Notificationrecipient notificationrecipient = notificationRecipientRepository.findById(notificationRecipientID)
+                .orElseThrow(() -> new ResourceNotFoundException("NotificationRecipient not found with ID: " + notificationRecipientID));
+
+        if (notificationrecipient.getUserID().getUsername().equals(userLoginInfomation.getCurrentUsername())) {
+            notificationRecipientRepository.delete(notificationrecipient);
+            return ResponseEntity.ok("Notification deleted successfully");
+        } else {
+            throw new UserNotFoundException("User not found or not authorized to delete this notification");
+        }
+    }
+
 }
