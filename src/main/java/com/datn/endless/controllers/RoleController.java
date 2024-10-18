@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,13 +41,13 @@ public class RoleController {
     }
 
     @PostMapping
-    public ResponseEntity<RoleDTO> createRole(@RequestBody @Valid RoleModel roleModel) {
+    public ResponseEntity<RoleDTO> createRole(@Validated(RoleModel.OnCreate.class) @RequestBody RoleModel roleModel) {
         Role createdRole = roleService.createRole(roleModel);
         return ResponseEntity.ok(roleService.toDto(createdRole));
     }
 
     @PutMapping
-    public ResponseEntity<RoleDTO> updateRole(@RequestBody @Valid RoleModel roleModel) {
+    public ResponseEntity<RoleDTO> updateRole(@Validated(RoleModel.OnUpdate.class) @RequestBody RoleModel roleModel) {
         try {
             Role updatedRole = roleService.updateRole(roleModel);
             return updatedRole != null ? ResponseEntity.ok(roleService.toDto(updatedRole)) : ResponseEntity.notFound().build();
@@ -54,6 +55,7 @@ public class RoleController {
             return ResponseEntity.badRequest().build();
         }
     }
+
 
     @DeleteMapping("/{roleId}")
     public ResponseEntity<Void> deleteRole(@PathVariable("roleId") String roleId) {

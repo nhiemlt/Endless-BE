@@ -9,12 +9,6 @@ public class UserAddressModel {
     @NotBlank(message = "User ID cannot be blank")
     private String userID;
 
-    @NotBlank(message = "Province code cannot be blank")
-    private String provinceCode;
-
-    @NotBlank(message = "District code cannot be blank")
-    private String districtCode;
-
     @NotBlank(message = "Ward code cannot be blank")
     private String wardCode;
 

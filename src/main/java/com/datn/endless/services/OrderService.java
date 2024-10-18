@@ -488,7 +488,7 @@ public class OrderService {
         }
 
         try {
-            Useraddress userAddress = userAddressRepository.findById(UUID.fromString(addressId))
+            Useraddress userAddress = userAddressRepository.findById(addressId)
                     .orElseThrow(() -> new AddressNotFoundException("Địa chỉ với ID " + addressId + " không tìm thấy"));
 
             Province province = userAddress.getProvinceCode();

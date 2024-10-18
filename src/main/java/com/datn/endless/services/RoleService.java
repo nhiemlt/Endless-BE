@@ -37,14 +37,19 @@ public class RoleService {
 
     public Role createRole(RoleModel roleModel) {
         Role role = new Role();
-        role.setRoleId(roleModel.getRoleId());
+
+        // Generate UUID if roleId is null
+        if (roleModel.getRoleId() == null) {
+            role.setRoleId(UUID.randomUUID().toString());
+        } else {
+            role.setRoleId(roleModel.getRoleId());
+        }
+
         role.setRoleName(roleModel.getRoleName());
         role.setEnNamerole(roleModel.getEnNamerole());
 
-        // Xử lý danh sách permissions dựa trên permissionIds từ Model
-        Set<Permission> permissions = new HashSet<>(
-                permissionRepository.findAllById(roleModel.getPermissionIds())
-        );
+        // Handle permissions
+        Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(roleModel.getPermissionIds()));
         role.setPermissions(permissions);
 
         return roleRepository.save(role);

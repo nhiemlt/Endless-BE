@@ -6,11 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface UseraddressRepository extends JpaRepository<Useraddress, UUID> {
-    @Query("SELECT ur FROM Useraddress ur WHERE ur.userID.userID = :userID")
-    List<Useraddress> findByUserID(String userID);
-
-    Useraddress findByUserIDAndAddressID(User userid, String addressID);
+public interface UseraddressRepository extends JpaRepository<Useraddress, String> {
+    // Tìm danh sách địa chỉ theo userID
+    @Query("SELECT ua FROM Useraddress ua WHERE ua.userID = :user")
+    List<Useraddress> findByUser(User user);
+    // Tìm địa chỉ theo userID và addressID
+    Useraddress findByUserIDAndAddressID(User user, String addressID);
 }

@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-    @RequestMapping("/api/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -31,8 +31,9 @@ public class UserController {
     }
 
     @GetMapping("/current")
-    public UserDTO getCurrentUser() {
-        return userService.getCurrentUser();
+    public ResponseEntity<UserDTO> getCurrentUser() {
+        UserDTO user = userService.getCurrentUser();
+        return ResponseEntity.ok(user);
     }
 
     // Lấy người dùng theo ID
@@ -48,9 +49,9 @@ public class UserController {
 
     // Thêm người dùng mới
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserModel userModel) {
-        UserDTO savedUser = userService.saveUser(userModel);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
+    public ResponseEntity<UserDTO> createUser(@ModelAttribute UserModel userModel) {
+        UserDTO createdUser = userService.saveUser(userModel);
+        return ResponseEntity.ok(createdUser);
     }
 
     // Cập nhật người dùng theo ID
