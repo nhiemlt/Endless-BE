@@ -54,7 +54,7 @@ public class AuthService {
         }
 
         // Kiểm tra user trong database
-        Optional<User> userOpt = Optional.ofNullable(userRepository.findByUsername(username));
+        Optional<User> userOpt = Optional.ofNullable(userRepository.findByKeyword(username));
         if (userOpt.isEmpty()) {
             response.put("error", "User not found.");
             return ResponseEntity.badRequest().body(response);
@@ -282,29 +282,31 @@ public class AuthService {
         return ResponseEntity.ok(response);
     }
 
-    public String forgotPassword(String email) throws MessagingException {
-        StringBuilder response = new StringBuilder();
+    public ResponseEntity<Map<String, Object>> forgotPassword(String email) throws MessagingException {
+        Map<String, Object> response = new HashMap<>();
 
         Optional<User> userOpt = Optional.ofNullable(userRepository.findByKeyword(email));
         if (userOpt.isEmpty()) {
-            response.append(generateHtml("Lỗi", "Email không tồn tại.", "Vui lòng thử lại sau ít phút"));
-            return response.toString();
+            response.put("error", "Tài khoản này không tồn tại!");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
 
         User user = userOpt.get();
+
         String secret = new Constant().getAUTH_KEY();
         SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
         long expirationTimeMillis = 24 * 60 * 60 * 1000L;
         JWT jwt = new JWT(secretKey, expirationTimeMillis);
 
         String resetToken = jwt.generateToken(user.getUsername());
+
         String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
         mailService.sendResetPasswordMail(user.getUsername(), user.getEmail(), resetLink);
 
-        response.append(generateHtml("Thành công", "Email đặt lại mật khẩu đã được gửi. ", "Vui lòng kiểm tra email của bạn."));
-        return response.toString();
+        response.put("success", true);
+        response.put("message", "Vui lòng kiểm tra email để đặt lại mật khẩu!");
+        return ResponseEntity.ok(response);
     }
-
 
     public String resetPassword(String token) {
         String title;

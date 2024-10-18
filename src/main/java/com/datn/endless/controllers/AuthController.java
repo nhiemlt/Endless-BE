@@ -58,11 +58,8 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestParam String email) throws MessagingException {
-        String htmlResponse = authService.forgotPassword(email);
-        return ResponseEntity.ok()
-                .contentType(MediaType.TEXT_HTML)
-                .body(htmlResponse);
+    public ResponseEntity<Map<String, Object>> forgotPassword(@RequestParam String email) throws MessagingException {
+        return authService.forgotPassword(email);
     }
 
     @GetMapping("/reset-password")
