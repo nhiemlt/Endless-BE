@@ -1,11 +1,12 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.entities.Role;
 import com.datn.endless.models.RoleModel;
+import com.datn.endless.services.PermissionService;
 import com.datn.endless.services.RoleService;
 import com.datn.endless.services.UserRoleService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -24,6 +25,16 @@ public class RoleController {
 
     @Autowired
     UserRoleService userRoleService;
+
+    @Autowired
+    private PermissionService permissionService;
+
+    // Phương thức GET để lấy toàn bộ permissions
+    @GetMapping("/permissions")
+    public ResponseEntity<List<PermissionDTO>> getAllPermissions() {
+        List<PermissionDTO> permissions = permissionService.getAllPermissions();
+        return ResponseEntity.ok(permissions);
+    }
 
     @GetMapping
     public ResponseEntity<List<RoleDTO>> getAllRoles() {

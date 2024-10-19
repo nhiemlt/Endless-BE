@@ -7,7 +7,6 @@ import com.datn.endless.dtos.UseraddressDTO;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Useraddress;
 import com.datn.endless.models.UserModel;
-import com.datn.endless.entities.Role;
 import com.datn.endless.repositories.UserRepository;
 import com.datn.endless.repositories.UseraddressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,7 @@ public class UserService {
 
     // Chuyển đổi User thành UserDTO
     private UserDTO convertToDTO(User user) {
-        List<RoleDTO> roles = user.getRoles().stream()
+        List<RoleDTO> roles = user.getRoles() != null ? user.getRoles().stream()
                 .map(role -> {
                     RoleDTO roleDTO = new RoleDTO();
                     roleDTO.setRoleId(role.getRoleId());
@@ -47,10 +46,10 @@ public class UserService {
                     );
                     return roleDTO;
                 })
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()) : null;
 
         List<Useraddress> addresses = userAddressRepository.findByUser(user);
-        List<UseraddressDTO> addressDTOs = addresses.stream()
+        List<UseraddressDTO> addressDTOs = addresses != null ? addresses.stream()
                 .map(address -> new UseraddressDTO(
                         address.getAddressID(),
                         address.getUserID().getUserID(),
@@ -62,7 +61,7 @@ public class UserService {
                         address.getDistrictCode() != null ? address.getDistrictCode().getName() : null,
                         address.getWardCode() != null ? address.getWardCode().getName() : null
                 ))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()) : null;
 
         return UserDTO.builder()
                 .userID(user.getUserID())
@@ -99,7 +98,7 @@ public class UserService {
         if (file != null && !file.isEmpty()) {
             return Base64.getEncoder().encodeToString(file.getBytes());
         }
-        return null; // Handle no file case if needed
+        return null;
     }
 
     public UserDTO saveUser(UserModel userModel) {
@@ -113,9 +112,7 @@ public class UserService {
 
         if (userModel.getAvatar() != null) {
             try {
-                byte[] avatarBytes = userModel.getAvatar().getBytes();
-                String base64Avatar = Base64.getEncoder().encodeToString(avatarBytes);
-                user.setAvatar(base64Avatar);
+                user.setAvatar(convertToBase64(userModel.getAvatar()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -123,6 +120,28 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
+    }
+
+    public UserDTO updateCurrentUser(UserModel userModel) {
+        User user = userRepository.findById(userModel.getUserID()).orElse(null);
+        if (user != null) {
+            user.setFullname(userModel.getFullname());
+            user.setPhone(userModel.getPhone());
+            user.setEmail(userModel.getEmail());
+            user.setLanguage(userModel.getLanguage());
+
+            if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
+                try {
+                    user.setAvatar(convertToBase64(userModel.getAvatar()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            userRepository.save(user);
+            return convertToDTO(user);
+        }
+        return null;
     }
 
     // Xóa người dùng theo ID
@@ -142,13 +161,12 @@ public class UserService {
     }
 
     public UserDTO getCurrentUser() {
-        // Lấy tên người dùng hiện tại từ UserLoginInfomation
         String username = userLoginInfomation.getCurrentUsername();
-
-        // Lấy thông tin người dùng từ repository bằng tên người dùng
         User user = userRepository.findByUsername(username);
 
-        // Chuyển đổi sang UserDTO và trả về
+        System.out.println("Current user: " + user.toString());
+
         return convertToDTO(user);
     }
+
 }
