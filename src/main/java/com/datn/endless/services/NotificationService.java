@@ -40,14 +40,25 @@ public class NotificationService {
 
     @Autowired
     private UserLoginInfomation userLoginInfomation;
-    @Autowired
-    private NotificationrecipientRepository notificationrecipientRepository;
 
     public Map<String, Object> sendNotification(@Valid NotificationModel notificationModel, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return buildValidationErrorResponse(bindingResult);
         }
 
+        try {
+            Notification notification = createNotification(notificationModel);
+            notificationRepository.save(notification);
+
+            saveNotificationRecipients(notification, notificationModel.getUserIds());
+
+            return buildSuccessResponse("Notification sent successfully!");
+        } catch (Exception e) {
+            return buildErrorResponse("Failed to send notification: " + e.getMessage());
+        }
+    }
+
+    public Map<String, Object> sendNotificationForOrder(@Valid NotificationModel notificationModel) {
         try {
             Notification notification = createNotification(notificationModel);
             notificationRepository.save(notification);

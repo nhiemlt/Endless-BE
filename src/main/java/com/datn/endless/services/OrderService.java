@@ -3,6 +3,7 @@ package com.datn.endless.services;
 import com.datn.endless.dtos.*;
 import com.datn.endless.entities.*;
 import com.datn.endless.exceptions.*;
+import com.datn.endless.models.NotificationModel;
 import com.datn.endless.models.OrderDetailModel;
 import com.datn.endless.models.OrderModel;
 import com.datn.endless.models.OrderModelForUser;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -59,6 +61,9 @@ public class OrderService {
 
     @Autowired
     EntryService purchaseOrderService;
+
+    @Autowired
+    private NotificationService notificationService;
 
 
     // Tạo đơn hàng
@@ -126,7 +131,7 @@ public class OrderService {
                 .orElseThrow(() -> new StatusTypeNotFoundException("Order status type not found")));
         initialStatus.setTime(Instant.now());
         orderstatusRepository.save(initialStatus);
-
+        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã "+order.getOrderID()+"đã được tạo thành công!");
         return convertToOrderDTO(savedOrder);
     }
 
@@ -188,7 +193,7 @@ public class OrderService {
                 .orElseThrow(() -> new StatusTypeNotFoundException("Order status type not found")));
         initialStatus.setTime(Instant.now());
         orderstatusRepository.save(initialStatus);
-
+        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã "+order.getOrderID()+"đã được tạo thành công!");
         return convertToOrderDTO(savedOrder);
     }
 
@@ -285,63 +290,98 @@ public class OrderService {
     }
 
     public OrderStatusDTO cancelOrder(String orderId) {
-        return updateOrderStatus(
+        OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 -1, // Trạng thái 'Hủy đơn hàng'
-                Arrays.asList(1, 2, 6, 7), // Các trạng thái cho phép hủy đơn hàng
-                24, // Giới hạn thời gian 24 giờ
-                "Order cannot be cancelled as it is already paid, shipping, or delivered"
+                Arrays.asList(1, 2), // Các trạng thái cho phép hủy đơn hàng
+                72, // Giới hạn thời gian 24 giờ
+                "Order cannot be cancelled as it is already paid, shipping"
         );
+
+        sendOrderStatusNotification(orderId, "Hủy đơn hàng", "Đơn hàng "+orderId+" đã bị hủy.");
+        return updatedStatus;
     }
 
     public OrderStatusDTO markOrderAsPaid(String orderId) {
-        return updateOrderStatus(
+        OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 3, // Trạng thái 'Đã thanh toán'
-                Arrays.asList(1, 7), // Chỉ cho phép thanh toán ở trạng thái 'Đã đặt hàng chưa thanh toán' và 'Đã xác nhận'
+                Arrays.asList(1, 2), // Chỉ cho phép thanh toán ở trạng thái 'Chờ thanh toán' và 'Đã xác nhận'
                 0, // Không giới hạn thời gian
                 "Order cannot be marked as paid in its current state"
         );
+
+        sendOrderStatusNotification(orderId, "Đã thanh toán", "Đơn hàng "+orderId+" đã được thanh toán.");
+        return updatedStatus;
     }
 
     public OrderStatusDTO markOrderAsShipping(String orderId) {
-        return updateOrderStatus(
+        OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 4, // Trạng thái 'Đang giao hàng'
-                Arrays.asList(3), // Chỉ cho phép giao hàng khi đơn đã được thanh toán
+                Arrays.asList(3, 4), // Chỉ cho phép giao hàng khi đơn đã được thanh toán
                 0, // Không giới hạn thời gian
                 "Order cannot be marked as shipping if it has not been paid"
         );
+
+        sendOrderStatusNotification(orderId, "Đang giao hàng", "Đơn hàng "+orderId+" đang được giao.");
+        return updatedStatus;
     }
 
     public OrderStatusDTO markOrderAsDelivered(String orderId) {
-        return updateOrderStatus(
+        OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 5, // Trạng thái 'Đã giao hàng'
-                Arrays.asList(4), // Chỉ cho phép giao hàng khi đơn hàng đang ở trạng thái 'Đang giao hàng'
+                Arrays.asList(5), // Chỉ cho phép giao hàng khi đơn hàng đang ở trạng thái 'Đang giao hàng'
                 0, // Không giới hạn thời gian
                 "Order cannot be marked as delivered if it is not in shipping state"
         );
+
+        sendOrderStatusNotification(orderId, "Đã giao hàng", "Đơn hàng "+orderId+" đã được giao thành công!");
+        return updatedStatus;
     }
 
     public OrderStatusDTO markOrderAsConfirmed(String orderId) {
-        return updateOrderStatus(
+        OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 7, // Trạng thái 'Đã xác nhận'
-                Arrays.asList(1), // Chỉ cho phép xác nhận đơn hàng ở trạng thái 'Chờ xử lý'
+                Arrays.asList(1, 3), // Chỉ cho phép xác nhận đơn hàng ở trạng thái 'Chờ xử lý'
                 0, // Không giới hạn thời gian
                 "Order cannot be confirmed in its current state"
         );
+
+        sendOrderStatusNotification(orderId, "Đã xác nhận", "Đơn hàng "+orderId+" đã được xác nhận.");
+        return updatedStatus;
     }
 
     public OrderStatusDTO markOrderAsPending(String orderId) {
-        return updateOrderStatus(
+        OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 6, // Trạng thái 'Chờ xử lý'
                 Arrays.asList(7), // Chỉ cho phép đưa đơn hàng về trạng thái 'Chờ xử lý' khi đang ở trạng thái 'Đã xác nhận'
                 0, // Không giới hạn thời gian
                 "Order cannot be set to pending in its current state"
         );
+
+        sendOrderStatusNotification(orderId, "Chờ xử lý", "Đơn hàng "+orderId+" đã được đưa về trạng thái chờ xử lý.");
+        return updatedStatus;
+    }
+
+    private void sendOrderStatusNotification(String orderId, String title, String content) {
+        NotificationModel notificationModel = new NotificationModel();
+        notificationModel.setTitle(title);
+        notificationModel.setContent(content);
+        // Giả sử bạn có một danh sách ID người dùng liên quan đến đơn hàng này
+        List<String> userIds = getUserIdsForOrder(orderId);
+        notificationModel.setUserIds(userIds);
+
+        // Gửi thông báo
+        notificationService.sendNotificationForOrder(notificationModel);
+    }
+
+    private List<String> getUserIdsForOrder(String orderId) {
+        // Logic để lấy danh sách ID người dùng liên quan đến đơn hàng (orderId)
+        return Arrays.asList("user1", "user2"); // Ví dụ
     }
 
 
