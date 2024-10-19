@@ -57,6 +57,30 @@ public class VoucherController {
         }
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> getVoucherById(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Capture the voucher found
+            VoucherDTO voucher = voucherService.getVoucherById(id); // Gọi phương thức từ service
+
+            response.put("success", true);
+            response.put("message", "Voucher found successfully"); // Trả về thông báo thành công
+            response.put("data", voucher); // Include the found voucher in the response
+            return ResponseEntity.ok(response);
+        } catch (VoucherNotFoundException e) {
+            response.put("success", false);
+            response.put("message", "Voucher not found"); // Trả về thông báo không tìm thấy voucher
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
+
     @PostMapping("/add")
     public ResponseEntity<Object> addVoucher(@Valid @RequestBody VoucherModel voucherModel) {
         Map<String, Object> response = new HashMap<>();
