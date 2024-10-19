@@ -1,6 +1,7 @@
 package com.datn.endless.services;
 
 import com.datn.endless.dtos.VoucherDTO;
+import com.datn.endless.exceptions.VoucherNotFoundException;
 import com.datn.endless.models.VoucherModel;
 import com.datn.endless.entities.Voucher;
 import com.datn.endless.repositories.VoucherRepository;
@@ -36,6 +37,12 @@ public class VoucherService {
         Page<Voucher> vouchers = voucherRepository.findByFilters(voucherCode, leastBill, leastDiscount, pageable);
         return vouchers.map(this::convertToDTO);
     }
+public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
+    return voucherRepository.findById(id)
+        .map(this::convertToDTO) // Chuyển đổi Voucher sang VoucherDTO
+        .orElseThrow(() -> new VoucherNotFoundException("Voucher not found with ID: " + id)); // Ném ngoại lệ nếu không tìm thấy
+}
+
 
     public void addVoucher(VoucherModel voucherModel) {
         // Kiểm tra mã voucher có tồn tại không
