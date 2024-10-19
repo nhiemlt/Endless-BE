@@ -19,6 +19,6 @@ public interface OrderstatusRepository extends JpaRepository<Orderstatus, Orders
 
     List<Orderstatus> findByOrder_OrderID(String orderID);
 
-    @Query(value = "SELECT * FROM orderstatus o WHERE o.OrderID = :orderID ORDER BY o.Time DESC LIMIT 1", nativeQuery = true)
+    @Query(value = "SELECT o FROM Orderstatus o WHERE o.order.orderID = :orderID ORDER BY o.statusType.id DESC LIMIT 1")
     Optional<Orderstatus> findTopByOrderIdOrderByTimeDesc(@Param("orderID") String orderID);
 }

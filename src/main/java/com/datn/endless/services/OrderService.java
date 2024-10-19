@@ -11,6 +11,7 @@ import com.datn.endless.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
@@ -259,8 +260,10 @@ public class OrderService {
 
         UserDetails userDetails = userLoginInformation.getCurrentUser();
 
-        if(!userDetails.getUsername().equals(order.getUserID().getUsername())) {
-            throw new OrderCannotBeUpdateException("This user is not allowed to update this order");
+        if(newStatusId==-1 || newStatusId==1 || newStatusId==6){
+            if(!userDetails.getUsername().equals(order.getUserID().getUsername())) {
+                throw new OrderCannotBeUpdateException("This user is not allowed to update this order");
+            }
         }
 
         // Kiểm tra xem trạng thái hiện tại có hợp lệ để chuyển đổi không
@@ -318,7 +321,7 @@ public class OrderService {
     public OrderStatusDTO markOrderAsShipping(String orderId) {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
-                4, // Trạng thái 'Đang giao hàng'
+                5, // Trạng thái 'Đang giao hàng'
                 Arrays.asList(3, 4), // Chỉ cho phép giao hàng khi đơn đã được thanh toán
                 0, // Không giới hạn thời gian
                 "Order cannot be marked as shipping if it has not been paid"
@@ -331,7 +334,7 @@ public class OrderService {
     public OrderStatusDTO markOrderAsDelivered(String orderId) {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
-                5, // Trạng thái 'Đã giao hàng'
+                6, // Trạng thái 'Đã giao hàng'
                 Arrays.asList(5), // Chỉ cho phép giao hàng khi đơn hàng đang ở trạng thái 'Đang giao hàng'
                 0, // Không giới hạn thời gian
                 "Order cannot be marked as delivered if it is not in shipping state"
@@ -344,7 +347,7 @@ public class OrderService {
     public OrderStatusDTO markOrderAsConfirmed(String orderId) {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
-                7, // Trạng thái 'Đã xác nhận'
+                4, // Trạng thái 'Đã xác nhận'
                 Arrays.asList(1, 3), // Chỉ cho phép xác nhận đơn hàng ở trạng thái 'Chờ xử lý'
                 0, // Không giới hạn thời gian
                 "Order cannot be confirmed in its current state"
@@ -357,8 +360,8 @@ public class OrderService {
     public OrderStatusDTO markOrderAsPending(String orderId) {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
-                6, // Trạng thái 'Chờ xử lý'
-                Arrays.asList(7), // Chỉ cho phép đưa đơn hàng về trạng thái 'Chờ xử lý' khi đang ở trạng thái 'Đã xác nhận'
+                7, // Trạng thái 'Chờ xử lý'
+                Arrays.asList(4), // Chỉ cho phép đưa đơn hàng về trạng thái 'Chờ xử lý' khi đang ở trạng thái 'Đã xác nhận'
                 0, // Không giới hạn thời gian
                 "Order cannot be set to pending in its current state"
         );

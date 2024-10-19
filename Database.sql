@@ -12154,7 +12154,7 @@ SELECT PermissionID, (SELECT Role_ID FROM Roles WHERE RoleName LIKE 'SuperAdmin'
 FROM Permissions;
 
 INSERT INTO OrderStatusType (StatusID, Name, EN_Name) VALUES
-(-1, 'Hủy đơn hàng', 'Cancelled'),
+(-1, 'Đã hủy', 'Cancelled'),
 (1, 'Chờ xác nhận', 'Pending'),
 (2, 'Chờ thanh toán', 'Pending Payment'),
 (3, 'Đã thanh toán', 'Paid'),

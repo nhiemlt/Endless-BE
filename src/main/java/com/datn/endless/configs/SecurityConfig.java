@@ -68,6 +68,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/orders/create").authenticated()  // Sử dụng quyền orders/create
                         .requestMatchers(HttpMethod.POST, "/ratings/add").authenticated()  // Sử dụng quyền ratings/add
                         .requestMatchers("/api/users/current").authenticated()  // Sử dụng quyền logout
+                        .requestMatchers(HttpMethod.POST, "/orders/mark-as-pending").authenticated() //Chờ xác nhận đơn hàng
+                        .requestMatchers(HttpMethod.GET, "/orders/user").authenticated() //xem danh sách đơn hàng
+                        .requestMatchers(HttpMethod.GET, "/orders/{id}/details").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/orders/{id}/status").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/orders/mark-as-delivered").authenticated()
 
                         // Các API yêu cầu quyền (dựa theo permission code)
                         .requestMatchers(HttpMethod.POST, "/notifications/send").hasAuthority("send_notifications")
@@ -78,15 +83,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/orders").hasAuthority("orders/create")
                         .requestMatchers(HttpMethod.GET, "/orders/{id}").hasAuthority("view_all_orders")
                         .requestMatchers(HttpMethod.GET, "/orders").hasAuthority("view_all_orders")
-                        .requestMatchers(HttpMethod.GET, "/orders/user").hasAuthority("view_user_orders")
                         .requestMatchers(HttpMethod.GET, "/orders/{id}/details").hasAuthority("orders/{id}/details")
-                        .requestMatchers(HttpMethod.GET, "/orders/{id}/status").hasAuthority("orders/{id}/status")
                         .requestMatchers(HttpMethod.POST, "/orders/cancel").hasAuthority("orders/cancel")
                         .requestMatchers(HttpMethod.POST, "/orders/mark-as-paid").hasAuthority("orders/mark-as-paid")
                         .requestMatchers(HttpMethod.POST, "/orders/mark-as-shipping").hasAuthority("orders/mark-as-shipping")
-                        .requestMatchers(HttpMethod.POST, "/orders/mark-as-delivered").hasAuthority("orders/mark-as-delivered")
                         .requestMatchers(HttpMethod.POST, "/orders/mark-as-confirmed").hasAuthority("orders/mark-as-confirmed")
-                        .requestMatchers(HttpMethod.POST, "/orders/mark-as-pending").hasAuthority("orders/mark-as-pending")
 
                         .requestMatchers(HttpMethod.GET, "/purchase-orders").hasAuthority("view_all_purchase_orders")
                         .requestMatchers(HttpMethod.GET, "/purchase-orders/{id}").hasAuthority("view_purchase_order")
