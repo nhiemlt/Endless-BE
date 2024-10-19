@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,17 +49,39 @@ public class UserController {
     // Thêm người dùng mới
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@ModelAttribute UserModel userModel) {
+        if (userModel.getUsername() == null || userModel.getEmail() == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
         UserDTO createdUser = userService.saveUser(userModel);
         return ResponseEntity.ok(createdUser);
     }
 
     // Cập nhật người dùng theo ID
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable("id") String id, @RequestBody UserModel userModel) {
-        userModel.setUserID(id); // Đảm bảo ID trùng khớp với URL
+    public ResponseEntity<UserDTO> updateUser(@PathVariable("id") String id, @ModelAttribute UserModel userModel) {
+        userModel.setUserID(id);
         UserDTO updatedUser = userService.saveUser(userModel);
         return ResponseEntity.ok(updatedUser);
     }
+
+    // Cập nhật người dùng hiện tại
+    @PutMapping("/current")
+    public ResponseEntity<UserDTO> updateCurrentUser(@RequestBody UserModel userModel) {
+        UserDTO currentUser = userService.getCurrentUser();
+        if (currentUser == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        userModel.setUserID(currentUser.getUserID());
+        UserDTO updatedUser = userService.updateCurrentUser(userModel);
+
+        if (updatedUser != null) {
+            return ResponseEntity.ok(updatedUser);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
     // Xóa người dùng theo ID
     @DeleteMapping("/{id}")
