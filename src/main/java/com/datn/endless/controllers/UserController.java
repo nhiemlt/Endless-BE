@@ -1,12 +1,15 @@
 package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.UserDTO;
+import com.datn.endless.entities.User;
 import com.datn.endless.models.UserModel;
+import com.datn.endless.repositories.UserRepository;
 import com.datn.endless.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +19,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // Lấy tất cả người dùng
     @GetMapping
@@ -49,43 +55,55 @@ public class UserController {
     // Thêm người dùng mới
     @PostMapping
     public ResponseEntity<UserDTO> createUser(@ModelAttribute UserModel userModel) {
-        if (userModel.getUsername() == null || userModel.getEmail() == null) {
+        try {
+            UserDTO createdUser = userService.saveUser(userModel);
+            return ResponseEntity.ok(createdUser);
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
-        UserDTO createdUser = userService.saveUser(userModel);
-        return ResponseEntity.ok(createdUser);
     }
 
-    // Cập nhật người dùng theo ID
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable("id") String id, @ModelAttribute UserModel userModel) {
         userModel.setUserID(id);
-        UserDTO updatedUser = userService.saveUser(userModel);
-        return ResponseEntity.ok(updatedUser);
+        try {
+            UserDTO updatedUser = userService.saveUser(userModel);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
-    // Cập nhật người dùng hiện tại
     @PutMapping("/current")
     public ResponseEntity<UserDTO> updateCurrentUser(@RequestBody UserModel userModel) {
-        UserDTO currentUser = userService.getCurrentUser();
-        if (currentUser == null) {
-            return ResponseEntity.notFound().build();
-        }
+        try {
+            UserDTO currentUser = userService.getCurrentUser();
+            if (currentUser == null) {
+                return ResponseEntity.notFound().build();
+            }
 
-        userModel.setUserID(currentUser.getUserID());
-        UserDTO updatedUser = userService.updateCurrentUser(userModel);
+            userModel.setUserID(currentUser.getUserID());
+            UserDTO updatedUser = userService.updateCurrentUser(userModel);
 
-        if (updatedUser != null) {
             return ResponseEntity.ok(updatedUser);
-        } else {
-            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
 
     // Xóa người dùng theo ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") String id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }

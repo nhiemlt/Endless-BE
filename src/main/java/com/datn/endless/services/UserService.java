@@ -102,6 +102,8 @@ public class UserService {
     }
 
     public UserDTO saveUser(UserModel userModel) {
+        userModel.validate();
+
         User user = new User();
         user.setUserID(userModel.getUserID());
         user.setUsername(userModel.getUsername());
@@ -123,6 +125,8 @@ public class UserService {
     }
 
     public UserDTO updateCurrentUser(UserModel userModel) {
+        userModel.validate();
+
         User user = userRepository.findById(userModel.getUserID()).orElse(null);
         if (user != null) {
             user.setFullname(userModel.getFullname());
