@@ -10,9 +10,9 @@ import java.util.List;
 public class OrderDTO {
     private String orderID;
     private UserOderDTO customer;
-    private UserOderDTO creater;
     private VoucherOrderDTO voucher;
     private LocalDate orderDate;
+    private BigDecimal shipFee;
     private BigDecimal totalMoney;
     private String orderAddress;
     private String orderPhone;

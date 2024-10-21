@@ -3,15 +3,13 @@ package com.datn.endless.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
 @Entity
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "useraddresses")
 public class Useraddress {
     @Id
@@ -25,21 +23,28 @@ public class Useraddress {
     @JoinColumn(name = "UserID", nullable = false)
     private User userID;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ProvinceCode")
-    private Province provinceCode;
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "ProvinceName", nullable = false, length = 100)
+    private String provinceName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "DistrictCode")
-    private District districtCode;
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "DistrictName", nullable = false, length = 100)
+    private String districtName;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "WardCode")
-    private Ward wardCode;
+    @Size(max = 100)
+    @NotNull
+    @Column(name = "WardStreet", nullable = false, length = 100)
+    private String wardStreet;
 
     @NotNull
     @Lob
-    @Column(name = "HouseNumberStreet", nullable = false)
-    private String houseNumberStreet;
+    @Column(name = "DetailAddress", nullable = false)
+    private String detailAddress;
+
+    @Size(max = 255)
+    @Column(name = "AddressLevel4")
+    private String addressLevel4;
 
 }

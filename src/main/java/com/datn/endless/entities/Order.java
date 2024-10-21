@@ -29,10 +29,6 @@ public class Order {
     @JoinColumn(name = "UserID", nullable = false)
     private User userID;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "Creater", nullable = true) // Sử dụng cột khác
-    private User creater;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "VoucherID")
     private Voucher voucherID;
@@ -40,6 +36,10 @@ public class Order {
     @NotNull
     @Column(name = "OrderDate", nullable = false)
     private LocalDate orderDate;
+
+    @NotNull
+    @Column(name = "ShipFee", nullable = false, precision = 18, scale = 2)
+    private BigDecimal shipFee;
 
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)

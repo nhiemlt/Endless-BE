@@ -18,5 +18,5 @@ public class UserDTO {
     private String avatar;
     private String language;
     private List<RoleDTO> roles;
-    private List<UseraddressDTO> addresses;
+    private List<UseraddressDto> addresses;
 }
