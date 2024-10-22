@@ -9,7 +9,6 @@ import lombok.Data;
 
 @Data
 public class UserAddressModel {
-    @NotBlank(message = "User ID cannot be blank")
     private String userID;
 
     @NotNull(message = "Province name cannot be blank")
