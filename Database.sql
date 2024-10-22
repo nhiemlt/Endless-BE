@@ -119,7 +119,7 @@ CREATE TABLE UserAddresses (
     ProvinceName VARCHAR(50) NOT NULL,
     DistrictID INT NOT NULL, 
     DistrictName VARCHAR(50) NOT NULL,
-    WardCode VARCHAR(20) NOT NULL, 
+    WardCode INT NOT NULL, 
     WardName VARCHAR(50) NOT NULL,
     DetailAddress TEXT NOT NULL,
     FOREIGN KEY (UserID) REFERENCES Users(UserID)
