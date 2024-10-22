@@ -3,7 +3,7 @@ package com.datn.endless.services;
 import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.dtos.UserDTO;
-import com.datn.endless.dtos.UseraddressDto;
+import com.datn.endless.dtos.UseraddressDTO;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Useraddress;
 import com.datn.endless.models.UserModel;
@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -49,15 +46,14 @@ public class UserService {
                 .collect(Collectors.toList()) : null;
 
         List<Useraddress> addresses = userAddressRepository.findByUser(user);
-        List<UseraddressDto> addressDTOs = addresses != null ? addresses.stream()
-                .map(address -> new UseraddressDto(
+        List<UseraddressDTO> addressDTOs = addresses != null ? addresses.stream()
+                .map(address -> new UseraddressDTO(
                         address.getAddressID(),
                         address.getUserID().getUserID(),
                         address.getUserID().getUsername(),
-                        address.getProvinceName() != null ? address.getProvinceName() : null,
-                        address.getDistrictName() != null ? address.getDistrictName() : null,
-                        address.getWardStreet() != null ? address.getWardStreet() : null,
-                        address.getAddressLevel4() != null ? address.getAddressLevel4() : null,
+                        address.getProvinceID() != null ? address.getProvinceID() : null,
+                        address.getDistrictID() != null ? address.getDistrictID() : null,
+                        address.getWardCode() != null ? address.getWardCode() : null,
                         address.getDetailAddress() != null ? address.getDetailAddress() : null
                 ))
                 .collect(Collectors.toList()) : null;
@@ -80,24 +76,10 @@ public class UserService {
         return users.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    // Lấy tất cả người dùng
-    public List<UserDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return convertToDTOList(users);
-    }
-
     // Lấy người dùng theo ID
     public UserDTO getUserById(String id) {
         User user = userRepository.findById(id).orElse(null);
         return user != null ? convertToDTO(user) : null;
-    }
-
-    // Convert MultipartFile to base64
-    private String convertToBase64(MultipartFile file) throws IOException {
-        if (file != null && !file.isEmpty()) {
-            return Base64.getEncoder().encodeToString(file.getBytes());
-        }
-        return null;
     }
 
     public UserDTO saveUser(UserModel userModel) {
@@ -109,13 +91,8 @@ public class UserService {
         user.setEmail(userModel.getEmail());
         user.setLanguage(userModel.getLanguage());
 
-        if (userModel.getAvatar() != null) {
-            try {
-                user.setAvatar(convertToBase64(userModel.getAvatar()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        // Lưu chuỗi base64 của avatar từ frontend
+        user.setAvatar(userModel.getAvatar());
 
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
@@ -129,12 +106,28 @@ public class UserService {
             user.setEmail(userModel.getEmail());
             user.setLanguage(userModel.getLanguage());
 
+            // Cập nhật chuỗi base64 của avatar từ frontend
             if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
-                try {
-                    user.setAvatar(convertToBase64(userModel.getAvatar()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                user.setAvatar(userModel.getAvatar());
+            }
+
+            userRepository.save(user);
+            return convertToDTO(user);
+        }
+        return null;
+    }
+
+    public UserDTO updateUserById(UserModel userModel) {
+        User user = userRepository.findById(userModel.getUserID()).orElse(null);
+        if (user != null) {
+            user.setUsername(userModel.getUsername());
+            user.setFullname(userModel.getFullname());
+            user.setPhone(userModel.getPhone());
+            user.setEmail(userModel.getEmail());
+            user.setLanguage(userModel.getLanguage());
+
+            if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
+                user.setAvatar(userModel.getAvatar());
             }
 
             userRepository.save(user);
@@ -162,10 +155,6 @@ public class UserService {
     public UserDTO getCurrentUser() {
         String username = userLoginInfomation.getCurrentUsername();
         User user = userRepository.findByUsername(username);
-
-        System.out.println("Current user: " + user.toString());
-
         return convertToDTO(user);
     }
-
 }

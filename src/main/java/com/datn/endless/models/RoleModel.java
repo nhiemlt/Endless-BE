@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
 import lombok.Data;
-
 import java.util.List;
 
 @Data
@@ -20,9 +19,9 @@ public class RoleModel {
     @NotEmpty(message = "Role English name cannot be empty")
     private String enNamerole;
 
+    @NotEmpty(message = "Permissions cannot be empty")
     private List<String> permissionIds;
 
     public interface OnCreate {}
     public interface OnUpdate {}
 }
-

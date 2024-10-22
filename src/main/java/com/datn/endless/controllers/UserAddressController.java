@@ -1,6 +1,6 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.dtos.UseraddressDto;
+import com.datn.endless.dtos.UseraddressDTO;
 import com.datn.endless.models.UserAddressModel;
 import com.datn.endless.services.UserAddressService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +18,9 @@ public class UserAddressController {
     private UserAddressService userAddressService;
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<UseraddressDto>> getAllUserAddresses(@PathVariable("userId") String userId) {
+    public ResponseEntity<List<UseraddressDTO>> getAllUserAddresses(@PathVariable("userId") String userId) {
         try {
-            List<UseraddressDto> userAddresses = userAddressService.getUserAddressesByUserId(userId);
+            List<UseraddressDTO> userAddresses = userAddressService.getUserAddressesByUserId(userId);
             return ResponseEntity.ok(userAddresses);
         } catch (Exception e) {
             e.printStackTrace();
@@ -29,9 +29,9 @@ public class UserAddressController {
     }
 
     @PostMapping("")
-    public ResponseEntity<UseraddressDto> addUserAddress(@RequestBody UserAddressModel userAddressModel) {
+    public ResponseEntity<UseraddressDTO> addUserAddress(@RequestBody UserAddressModel userAddressModel) {
         try {
-            UseraddressDto savedAddress = userAddressService.addUserAddress(userAddressModel);
+            UseraddressDTO savedAddress = userAddressService.addUserAddress(userAddressModel);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedAddress);
         } catch (Exception e) {
             e.printStackTrace();
@@ -40,10 +40,10 @@ public class UserAddressController {
     }
 
     @PutMapping("/{userId}/{addressId}")
-    public ResponseEntity<UseraddressDto> updateUserAddress(@PathVariable("userId") String userId, @PathVariable("addressId") String addressId, @RequestBody UserAddressModel userAddressModel) {
+    public ResponseEntity<UseraddressDTO> updateUserAddress(@PathVariable("userId") String userId, @PathVariable("addressId") String addressId, @RequestBody UserAddressModel userAddressModel) {
         try {
             userAddressModel.setUserID(userId);
-            UseraddressDto updatedAddress = userAddressService.updateUserAddress(addressId, userAddressModel);
+            UseraddressDTO updatedAddress = userAddressService.updateUserAddress(addressId, userAddressModel);
             return ResponseEntity.ok(updatedAddress);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
@@ -65,4 +65,3 @@ public class UserAddressController {
         }
     }
 }
-

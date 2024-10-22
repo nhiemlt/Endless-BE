@@ -12,7 +12,7 @@ public class ProductVersionDTO {
     private String versionName;
     private BigDecimal purchasePrice;
     private BigDecimal price;
-    private BigDecimal shipFee;  //Weight
+    private BigDecimal shipFee;
     private String status;
     private String image;
 
