@@ -41,10 +41,9 @@ public class Useraddress {
     @Column(name = "DistrictName", nullable = false, length = 50)
     private String districtName;
 
-    @Size(max = 20)
     @NotNull
-    @Column(name = "WardCode", nullable = false, length = 20)
-    private String wardCode;
+    @Column(name = "WardCode", nullable = false)
+    private Integer wardCode;
 
     @Size(max = 50)
     @NotNull

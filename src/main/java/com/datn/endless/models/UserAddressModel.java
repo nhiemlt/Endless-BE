@@ -9,13 +9,13 @@ public class UserAddressModel {
     private String userID;
 
     @NotNull(message = "Province name cannot be null")
-    private String provinceID;
+    private Integer provinceID;
 
     @NotNull(message = "District name cannot be null")
-    private String districtID;
+    private Integer districtID;
 
     @NotNull(message = "Ward street cannot be null")
-    private String wardCode;
+    private Integer wardCode;
 
     @NotNull(message = "Detail address cannot be null")
     private String detailAddress;
