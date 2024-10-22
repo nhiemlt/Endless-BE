@@ -1,7 +1,11 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.DistrictDTO;
+import com.datn.endless.dtos.ProvinceDTO;
 import com.datn.endless.dtos.UseraddressDTO;
+import com.datn.endless.dtos.WardDTO;
 import com.datn.endless.entities.Useraddress;
+import com.datn.endless.models.CurrentUserAddressModel;
 import com.datn.endless.models.UserAddressModel;
 import com.datn.endless.services.UserAddressService;
 import jakarta.validation.Valid;
@@ -30,7 +34,7 @@ public class UserAddressController {
         }
     }
 
-    @PostMapping("")
+    @PostMapping("/add")
     public ResponseEntity<UseraddressDTO> addUserAddress(@RequestBody UserAddressModel userAddressModel) {
         try {
             UseraddressDTO savedAddress = userAddressService.addUserAddress(userAddressModel);
@@ -38,6 +42,22 @@ public class UserAddressController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PostMapping("/add-current")
+    public ResponseEntity<?> addCurrentUserAddress(@RequestBody CurrentUserAddressModel currentUserAddressModel) {
+        try {
+            // Kiểm tra địa chỉ đã tồn tại
+            if (userAddressService.isAddressExists(currentUserAddressModel)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body("Address already exists");
+            }
+            // Thêm địa chỉ mới nếu không bị trùng
+            UseraddressDTO savedAddress = userAddressService.addCurrentUserAddress(currentUserAddressModel);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedAddress);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred");
         }
     }
 
@@ -65,6 +85,21 @@ public class UserAddressController {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @GetMapping("/provinces")
+    public List<ProvinceDTO> getAllProvinces() {
+        return userAddressService.getAllProvinces();
+    }
+
+    @GetMapping("/{provinceCode}/districts")
+    public List<DistrictDTO> getDistrictByProvince(@PathVariable String provinceCode) {
+        return userAddressService.getDistrictsByProvince(provinceCode);
+    }
+
+    @GetMapping("/districts/{districtCode}/wards")
+    public List<WardDTO> getWardByDistrict(@PathVariable String districtCode) {
+        return userAddressService.getWardsByDistrict(districtCode);
     }
 }
 

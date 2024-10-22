@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/orders/{id}/details").authenticated()
                         .requestMatchers(HttpMethod.GET, "/orders/{id}/status").authenticated()
                         .requestMatchers(HttpMethod.POST, "/orders/mark-as-delivered").authenticated()
+                        .requestMatchers("/api/useraddresses/add-current").authenticated()
 
                         // Các API yêu cầu quyền (dựa theo permission code)
                         .requestMatchers(HttpMethod.POST, "/notifications/send").hasAuthority("send_notifications")
