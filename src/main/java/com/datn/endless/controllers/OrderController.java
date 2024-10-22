@@ -3,7 +3,6 @@ package com.datn.endless.controllers;
 import com.datn.endless.dtos.*;
 import com.datn.endless.exceptions.*;
 import com.datn.endless.models.OrderModel;
-import com.datn.endless.models.OrderModelForUser;
 import com.datn.endless.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,41 +29,6 @@ public class OrderController {
         Map<String, Object> response = new HashMap<>();
         try {
             OrderDTO savedOrderDTO = orderService.createOrder(orderModel);
-            response.put("success", true);
-            response.put("data", savedOrderDTO);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (UserNotFoundException e) {
-            response.put("success", false);
-            response.put("error", "User not found: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (VoucherNotFoundException e) {
-            response.put("success", false);
-            response.put("error", "Voucher not found: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (AddressNotFoundException e) {
-            response.put("success", false);
-            response.put("error", "Address not found: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (ProductVersionNotFoundException e) {
-            response.put("success", false);
-            response.put("error", "Product version not found: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (StatusTypeNotFoundException e) {
-            response.put("success", false);
-            response.put("error", "Order status type not found: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createOrderForUser(@RequestBody OrderModelForUser orderModel) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            OrderDTO savedOrderDTO = orderService.createOrderForUser(orderModel);
             response.put("success", true);
             response.put("data", savedOrderDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
