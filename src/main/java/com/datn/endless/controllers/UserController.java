@@ -28,6 +28,10 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
+    private boolean isValidBase64(String base64) {
+        return base64 != null && base64.matches("^(?:[A-Za-z0-9+/=]{4})*$");
+    }
+
     // Lấy tất cả người dùng
     @GetMapping
     public ResponseEntity<Page<UserDTO>> getAllUsers(
@@ -62,6 +66,11 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
         }
 
+        // Kiểm tra định dạng base64 cho avatar
+        if (!isValidBase64(userModel.getAvatar())) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid avatar format")));
+        }
+
         try {
             UserDTO createdUser = userService.saveUser(userModel);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
@@ -81,6 +90,11 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
         }
 
+        // Kiểm tra định dạng base64 cho avatar
+        if (!isValidBase64(userModel.getAvatar())) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid avatar format")));
+        }
+
         userModel.setUserID(id);
         try {
             UserDTO updatedUser = userService.updateCurrentUser(userModel);
@@ -92,6 +106,7 @@ public class UserController {
         }
     }
 
+
     @PutMapping("/current")
     public ResponseEntity<?> updateCurrentUser(@Valid @ModelAttribute UserModel userModel, BindingResult result) {
         if (result.hasErrors()) {
@@ -99,6 +114,11 @@ public class UserController {
                     .map(error -> error.getDefaultMessage())
                     .collect(Collectors.toList());
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
+        }
+
+        // Kiểm tra định dạng base64 cho avatar
+        if (!isValidBase64(userModel.getAvatar())) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid avatar format")));
         }
 
         try {
@@ -113,26 +133,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(List.of("Failed to update current user")));
-        }
-    }
-
-    @PutMapping("/admin/{id}")
-    public ResponseEntity<?> updateUserByAdmin(@PathVariable("id") String id, @Valid @ModelAttribute UserModel userModel, BindingResult result) {
-        if (result.hasErrors()) {
-            List<String> errors = result.getFieldErrors().stream()
-                    .map(error -> error.getDefaultMessage())
-                    .collect(Collectors.toList());
-            return ResponseEntity.badRequest().body(new ErrorResponse(errors));
-        }
-
-        userModel.setUserID(id);
-        try {
-            UserDTO updatedUser = userService.updateUserById(userModel);
-            return updatedUser != null ? ResponseEntity.ok(updatedUser) : ResponseEntity.notFound().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(List.of("Failed to update user")));
         }
     }
 
