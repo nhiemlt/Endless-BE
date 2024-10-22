@@ -35,7 +35,7 @@ public class Useraddress {
 
     @Size(max = 100)
     @NotNull
-    @Column(name = "WardCode ", nullable = false, length = 100)
+    @Column(name = "WardCode", nullable = false, length = 100)
     private String wardCode;
 
     @NotNull
