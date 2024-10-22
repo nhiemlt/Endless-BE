@@ -102,6 +102,7 @@ public class NotificationService {
     // Phương thức tạo Notificationrecipient
     private Notificationrecipient createNotificationRecipient(Notification notification, User user, String status) {
         Notificationrecipient recipient = new Notificationrecipient();
+        recipient.setNotificationRecipientID(UUID.randomUUID().toString());
         recipient.setNotificationID(notification);
         recipient.setUserID(user);
         recipient.setStatus(status);

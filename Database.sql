@@ -115,9 +115,12 @@ CREATE TABLE Users (
 CREATE TABLE UserAddresses (
     AddressID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     UserID CHAR(36) NOT NULL,
-    ProvinceID INT NOT NULL, -- Mã tỉnh/thành phố
-    DistrictID INT NOT NULL, -- Mã quận/huyện
-    WardCode VARCHAR(20) NOT NULL, -- Mã phường/xã
+    ProvinceID INT NOT NULL,
+    ProvinceName VARCHAR(50) NOT NULL,
+    DistrictID INT NOT NULL, 
+    DistrictName VARCHAR(50) NOT NULL,
+    WardCode VARCHAR(20) NOT NULL, 
+    WardName VARCHAR(50) NOT NULL,
     DetailAddress TEXT NOT NULL,
     FOREIGN KEY (UserID) REFERENCES Users(UserID)
 );
@@ -591,18 +594,19 @@ INSERT INTO NotificationRecipients (NotificationID, UserID, Status) VALUES
  (SELECT UserID FROM Users WHERE Username = 'user05'), 'Pending');
  
  
-INSERT INTO UserAddresses (UserID, ProvinceID, DistrictID, WardCode, DetailAddress) VALUES
-((SELECT UserID FROM Users WHERE Username = 'user01'), 1, 101, '001', '123 Main St'),
-((SELECT UserID FROM Users WHERE Username = 'user02'), 1, 102, '002', '456 Elm St'),
-((SELECT UserID FROM Users WHERE Username = 'user03'), 1, 103, '003', '789 Oak St'),
-((SELECT UserID FROM Users WHERE Username = 'user04'), 1, 104, '004', '101 Pine St'),
-((SELECT UserID FROM Users WHERE Username = 'user05'), 1, 105, '005', '202 Maple St');
+INSERT INTO UserAddresses (UserID, ProvinceID, ProvinceName, DistrictID, DistrictName, WardCode, WardName, DetailAddress) VALUES
+((SELECT UserID FROM Users WHERE Username = 'user01'), 1, 'ProvinceName1', 101, 'DistrictName1', '001', 'WardName1', '123 Main St'),
+((SELECT UserID FROM Users WHERE Username = 'user02'), 1, 'ProvinceName1', 102, 'DistrictName2', '002', 'WardName2', '456 Elm St'),
+((SELECT UserID FROM Users WHERE Username = 'user03'), 1, 'ProvinceName1', 103, 'DistrictName3', '003', 'WardName3', '789 Oak St'),
+((SELECT UserID FROM Users WHERE Username = 'user04'), 1, 'ProvinceName1', 104, 'DistrictName4', '004', 'WardName4', '101 Pine St'),
+((SELECT UserID FROM Users WHERE Username = 'user05'), 1, 'ProvinceName1', 105, 'DistrictName5', '005', 'WardName5', '202 Maple St');
 
 -- Cập nhật bảng Modules (không cần trường Code)
 INSERT INTO Modules (ModuleName, EN_ModuleName) VALUES 
     ('Quản lý xác thực', 'Auth Management'),
     ('Quản lý thông báo', 'Notification Management'),
     ('Quản lý đơn hàng', 'Order Management'),
+    ('Quản lý nhập hàng', 'Entry Management'),
     ('Quản lý thuộc tính', 'Attribute Management'),
     ('Quản lý thương hiệu', 'Brand Management'),
     ('Quản lý danh mục', 'Category Management'),
@@ -650,13 +654,16 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Đang chờ xử lý', 'Mark as pending', 'orders/mark-as-pending'),
 
     -- Quản lý đơn hàng (ENTRIES)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Xem tất cả đơn hàng', 'View all orders', 'view_all_orders'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Thêm đơn hàng mới', 'Add new order', 'orders'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Xem tất cả đơn nhập', 'View all entries', 'view_all_entries'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Thêm đơn nhập mới', 'Add new entries', 'entries'),
 
     -- Quản lý thuộc tính (ATTRIBUTE)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Xem tất cả thuộc tính', 'View all attributes', 'view_all_attributes'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Xem tất cả thuộc tính', 'View all attributes', 'view_attributes'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Thêm thuộc tính mới', 'Add new attribute', 'add_new_attribute'),
-    
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Cập nhật thuộc tính mới', 'Update attribute', 'update_attribute'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Thêm mới thuộc tính', 'Add attribute value', 'add_attribute_value'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Cập nhật thuộc tính', 'Update attribute value', 'update_attribute_value'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Xóa giá trị thuộc tính', 'Delete attribute value', 'delete_attribute_value'),    
     
     -- Quản lý thương hiệu (BRAND)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Xem tất cả thương hiệu', 'View all brands', 'view_all_brands'),
@@ -678,13 +685,21 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
     -- Quản lý phiên bản sản phẩm (PRODUCT VERSION)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Version Management'), 'Xem tất cả phiên bản sản phẩm', 'View all product versions', 'view_all_product_versions'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Version Management'), 'Thêm phiên bản sản phẩm mới', 'Add new product version', 'add_new_product_version'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Version Management'), 'Xóa phiên bản sản phẩm', 'Delete product version', 'delete_product_version'),
+    
     
     -- Quản lý khuyến mãi (PROMOTIONS)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Xem danh sách khuyến mãi', 'View promotions list', 'view_promotions_list'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Kích hoạt khuyến mãi', 'Activate promotions', 'activate_promotions'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Cập nhật khuyến mãi', 'Update promotions', 'update_promotion'),
+	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Thêm mới khuyến mãi', 'Add new promotions', 'add_new_promotion'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Cập nhật khuyến mãi', 'Update promotions', 'search_promotions'),
     
     -- Quản lý chi tiết khuyến mãi (PROMOTION DETAILS)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Xem tất cả chi tiết khuyến mãi', 'View all promotion details', 'view_all_promotion_details'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Thêm chi tiết khuyến mãi', 'TAdd new promotion details', 'add_new_promotion_details'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Xem chi tiết khuyến mãi', 'View promotion details', 'view_promotion_details'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Cập nhật chi tiết khuyến mãi', 'Update promotion details', 'update_promotion_details'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Xóa chi tiết khuyến mãi', 'Delete promotion details', 'delete_promotion_details'),
     
     -- Quản lý sản phẩm trong khuyến mãi (PROMOTION PRODUCT)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Product Management'), 'Xem tất cả sản phẩm khuyến mãi', 'View all promotion products', 'view_all_promotion_products'),
