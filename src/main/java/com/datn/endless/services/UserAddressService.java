@@ -2,10 +2,12 @@ package com.datn.endless.services;
 
 import com.datn.endless.dtos.UseraddressDTO;
 import com.datn.endless.entities.*;
+import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.UserAddressModel;
 import com.datn.endless.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +21,9 @@ public class UserAddressService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private UserLoginInfomation userLoginInfomation;
 
     // Chuyển đổi Useraddress thành UseraddressDTO
     private UseraddressDTO convertToDTO(Useraddress address) {
@@ -62,6 +67,51 @@ public class UserAddressService {
         Useraddress savedUserAddress = userAddressRepository.save(userAddress);
         return convertToDTO(savedUserAddress);
     }
+
+    public List<UseraddressDTO> getUserAddressesForUser(String username) {
+        // Tìm kiếm user trong cơ sở dữ liệu theo username
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
+        }
+        // Lấy danh sách địa chỉ của user
+        List<Useraddress> userAddresses = userAddressRepository.findByUser(user);
+        // Chuyển đổi sang DTO và trả về
+        return convertToDTOList(userAddresses);
+    }
+
+    @Transactional // Đảm bảo phương thức này được thực hiện trong một transaction
+    public UseraddressDTO addUserAddressForUser(UserAddressModel userAddressModel) {
+        try {
+            // Lấy thông tin người dùng hiện tại
+            String currentUsername = userLoginInfomation.getCurrentUsername();
+            User user = userRepository.findByUsername(currentUsername);
+            if (user == null) {
+                throw new UserNotFoundException("User not found");
+            }
+
+            // Tạo đối tượng Useraddress mới để lưu địa chỉ
+            Useraddress userAddress = new Useraddress();
+            userAddress.setAddressID(UUID.randomUUID().toString());
+            userAddress.setUserID(user); // Gán người dùng hiện tại
+            userAddress.setProvinceID(userAddressModel.getProvinceID());
+            userAddress.setDistrictID(userAddressModel.getDistrictID());
+            userAddress.setWardCode(userAddressModel.getWardCode());
+            userAddress.setDetailAddress(userAddressModel.getDetailAddress());
+
+            // Lưu địa chỉ người dùng vào cơ sở dữ liệu
+            Useraddress savedUserAddress = userAddressRepository.save(userAddress);
+
+            // Chuyển đổi đối tượng Useraddress thành UseraddressDTO để trả về
+            return convertToDTO(savedUserAddress);
+
+        } catch (Exception e) {
+            // Ghi log để theo dõi chi tiết lỗi
+            System.err.println("Error adding user address: " + e.getMessage());
+            throw new RuntimeException("Could not save user address. Please try again later.");
+        }
+    }
+
 
     // Cập nhật địa chỉ người dùng hiện tại
     public UseraddressDTO updateUserAddress(String addressId, UserAddressModel userAddressModel) {
