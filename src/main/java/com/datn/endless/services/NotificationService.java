@@ -7,12 +7,12 @@ import com.datn.endless.entities.User;
 import com.datn.endless.exceptions.ResourceNotFoundException;
 import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.NotificationModel;
+import com.datn.endless.models.NotificationModelForUser;
 import com.datn.endless.repositories.NotificationRepository;
 import com.datn.endless.repositories.NotificationrecipientRepository;
 import com.datn.endless.repositories.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 
 import java.time.Instant;
 import java.util.*;
@@ -43,33 +42,29 @@ public class NotificationService {
 
     public Map<String, Object> sendNotification(@Valid NotificationModel notificationModel, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return buildValidationErrorResponse(bindingResult);
+            return buildErrorResponse("Validation failed");
         }
-
         try {
             Notification notification = createNotification(notificationModel);
             notificationRepository.save(notification);
-
             saveNotificationRecipients(notification, notificationModel.getUserIds());
-
             return buildSuccessResponse("Notification sent successfully!");
         } catch (Exception e) {
             return buildErrorResponse("Failed to send notification: " + e.getMessage());
         }
     }
 
-    public Map<String, Object> sendNotificationForOrder(@Valid NotificationModel notificationModel) {
+    public void sendNotificationForOrder(@Valid NotificationModelForUser notificationModel) {
         try {
-            Notification notification = createNotification(notificationModel);
+            Notification notification = createNotificationForUser(notificationModel);
             notificationRepository.save(notification);
-
-            saveNotificationRecipients(notification, notificationModel.getUserIds());
-
-            return buildSuccessResponse("Notification sent successfully!");
+            System.out.println("\n\n\n\n\n\n\n\n\n\n Notification sent for order: " + notificationModel.getUserID());
         } catch (Exception e) {
-            return buildErrorResponse("Failed to send notification: " + e.getMessage());
+            System.err.println("Failed to send notification: " + e.getMessage());
+            throw new IllegalArgumentException("Failed to send notification: " + e.getMessage());
         }
     }
+
 
     private Notification createNotification(NotificationModel notificationModel) {
         Notification notification = new Notification();
@@ -79,150 +74,149 @@ public class NotificationService {
         notification.setType(notificationModel.getType());
         notification.setNotificationDate(Instant.now());
         notification.setStatus("SENT");
+        notification.setNotificationrecipients(new HashSet<>()); // Khởi tạo Set nếu cần
         return notification;
     }
 
+
+    private Notification createNotificationForUser(NotificationModelForUser notificationModel) {
+        // Tạo một đối tượng Notification mới
+        Notification notification = new Notification();
+        notification.setNotificationID(UUID.randomUUID().toString());
+        notification.setTitle(notificationModel.getTitle());
+        notification.setContent(notificationModel.getContent());
+        notification.setType(notificationModel.getType());
+        notification.setNotificationDate(Instant.now());
+        notification.setStatus("SENT");
+
+        // Tìm user theo ID
+        User user = userRepository.findById(notificationModel.getUserID())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        // Tạo Notificationrecipient mới
+        Notificationrecipient recipient = createNotificationRecipient(notification, user, "UNREAD");
+        notification.getNotificationrecipients().add(recipient); // Thêm recipient vào notification
+        return notification;
+    }
+
+    // Phương thức tạo Notificationrecipient
+    private Notificationrecipient createNotificationRecipient(Notification notification, User user, String status) {
+        Notificationrecipient recipient = new Notificationrecipient();
+        recipient.setNotificationID(notification);
+        recipient.setUserID(user);
+        recipient.setStatus(status);
+        return recipient;
+    }
+
+
     private void saveNotificationRecipients(Notification notification, List<String> userIds) {
-        userIds.forEach(userId -> {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid User ID: " + userId));
-            Notificationrecipient recipient = new Notificationrecipient();
-            recipient.setNotificationRecipientID(UUID.randomUUID().toString());
-            recipient.setNotificationID(notification);
-            recipient.setUserID(user);
-            recipient.setStatus("UNREAD");
-            notificationRecipientRepository.save(recipient);
-        });
-    }
-
-    private Map<String, Object> buildValidationErrorResponse(BindingResult bindingResult) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", "Validation failed");
-        response.put("errors", bindingResult.getFieldErrors().stream()
-                .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage)));
-        return response;
-    }
-
-    private Map<String, Object> buildSuccessResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", message);
-        return response;
-    }
-
-    private Map<String, Object> buildErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return response;
+        List<Notificationrecipient> recipients = userIds.stream()
+                .map(userId -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new IllegalArgumentException("Invalid User ID: " + userId));
+                    return createNotificationRecipient(notification, user, "UNREAD"); // Sử dụng phương thức tạo
+                }).collect(Collectors.toList());
+        notificationRecipientRepository.saveAll(recipients);
     }
 
     public Map<String, Object> markAsRead(String notificationRecipientId) {
-        try {
-            Notificationrecipient recipient = notificationRecipientRepository.findById(notificationRecipientId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid Notification Recipient ID: " + notificationRecipientId));
-            if(!recipient.getUserID().getUsername().equals(userLoginInfomation.getCurrentUsername())){
-                throw new UserNotFoundException("User not found!");
-            }
-            recipient.setStatus("READ");
-            notificationRecipientRepository.save(recipient);
+        Notificationrecipient recipient = notificationRecipientRepository.findById(notificationRecipientId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Notification Recipient ID: " + notificationRecipientId));
+        validateUser(recipient.getUserID().getUsername());
+        recipient.setStatus("READ");
+        notificationRecipientRepository.save(recipient);
+        return buildSuccessResponse("Notification marked as read.");
+    }
 
-            return buildSuccessResponse("Notification marked as read.");
-        } catch (Exception e) {
-            return buildErrorResponse("Failed to mark notification as read: " + e.getMessage());
+    @Transactional
+    public Map<String, Object> markAllAsRead(Pageable pageable) {
+        User user = validateUser(userLoginInfomation.getCurrentUsername());
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
         }
+
+        // Lấy tất cả Notificationrecipient chưa đọc cho người dùng hiện tại
+        List<Notificationrecipient> unreadNotifications = notificationRecipientRepository.findAllByUserID(user.getUserID());
+
+        // Phân trang danh sách các thông báo chưa đọc
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), unreadNotifications.size());
+        List<Notificationrecipient> notificationsToMark = unreadNotifications.subList(start, end);
+
+        // Đánh dấu các thông báo trong trang hiện tại là đã đọc
+        for (Notificationrecipient recipient : notificationsToMark) {
+            recipient.setStatus("READ");
+        }
+        notificationRecipientRepository.saveAll(notificationsToMark);
+
+        return buildSuccessResponse("All notifications in the current page marked as read.");
     }
 
     public Page<NotificationRecipientDTO> getNotificationsByUserId(Pageable pageable) {
-        User user = userRepository.findByUsername(userLoginInfomation.getCurrentUsername());
+        User user = validateUser(userLoginInfomation.getCurrentUsername());
         if(user==null){
             throw new UserNotFoundException("User not found");
         }
         List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
-        allRecipients.sort(Comparator.comparing((Notificationrecipient nr) -> nr.getNotificationID().getNotificationDate()).reversed());
-
-        return paginateAndConvertToDTO(allRecipients, pageable);
+        return convertToDTOPage(allRecipients, pageable);
     }
 
-    public Page<NotificationRecipientDTO> markAllAsRead(Pageable pageable) {
-        User user = userRepository.findByUsername(userLoginInfomation.getCurrentUsername());
-        if(user==null){
-            throw new UserNotFoundException("User not found");
-        }
-        List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
-        for(Notificationrecipient recipient : allRecipients) {
-            recipient.setStatus("READ");
-            notificationRecipientRepository.save(recipient);
-        }
-        allRecipients.sort(Comparator.comparing((Notificationrecipient nr) -> nr.getNotificationID().getNotificationDate()).reversed());
 
-        return paginateAndConvertToDTO(allRecipients, pageable);
+    private User validateUser(String username) {
+        return userRepository.findByUsername(username);
     }
 
-    public Page<NotificationRecipientDTO> getNotificationsByUserLogin(Pageable pageable) {
-        User user = userRepository.findByUsername(userLoginInfomation.getCurrentUsername());
-        if(user==null){
-            throw new UserNotFoundException("User not found");
-        }
-
-        List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
-        allRecipients.sort(Comparator.comparing((Notificationrecipient nr) -> nr.getNotificationID().getNotificationDate()).reversed());
-
-        return paginateAndConvertToDTO(allRecipients, pageable);
-    }
-
-    private Page<NotificationRecipientDTO> paginateAndConvertToDTO(List<Notificationrecipient> recipients, Pageable pageable) {
+    private Page<NotificationRecipientDTO> convertToDTOPage(List<Notificationrecipient> recipients, Pageable pageable) {
+        recipients.sort(Comparator.comparing(nr -> nr.getNotificationID().getNotificationDate(), Comparator.reverseOrder()));
         int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), recipients.size());
-        List<Notificationrecipient> pagedRecipients = recipients.subList(start, end);
-
-        List<NotificationRecipientDTO> dtoList = pagedRecipients.stream().map(recipient -> {
-            NotificationRecipientDTO dto = new NotificationRecipientDTO();
-            dto.setNotificationRecipientID(recipient.getNotificationRecipientID());
-            dto.setNotificationID(recipient.getNotificationID().getNotificationID());
-            dto.setStatus(recipient.getStatus());
-            dto.setNotificationTitle(recipient.getNotificationID().getTitle());
-            dto.setUserName(recipient.getUserID().getUsername());
-            dto.setContent(recipient.getNotificationID().getContent());
-            return dto;
-        }).collect(Collectors.toList());
-
+        int end = Math.min(start + pageable.getPageSize(), recipients.size());
+        List<NotificationRecipientDTO> dtoList = recipients.subList(start, end).stream()
+                .map(this::convertToDTO).collect(Collectors.toList());
         return new PageImpl<>(dtoList, pageable, recipients.size());
+    }
+
+    private NotificationRecipientDTO convertToDTO(Notificationrecipient recipient) {
+        return new NotificationRecipientDTO(recipient.getNotificationRecipientID(),
+                recipient.getNotificationID().getNotificationID(),
+                recipient.getStatus(),
+                recipient.getNotificationID().getTitle(),
+                recipient.getUserID().getUsername(),
+                recipient.getNotificationID().getContent());
     }
 
     @Transactional
     public Map<String, Object> deleteNotification(String notificationId) {
-        try {
-            Notification notification = notificationRepository.findById(notificationId)
-                    .orElseThrow(() -> new IllegalArgumentException("Invalid Notification ID: " + notificationId));
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Notification ID: " + notificationId));
+        notificationRecipientRepository.deleteByNotificationID(notification);
+        notificationRepository.delete(notification);
+        return buildSuccessResponse("Notification deleted successfully.");
+    }
 
-            notificationRecipientRepository.deleteByNotificationID(notification);
-            notificationRepository.delete(notification);
+    private Map<String, Object> buildSuccessResponse(String message) {
+        return Map.of("success", true, "message", message);
+    }
 
-            return buildSuccessResponse("Notification deleted successfully.");
-        } catch (EmptyResultDataAccessException e) {
-            return buildErrorResponse("Notification not found: " + notificationId);
-        } catch (Exception e) {
-            return buildErrorResponse("Failed to delete notification: " + e.getMessage());
-        }
+    private Map<String, Object> buildErrorResponse(String message) {
+        return Map.of("success", false, "message", message);
     }
 
     public Long getUnreadNotificationCount() {
-        return notificationRecipientRepository.countUnreadNotifications(userLoginInfomation.getCurrentUsername());
+        User user = validateUser(userLoginInfomation.getCurrentUsername());
+        if (user == null) {
+            throw new UserNotFoundException("User not found");
+        }
+        return notificationRecipientRepository.countUnreadNotifications(user.getUsername());
     }
 
     @Transactional
     public ResponseEntity<String> deleteNotificationReception(String notificationRecipientID) {
-        Notificationrecipient notificationrecipient = notificationRecipientRepository.findById(notificationRecipientID)
-                .orElseThrow(() -> new ResourceNotFoundException("NotificationRecipient not found with ID: " + notificationRecipientID));
+        Notificationrecipient recipient = notificationRecipientRepository.findById(notificationRecipientID)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid Notification Recipient ID: " + notificationRecipientID));
 
-        if (notificationrecipient.getUserID().getUsername().equals(userLoginInfomation.getCurrentUsername())) {
-            notificationRecipientRepository.delete(notificationrecipient);
-            return ResponseEntity.ok("Notification deleted successfully");
-        } else {
-            throw new UserNotFoundException("User not found or not authorized to delete this notification");
-        }
+        // Xóa thông báo theo ID
+        notificationRecipientRepository.deleteNotificationReceptionByRecipientID(notificationRecipientID);
+
+        return ResponseEntity.ok("Notification recipient deleted successfully.");
     }
-
 }

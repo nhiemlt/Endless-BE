@@ -46,7 +46,7 @@ public class Notification {
     @Column(name = "Status", nullable = false, length = 50)
     private String status;
 
-    @OneToMany(mappedBy = "notificationID")
+    @OneToMany(mappedBy = "notificationID", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Notificationrecipient> notificationrecipients = new LinkedHashSet<>();
 
 }
