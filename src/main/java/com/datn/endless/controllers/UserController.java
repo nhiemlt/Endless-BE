@@ -53,7 +53,7 @@ public class UserController {
     }
 
     // Thêm người dùng mới
-    @PostMapping(consumes = "multipart/form-data")
+    @PostMapping()
     public ResponseEntity<?> createUser(@Valid @ModelAttribute UserModel userModel, BindingResult result) {
         if (result.hasErrors()) {
             List<String> errors = result.getFieldErrors().stream()
@@ -113,6 +113,26 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(List.of("Failed to update current user")));
+        }
+    }
+
+    @PutMapping("/admin/{id}")
+    public ResponseEntity<?> updateUserByAdmin(@PathVariable("id") String id, @Valid @ModelAttribute UserModel userModel, BindingResult result) {
+        if (result.hasErrors()) {
+            List<String> errors = result.getFieldErrors().stream()
+                    .map(error -> error.getDefaultMessage())
+                    .collect(Collectors.toList());
+            return ResponseEntity.badRequest().body(new ErrorResponse(errors));
+        }
+
+        userModel.setUserID(id);
+        try {
+            UserDTO updatedUser = userService.updateUserById(userModel);
+            return updatedUser != null ? ResponseEntity.ok(updatedUser) : ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(List.of("Failed to update user")));
         }
     }
 
