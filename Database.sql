@@ -657,6 +657,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Xem tất cả thuộc tính', 'View all attributes', 'view_all_attributes'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Thêm thuộc tính mới', 'Add new attribute', 'add_new_attribute'),
     
+    
     -- Quản lý thương hiệu (BRAND)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Xem tất cả thương hiệu', 'View all brands', 'view_all_brands'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Thêm thương hiệu mới', 'Add new brand', 'add_new_brand'),
@@ -664,6 +665,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
     -- Quản lý danh mục (CATEGORY)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Xem tất cả danh mục', 'View all categories', 'view_all_categories'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Thêm danh mục mới', 'Add new category', 'add_new_category'),
+	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Xóa danh mục', 'Remove category', 'delete_category'),
     
     -- Quản lý sản phẩm (PRODUCT)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Xem tất cả sản phẩm', 'View all products', 'view_all_products'),

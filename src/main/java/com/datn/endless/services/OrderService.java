@@ -4,6 +4,7 @@ import com.datn.endless.dtos.*;
 import com.datn.endless.entities.*;
 import com.datn.endless.exceptions.*;
 import com.datn.endless.models.NotificationModel;
+import com.datn.endless.models.NotificationModelForUser;
 import com.datn.endless.models.OrderDetailModel;
 import com.datn.endless.models.OrderModel;
 import com.datn.endless.repositories.*;
@@ -298,21 +299,16 @@ public class OrderService {
     }
 
     private void sendOrderStatusNotification(String orderId, String title, String content) {
-        NotificationModel notificationModel = new NotificationModel();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new StatusTypeNotFoundException("Order status type not found"));
+        NotificationModelForUser notificationModel = new NotificationModelForUser();
         notificationModel.setTitle(title);
         notificationModel.setContent(content);
-        // Giả sử bạn có một danh sách ID người dùng liên quan đến đơn hàng này
-        List<String> userIds = getUserIdsForOrder(orderId);
-        notificationModel.setUserIds(userIds);
+        notificationModel.setUserID(order.getUserID().getUserID());
 
-        // Gửi thông báo
         notificationService.sendNotificationForOrder(notificationModel);
     }
 
-    private List<String> getUserIdsForOrder(String orderId) {
-        // Logic để lấy danh sách ID người dùng liên quan đến đơn hàng (orderId)
-        return Arrays.asList("user1", "user2"); // Ví dụ
-    }
 
 
     // Tính tổng tiền
