@@ -23,20 +23,33 @@ public class Useraddress {
     @JoinColumn(name = "UserID", nullable = false)
     private User userID;
 
-    @Size(max = 100)
     @NotNull
-    @Column(name = "ProvinceID", nullable = false, length = 100)
-    private String provinceID;
+    @Column(name = "ProvinceID", nullable = false)
+    private Integer provinceID;
 
-    @Size(max = 100)
+    @Size(max = 50)
     @NotNull
-    @Column(name = "DistrictID", nullable = false, length = 100)
-    private String districtID;
+    @Column(name = "ProvinceName", nullable = false, length = 50)
+    private String provinceName;
 
-    @Size(max = 100)
     @NotNull
-    @Column(name = "WardCode", nullable = false, length = 100)
+    @Column(name = "DistrictID", nullable = false)
+    private Integer districtID;
+
+    @Size(max = 50)
+    @NotNull
+    @Column(name = "DistrictName", nullable = false, length = 50)
+    private String districtName;
+
+    @Size(max = 20)
+    @NotNull
+    @Column(name = "WardCode", nullable = false, length = 20)
     private String wardCode;
+
+    @Size(max = 50)
+    @NotNull
+    @Column(name = "WardName", nullable = false, length = 50)
+    private String wardName;
 
     @NotNull
     @Lob
