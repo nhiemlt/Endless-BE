@@ -13,6 +13,9 @@ public class ProductVersionDTO {
     private BigDecimal purchasePrice;
     private BigDecimal price;
     private BigDecimal shipFee;
+    private BigDecimal height;
+    private BigDecimal length;
+    private BigDecimal width;
     private String status;
     private String image;
 

@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -19,12 +19,11 @@ import java.util.List;
 public class Order {
     @Id
     @Size(max = 36)
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @ColumnDefault("(uuid())")
     @Column(name = "OrderID", nullable = false, length = 36)
     private String orderID;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "UserID", nullable = false)
     private User userID;
@@ -45,6 +44,18 @@ public class Order {
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalMoney;
 
+    @ColumnDefault("0.00")
+    @Column(name = "CodValue", precision = 18, scale = 2)
+    private BigDecimal codValue;
+
+    @ColumnDefault("0.00")
+    @Column(name = "InsuranceValue", precision = 18, scale = 2)
+    private BigDecimal insuranceValue;
+
+    @NotNull
+    @Column(name = "ServiceTypeID", nullable = false)
+    private Integer serviceTypeID;
+
     @Lob
     @Column(name = "OrderAddress")
     private String orderAddress;
@@ -57,6 +68,7 @@ public class Order {
     @Column(name = "OrderName")
     private String orderName;
 
-    @OneToMany(mappedBy = "orderID", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Orderdetail> orderDetails;
+    @OneToMany(mappedBy = "orderID")
+    private Set<Orderdetail> orderdetails = new LinkedHashSet<>();
+
 }

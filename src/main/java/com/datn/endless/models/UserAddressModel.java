@@ -9,21 +9,18 @@ import lombok.Data;
 
 @Data
 public class UserAddressModel {
-
     @NotBlank(message = "User ID cannot be blank")
     private String userID;
 
     @NotNull(message = "Province name cannot be blank")
-    private String provinceName;
+    private String provinceID;
 
     @NotNull(message = "District name cannot be blank")
-    private String districtName;
+    private String districtID;
 
     @NotNull(message = "Ward street cannot be blank")
-    private String wardStreet;
+    private String wardCode;
 
     @NotNull(message = "Detail address cannot be blank")
     private String detailAddress;
-
-    private String addressLevel4;
 }

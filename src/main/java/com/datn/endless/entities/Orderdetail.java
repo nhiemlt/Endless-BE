@@ -1,6 +1,5 @@
 package com.datn.endless.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -20,11 +19,9 @@ public class Orderdetail {
     @Size(max = 36)
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @ColumnDefault("(uuid())")
     @Column(name = "OrderDetailID", nullable = false, length = 36)
     private String orderDetailID;
 
-    @JsonIgnoreProperties
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "OrderID", nullable = false)
@@ -46,4 +43,5 @@ public class Orderdetail {
     @NotNull
     @Column(name = "DiscountPrice", nullable = false, precision = 18, scale = 2)
     private BigDecimal discountPrice;
+
 }

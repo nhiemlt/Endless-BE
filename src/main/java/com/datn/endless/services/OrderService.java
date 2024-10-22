@@ -18,10 +18,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,8 +90,11 @@ public class OrderService {
         order.setOrderAddress(orderModel.getOrderAddress());
         order.setOrderPhone(orderModel.getOrderPhone());
         order.setOrderName(orderModel.getOrderName());
-        order.setOrderDetails(new ArrayList<>()); // Khởi tạo danh sách orderDetails
+        order.setOrderdetails(new LinkedHashSet<>()); // Khởi tạo danh sách orderDetails
         order.setShipFee(orderModel.getShipFee());
+        order.setCodValue(orderModel.getCodValue());
+        order.setInsuranceValue(orderModel.getInsuranceValue());
+        order.setServiceTypeID(orderModel.getServiceTypeID());
         BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), orderModel.getVoucherID());
         order.setTotalMoney(totalMoney);
 
@@ -105,7 +105,7 @@ public class OrderService {
             }
             else{
                 Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
-                order.getOrderDetails().add(orderDetail);
+                order.getOrderdetails().add(orderDetail);
             }
         }
 
@@ -442,8 +442,8 @@ public class OrderService {
         dto.setOrderPhone(order.getOrderPhone());
         dto.setOrderName(order.getOrderName());
         dto.setStatus(orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID()).get().getStatusType().getName());
-        List<OrderDetailDTO> orderDetailDTOs = order.getOrderDetails() != null ?
-                order.getOrderDetails().stream().map(this::convertToOrderDetailDTO).collect(Collectors.toList()) :
+        List<OrderDetailDTO> orderDetailDTOs = order.getOrderdetails() != null ?
+                order.getOrderdetails().stream().map(this::convertToOrderDetailDTO).collect(Collectors.toList()) :
                 new ArrayList<>();
 
         dto.setOrderDetails(orderDetailDTOs);
@@ -463,17 +463,15 @@ public class OrderService {
 
             return String.format("%s ,%s, %s, %s, %s",
                     userAddress.getDetailAddress(),
-                    userAddress.getAddressLevel4(),
-                    userAddress.getWardStreet(),
-                    userAddress.getDistrictName(),
-                    userAddress.getProvinceName());
+                    userAddress.getWardCode(),
+                    userAddress.getDistrictID(),
+                    userAddress.getProvinceID());
         } catch (AddressNotFoundException e) {
             return "Địa chỉ không tìm thấy";
         } catch (Exception e) {
             return "Lỗi khi lấy địa chỉ";
         }
     }
-
 
 
     // Chuyển đổi Orderdetail thành OrderDetailDTO
@@ -500,7 +498,6 @@ public class OrderService {
         orderDetail.setOrderID(savedOrder);
         orderDetail.setProductVersionID(productversion);
         orderDetail.setQuantity(detailModel.getQuantity());
-        // Tính giá và giá giảm theo yêu cầu
         BigDecimal price = productversion.getPrice();
         orderDetail.setPrice(price);
         orderDetail.setDiscountPrice(price.subtract(calculateDiscountPrice(detailModel.getProductVersionID()))); // Giảm giá cho một đơn vị sản phẩm
