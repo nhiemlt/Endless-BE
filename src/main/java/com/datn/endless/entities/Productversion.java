@@ -40,6 +40,10 @@ public class Productversion {
     @Column(name = "Price", nullable = false, precision = 18, scale = 2)
     private BigDecimal price;
 
+    @NotNull
+    @Column(name = "Weight", nullable = false, precision = 18, scale = 2)
+    private BigDecimal weight;
+
     @Size(max = 50)
     @NotNull
     @Column(name = "Status", nullable = false, length = 50)

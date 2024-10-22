@@ -6,15 +6,12 @@ import com.datn.endless.exceptions.*;
 import com.datn.endless.models.NotificationModel;
 import com.datn.endless.models.OrderDetailModel;
 import com.datn.endless.models.OrderModel;
-import com.datn.endless.models.OrderModelForUser;
 import com.datn.endless.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.BindingResult;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -67,76 +64,7 @@ public class OrderService {
     private NotificationService notificationService;
 
 
-    // Tạo đơn hàng
     public OrderDTO createOrder(OrderModel orderModel) {
-        // Validate that userID is not null or empty
-        if (orderModel.getUserID() == null || orderModel.getUserID().isEmpty()) {
-            throw new IllegalArgumentException("User ID cannot be null or empty");
-        }
-
-        User user = userRepository.findById(orderModel.getUserID())
-                .orElseThrow(() -> new UserNotFoundException("User with ID " + orderModel.getUserID() + " not found"));
-
-        Useraddress userAddress = userAddressRepository.findByUserIDAndAddressID(user, orderModel.getOrderAddress());
-
-        if(userAddress == null) {
-            throw new AddressNotFoundException("Address with ID " + orderModel.getOrderAddress() + " cannot be used");
-        }
-
-        Voucher voucher = null;
-        if (orderModel.getVoucherID() != null && !orderModel.getVoucherID().isEmpty()) {
-            voucher = voucherRepository.findById(orderModel.getVoucherID())
-                    .orElseThrow(() -> new VoucherNotFoundException("Voucher with ID " + orderModel.getVoucherID() + " not found"));
-        }
-
-        // Validate that orderAddress is not null or empty
-        if (orderModel.getOrderAddress() == null || orderModel.getOrderAddress().isEmpty()) {
-            throw new IllegalArgumentException("Order address cannot be null or empty");
-        }
-
-        Order order = new Order();
-        order.setOrderID(UUID.randomUUID().toString()); // Generate ID
-        order.setUserID(user);
-        order.setVoucherID(voucher);
-        order.setOrderDate(LocalDate.now()); // Current date
-        order.setOrderAddress(orderModel.getOrderAddress());
-        order.setOrderPhone(user.getPhone());
-        order.setOrderName(user.getFullname().isEmpty()?user.getUsername():user.getFullname());
-        order.setOrderDetails(new ArrayList<>()); // Initialize the orderDetails list
-        BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), orderModel.getVoucherID());
-        order.setTotalMoney(totalMoney);
-
-        User creater = userRepository.findByUsername(userLoginInformation.getCurrentUser().getUsername());
-        order.setCreater(creater);
-
-        // Create and save order details
-        for (OrderDetailModel detailModel : orderModel.getOrderDetails()) {
-            if (detailModel.getQuantity()>purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())){
-                throw new ProductVersionQuantityException("Product version quantity is greater than product version quantity in shop");
-            }
-            else{
-                Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
-                order.getOrderDetails().add(orderDetail);
-            }
-        }
-
-        // Save order with details
-        Order savedOrder = orderRepository.save(order);
-
-        // Create order status
-        OrderstatusId orderStatusId = new OrderstatusId(savedOrder.getOrderID(), 1); // 1 is the initial status ID
-        Orderstatus initialStatus = new Orderstatus();
-        initialStatus.setId(orderStatusId);
-        initialStatus.setOrder(savedOrder);
-        initialStatus.setStatusType(orderstatustypeRepository.findById(1)
-                .orElseThrow(() -> new StatusTypeNotFoundException("Order status type not found")));
-        initialStatus.setTime(Instant.now());
-        orderstatusRepository.save(initialStatus);
-        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã "+order.getOrderID()+"đã được tạo thành công!");
-        return convertToOrderDTO(savedOrder);
-    }
-
-    public OrderDTO createOrderForUser(OrderModelForUser orderModel) {
         // Lấy thông tin người dùng hiện tại từ hệ thống đăng nhập
         User currentUser = userRepository.findByUsername(userLoginInformation.getCurrentUser().getUsername());
 
@@ -160,14 +88,13 @@ public class OrderService {
         Order order = new Order();
         order.setOrderID(UUID.randomUUID().toString()); // Generate ID
         order.setUserID(currentUser); // Gán người dùng hiện tại vào UserID
-        order.setCreater(null);
         order.setVoucherID(voucher);
         order.setOrderDate(LocalDate.now()); // Ngày hiện tại
         order.setOrderAddress(orderModel.getOrderAddress());
         order.setOrderPhone(orderModel.getOrderPhone());
         order.setOrderName(orderModel.getOrderName());
         order.setOrderDetails(new ArrayList<>()); // Khởi tạo danh sách orderDetails
-
+        order.setShipFee(orderModel.getShipFee());
         BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), orderModel.getVoucherID());
         order.setTotalMoney(totalMoney);
 
@@ -507,9 +434,9 @@ public class OrderService {
 
         // Handle potential null values
         dto.setCustomer(order.getUserID() != null ? convertUserToDTO(order.getUserID()) : null);
-        dto.setCreater(order.getCreater() != null ? convertUserToDTO(order.getCreater()) : null);
         dto.setVoucher(order.getVoucherID() != null ? convertVoucherToDTO(order.getVoucherID()) : null);
         dto.setOrderDate(order.getOrderDate());
+        dto.setShipFee(order.getShipFee());
         dto.setTotalMoney(order.getTotalMoney());
         dto.setOrderAddress(formatAddress(order.getOrderAddress()));
         dto.setOrderPhone(order.getOrderPhone());
@@ -534,22 +461,15 @@ public class OrderService {
             Useraddress userAddress = userAddressRepository.findById(addressId)
                     .orElseThrow(() -> new AddressNotFoundException("Địa chỉ với ID " + addressId + " không tìm thấy"));
 
-            Province province = userAddress.getProvinceCode();
-            District district = userAddress.getDistrictCode();
-            Ward ward = userAddress.getWardCode();
-
-            return String.format("%s, %s, %s, %s",
-                    userAddress.getHouseNumberStreet(),
-                    ward != null ? ward.getFullName() : "",
-                    district != null ? district.getFullName() : "",
-                    province != null ? province.getFullName() : "");
+            return String.format("%s ,%s, %s, %s, %s",
+                    userAddress.getDetailAddress(),
+                    userAddress.getAddressLevel4(),
+                    userAddress.getWardStreet(),
+                    userAddress.getDistrictName(),
+                    userAddress.getProvinceName());
         } catch (AddressNotFoundException e) {
-            // Ghi lại cảnh báo khi địa chỉ không tìm thấy
-            System.err.println(e.getMessage());
             return "Địa chỉ không tìm thấy";
         } catch (Exception e) {
-            // Xử lý lỗi khác và ghi lại thông báo lỗi
-            e.printStackTrace();
             return "Lỗi khi lấy địa chỉ";
         }
     }
