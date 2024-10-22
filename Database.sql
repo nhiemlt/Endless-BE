@@ -171,9 +171,6 @@ CREATE TABLE OrderDetails (
     Quantity INT NOT NULL,
     Price DECIMAL(18, 2) NOT NULL,
     DiscountPrice DECIMAL(18, 2) NOT NULL,
-    Height DECIMAL(18, 2) NOT NULL, -- Chiều cao
-    Length DECIMAL(18, 2) NOT NULL, -- Chiều dài
-    Width DECIMAL(18, 2) NOT NULL,  -- Chiều rộng
     FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
     FOREIGN KEY (ProductVersionID) REFERENCES ProductVersions(ProductVersionID)
 );
@@ -495,17 +492,17 @@ INSERT INTO Orders (UserID, VoucherID, OrderDate, ShipFee, TotalMoney, CodValue,
 ((SELECT UserID FROM Users WHERE Username = 'user05'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'MOTHERSDAY'), '2024-05-11', 60000, 700000, 0, 0, 1, '654 Vĩnh Phúc', '0987654325', 'Hoang Van E');
 
 -- Thêm dữ liệu mẫu cho bảng OrderDetails
-INSERT INTO OrderDetails (OrderID, ProductVersionID, Quantity, Price, DiscountPrice, Height, Length, Width) VALUES
+INSERT INTO OrderDetails (OrderID, ProductVersionID, Quantity, Price, DiscountPrice) VALUES
 ((SELECT OrderID FROM Orders WHERE OrderName = 'Nguyen Van A'), 
- (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Đen'), 1, 600000, 540000, 7.65, 14.67, 0.73),
+ (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Đen'), 1, 600000, 540000),
 ((SELECT OrderID FROM Orders WHERE OrderName = 'Le Thi B'), 
- (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '256GB - Trắng'), 1, 1500000, 1200000, 7.9, 15.5, 0.7),
+ (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '256GB - Trắng'), 1, 1500000, 1200000),
 ((SELECT OrderID FROM Orders WHERE OrderName = 'Tran Van C'), 
- (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 512GB SSD'), 1, 900000, 810000, 1.48, 30.1, 19.9),
+ (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 512GB SSD'), 1, 900000, 810000),
 ((SELECT OrderID FROM Orders WHERE OrderName = 'Pham Thi D'), 
- (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 1TB SSD'), 1, 800000, 600000, 1.6, 31.3, 22.2),
+ (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 1TB SSD'), 1, 800000, 600000),
 ((SELECT OrderID FROM Orders WHERE OrderName = 'Hoang Van E'), 
- (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 1, 700000, 665000, 0.61, 24.81, 17.95);
+ (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 1, 700000, 665000);
 
 -- Thêm dữ liệu mẫu cho bảng Ratings
 INSERT INTO Ratings (UserID, OrderDetailID, RatingValue, Comment, RatingDate) VALUES

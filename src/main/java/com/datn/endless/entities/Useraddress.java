@@ -25,26 +25,22 @@ public class Useraddress {
 
     @Size(max = 100)
     @NotNull
-    @Column(name = "ProvinceName", nullable = false, length = 100)
-    private String provinceName;
+    @Column(name = "ProvinceID", nullable = false, length = 100)
+    private String provinceID;
 
     @Size(max = 100)
     @NotNull
-    @Column(name = "DistrictName", nullable = false, length = 100)
-    private String districtName;
+    @Column(name = "DistrictID", nullable = false, length = 100)
+    private String districtID;
 
     @Size(max = 100)
     @NotNull
-    @Column(name = "WardStreet", nullable = false, length = 100)
-    private String wardStreet;
+    @Column(name = "WardCode ", nullable = false, length = 100)
+    private String wardCode;
 
     @NotNull
     @Lob
     @Column(name = "DetailAddress", nullable = false)
     private String detailAddress;
-
-    @Size(max = 255)
-    @Column(name = "AddressLevel4")
-    private String addressLevel4;
 
 }

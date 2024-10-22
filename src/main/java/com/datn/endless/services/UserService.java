@@ -3,7 +3,7 @@ package com.datn.endless.services;
 import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.dtos.UserDTO;
-import com.datn.endless.dtos.UseraddressDto;
+import com.datn.endless.dtos.UseraddressDTO;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Useraddress;
 import com.datn.endless.models.UserModel;
@@ -49,15 +49,14 @@ public class UserService {
                 .collect(Collectors.toList()) : null;
 
         List<Useraddress> addresses = userAddressRepository.findByUser(user);
-        List<UseraddressDto> addressDTOs = addresses != null ? addresses.stream()
-                .map(address -> new UseraddressDto(
+        List<UseraddressDTO> addressDTOs = addresses != null ? addresses.stream()
+                .map(address -> new UseraddressDTO(
                         address.getAddressID(),
                         address.getUserID().getUserID(),
                         address.getUserID().getUsername(),
-                        address.getProvinceName() != null ? address.getProvinceName() : null,
-                        address.getDistrictName() != null ? address.getDistrictName() : null,
-                        address.getWardStreet() != null ? address.getWardStreet() : null,
-                        address.getAddressLevel4() != null ? address.getAddressLevel4() : null,
+                        address.getProvinceID() != null ? address.getProvinceID() : null,
+                        address.getDistrictID() != null ? address.getDistrictID() : null,
+                        address.getWardCode() != null ? address.getWardCode() : null,
                         address.getDetailAddress() != null ? address.getDetailAddress() : null
                 ))
                 .collect(Collectors.toList()) : null;
@@ -162,9 +161,6 @@ public class UserService {
     public UserDTO getCurrentUser() {
         String username = userLoginInfomation.getCurrentUsername();
         User user = userRepository.findByUsername(username);
-
-        System.out.println("Current user: " + user.toString());
-
         return convertToDTO(user);
     }
 
