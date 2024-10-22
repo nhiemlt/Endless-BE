@@ -26,6 +26,12 @@ public class UserRoleService {
     @Autowired
     private RoleRepository roleRepository;
 
+    // Tìm kiếm role theo tên
+    public List<RoleDTO> searchRoles(String roleName) {
+        List<Role> roles = roleRepository.searchRolesByKeyword(roleName);
+        return roles.stream().map(this::toDto).collect(Collectors.toList());
+    }
+
     public List<RoleDTO> getRolesByUser(String userID) {
         List<Role> roles = userRoleRepository.findRolesByUserId(userID);
         return roles.stream().map(this::toDto).collect(Collectors.toList());
@@ -36,11 +42,13 @@ public class UserRoleService {
         return roles.stream().map(this::toDto).collect(Collectors.toList());
     }
 
-    public void assignRolesToUser(String userId, List<String> roleIds) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+    public void assignUsersToRole(String roleId, List<String> userIds) {
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
 
-        for (String roleId : roleIds) {
-            Role role = roleRepository.findById(roleId).orElseThrow(() -> new RuntimeException("Role not found"));
+        for (String userId : userIds) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
             Userrole userrole = new Userrole();
             userrole.setUser(user);
