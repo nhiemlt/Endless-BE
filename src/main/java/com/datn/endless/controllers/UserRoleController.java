@@ -22,9 +22,15 @@ public class UserRoleController {
         return ResponseEntity.ok(userRoleService.getRolesByUser(userId));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<RoleDTO>> searchRoles(@RequestParam String keyword) {
+        List<RoleDTO> roles = userRoleService.searchRoles(keyword);
+        return ResponseEntity.ok(roles);
+    }
+
     @PostMapping
-    public ResponseEntity<Void> assignRolesToUser(@PathVariable String userId, @RequestBody UserRoleDTO userRoleDTO) {
-        userRoleService.assignRolesToUser(userId, userRoleDTO.getRoleIds());
+    public ResponseEntity<Void> assignUsersToRole(@PathVariable String roleId, @RequestBody UserRoleDTO userRoleDTO) {
+        userRoleService.assignUsersToRole(roleId, userRoleDTO.getUserIds());
         return ResponseEntity.noContent().build();
     }
 

@@ -11,6 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRoleDTO implements Serializable {
-    private String userId;
-    private List<String> roleIds;
+    private List<String> userIds;
+    private String roleIds;
 }

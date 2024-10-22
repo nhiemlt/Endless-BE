@@ -76,83 +76,6 @@ public class UserService {
                 .build();
     }
 
-    // Chuyển đổi danh sách User thành danh sách UserDTO
-    private List<UserDTO> convertToDTOList(List<User> users) {
-        return users.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    // Lấy tất cả người dùng
-    public List<UserDTO> getAllUsers() {
-        List<User> users = userRepository.findAll();
-        return convertToDTOList(users);
-    }
-
-    // Lấy người dùng theo ID
-    public UserDTO getUserById(String id) {
-        User user = userRepository.findById(id).orElse(null);
-        return user != null ? convertToDTO(user) : null;
-    }
-
-    // Convert MultipartFile to base64
-    private String convertToBase64(MultipartFile file) throws IOException {
-        if (file != null && !file.isEmpty()) {
-            return Base64.getEncoder().encodeToString(file.getBytes());
-        }
-        return null;
-    }
-
-    public UserDTO saveUser(UserModel userModel) {
-        userModel.validate();
-
-        User user = new User();
-        user.setUserID(userModel.getUserID());
-        user.setUsername(userModel.getUsername());
-        user.setFullname(userModel.getFullname());
-        user.setPhone(userModel.getPhone());
-        user.setEmail(userModel.getEmail());
-        user.setLanguage(userModel.getLanguage());
-
-        if (userModel.getAvatar() != null) {
-            try {
-                user.setAvatar(convertToBase64(userModel.getAvatar()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        User savedUser = userRepository.save(user);
-        return convertToDTO(savedUser);
-    }
-
-    public UserDTO updateCurrentUser(UserModel userModel) {
-        userModel.validate();
-
-        User user = userRepository.findById(userModel.getUserID()).orElse(null);
-        if (user != null) {
-            user.setFullname(userModel.getFullname());
-            user.setPhone(userModel.getPhone());
-            user.setEmail(userModel.getEmail());
-            user.setLanguage(userModel.getLanguage());
-
-            if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
-                try {
-                    user.setAvatar(convertToBase64(userModel.getAvatar()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            userRepository.save(user);
-            return convertToDTO(user);
-        }
-        return null;
-    }
-
-    // Xóa người dùng theo ID
-    public void deleteUser(String id) {
-        userRepository.deleteById(id);
-    }
-
     // Lấy tất cả người dùng với phân trang và tìm kiếm theo tên
     public Page<UserDTO> getUsersWithPaginationAndSearch(String keyword, Pageable pageable) {
         Page<User> users;
@@ -167,10 +90,73 @@ public class UserService {
     public UserDTO getCurrentUser() {
         String username = userLoginInfomation.getCurrentUsername();
         User user = userRepository.findByUsername(username);
-
-        System.out.println("Current user: " + user.toString());
-
         return convertToDTO(user);
     }
 
+    // Lấy người dùng theo ID
+    public UserDTO getUserById(String id) {
+        User user = userRepository.findById(id).orElse(null);
+        return user != null ? convertToDTO(user) : null;
+    }
+
+    public UserDTO saveUser(UserModel userModel) {
+        User user = new User();
+        user.setUserID(userModel.getUserID());
+        user.setUsername(userModel.getUsername());
+        user.setFullname(userModel.getFullname());
+        user.setPhone(userModel.getPhone());
+        user.setEmail(userModel.getEmail());
+        user.setLanguage(userModel.getLanguage());
+
+        if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
+            String contentType = userModel.getAvatar().getContentType();
+
+            if (!contentType.startsWith("image/")) {
+                throw new IllegalArgumentException("File must be an image");
+            }
+
+            try {
+                String base64Image = convertToBase64(userModel.getAvatar());
+                user.setAvatar(base64Image);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to convert image to base64", e);
+            }
+        }
+
+        User savedUser = userRepository.save(user);
+        return convertToDTO(savedUser);
+    }
+
+    public UserDTO updateCurrentUser(UserModel userModel) {
+        User user = userRepository.findById(userModel.getUserID()).orElse(null);
+        if (user != null) {
+            user.setFullname(userModel.getFullname());
+            user.setPhone(userModel.getPhone());
+            user.setEmail(userModel.getEmail());
+            user.setLanguage(userModel.getLanguage());
+
+            if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
+                try {
+                    user.setAvatar(convertToBase64(userModel.getAvatar()));
+                } catch (IOException e) {
+                    throw new RuntimeException("Failed to convert image to base64", e);
+                }
+            }
+
+            userRepository.save(user);
+            return convertToDTO(user);
+        }
+        return null;
+    }
+
+    // Xóa người dùng theo ID
+    public void deleteUser(String id) {
+        userRepository.deleteById(id);
+    }
+
+    // Chuyển đổi MultipartFile thành base64
+    private String convertToBase64(MultipartFile file) throws IOException {
+        byte[] bytes = file.getBytes();
+        return Base64.getEncoder().encodeToString(bytes);
+    }
 }

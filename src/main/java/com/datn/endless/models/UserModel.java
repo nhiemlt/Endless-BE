@@ -1,39 +1,36 @@
 package com.datn.endless.models;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserModel {
 
     private String userID;
-    private String username;
-    private String fullname;
-    private String phone;
-    private String email;
-    private MultipartFile avatar;
-    private String language;
 
-    public void validate() {
-        if (username == null || username.isEmpty()) {
-            throw new IllegalArgumentException("Username is required");
-        }
-        if (email == null || email.isEmpty()) {
-            throw new IllegalArgumentException("Email is required");
-        } else if (!email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
-            throw new IllegalArgumentException("Invalid email format");
-        }
-        if (phone == null || phone.isEmpty()) {
-            throw new IllegalArgumentException("Phone number is required");
-        } else if (!phone.matches("^0\\d{9}$")) {
-            throw new IllegalArgumentException("Phone number must be 10 digits and start with 0");
-        }
-        if (language == null || language.isEmpty()) {
-            throw new IllegalArgumentException("Language is required");
-        }
-    }
+    @NotBlank(message = "Username is required")
+    private String username;
+
+    @NotBlank(message = "Fullname is required")
+    private String fullname;
+
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^0\\d{9}$", message = "Phone number must be 10 digits and start with 0")
+    private String phone;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    private String email;
+
+    private MultipartFile avatar;
+
+    @NotBlank(message = "Language is required")
+    private String language;
 }
