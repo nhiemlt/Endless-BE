@@ -91,6 +91,7 @@ public class ProductVersionService {
         productVersion.setVersionName(productVersionModel.getVersionName());
         productVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
         productVersion.setPrice(productVersionModel.getPrice());
+        productVersion.setWeight(productVersionModel.getWeight());
         productVersion.setImage(convertImageToBase64(productVersionModel.getImage())); // Chuyển đổi hình ảnh
 
         productVersion.setStatus("Active");
@@ -123,6 +124,7 @@ public class ProductVersionService {
         existingProductVersion.setVersionName(productVersionModel.getVersionName());
         existingProductVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
         existingProductVersion.setPrice(productVersionModel.getPrice());
+        existingProductVersion.setWeight(productVersionModel.getWeight());
         existingProductVersion.setImage(convertImageToBase64(productVersionModel.getImage())); // Chuyển đổi hình ảnh
 
         // Cập nhật thông tin
@@ -164,6 +166,7 @@ public class ProductVersionService {
         dto.setVersionName(productVersion.getVersionName());
         dto.setPurchasePrice(productVersion.getPurchasePrice()); // giá nhap || giá góc
         dto.setPrice(productVersion.getPrice()); //gia ban
+        dto.setShipFee(productVersion.getWeight()); //gia ban
         dto.setDiscountPercentage(calculateDiscountPercentage(productVersion.getProductVersionID())); // Tỷ lệ phần trăm giảm giá
 
         dto.setQuantitySold(purchaseOrderService.getProductVersionOrderQuantity(productVersion.getProductVersionID())); // Số lượng đã bán
