@@ -1,22 +1,22 @@
 package com.datn.endless.dtos;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import lombok.Value;
+import lombok.*;
 
-import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
-/**
- * DTO for {@link com.datn.endless.entities.Useraddress}
- */
-@Value
-public class UseraddressDto implements Serializable {
-    String addressID;
-    String userID;
-    String username;
-    String provinceName;
-    String districtName;
-    String wardStreet;
-    String detailAddress;
-    String addressLevel4;
+@Data
+public class OrderDTO {
+    private String orderID;
+    private UserOderDTO customer;
+    private VoucherOrderDTO voucher;
+    private LocalDate orderDate;
+    private BigDecimal shipFee;
+    private BigDecimal totalMoney;
+    private String orderAddress;
+    private String orderPhone;
+    private String orderName;
+    private String status;
+    List<OrderDetailDTO> orderDetails;
 }
