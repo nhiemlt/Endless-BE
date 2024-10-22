@@ -3,7 +3,7 @@ package com.datn.endless.services;
 import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.dtos.UserDTO;
-import com.datn.endless.dtos.UseraddressDto;
+import com.datn.endless.dtos.UseraddressDTO;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Useraddress;
 import com.datn.endless.models.UserModel;
@@ -49,15 +49,14 @@ public class UserService {
                 .collect(Collectors.toList()) : null;
 
         List<Useraddress> addresses = userAddressRepository.findByUser(user);
-        List<UseraddressDto> addressDTOs = addresses != null ? addresses.stream()
-                .map(address -> new UseraddressDto(
+        List<UseraddressDTO> addressDTOs = addresses != null ? addresses.stream()
+                .map(address -> new UseraddressDTO(
                         address.getAddressID(),
                         address.getUserID().getUserID(),
                         address.getUserID().getUsername(),
-                        address.getProvinceName() != null ? address.getProvinceName() : null,
-                        address.getDistrictName() != null ? address.getDistrictName() : null,
-                        address.getWardStreet() != null ? address.getWardStreet() : null,
-                        address.getAddressLevel4() != null ? address.getAddressLevel4() : null,
+                        address.getProvinceID() != null ? address.getProvinceID() : null,
+                        address.getDistrictID() != null ? address.getDistrictID() : null,
+                        address.getWardCode() != null ? address.getWardCode() : null,
                         address.getDetailAddress() != null ? address.getDetailAddress() : null
                 ))
                 .collect(Collectors.toList()) : null;
@@ -75,27 +74,29 @@ public class UserService {
                 .build();
     }
 
-    // Lấy tất cả người dùng với phân trang và tìm kiếm theo tên
-    public Page<UserDTO> getUsersWithPaginationAndSearch(String keyword, Pageable pageable) {
-        Page<User> users;
-        if (keyword != null && !keyword.isEmpty()) {
-            users = userRepository.searchByFullname(keyword, pageable);
-        } else {
-            users = userRepository.findAll(pageable);
-        }
-        return users.map(this::convertToDTO);
+    // Chuyển đổi danh sách User thành danh sách UserDTO
+    private List<UserDTO> convertToDTOList(List<User> users) {
+        return users.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    public UserDTO getCurrentUser() {
-        String username = userLoginInfomation.getCurrentUsername();
-        User user = userRepository.findByUsername(username);
-        return convertToDTO(user);
+    // Lấy tất cả người dùng
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return convertToDTOList(users);
     }
 
     // Lấy người dùng theo ID
     public UserDTO getUserById(String id) {
         User user = userRepository.findById(id).orElse(null);
         return user != null ? convertToDTO(user) : null;
+    }
+
+    // Convert MultipartFile to base64
+    private String convertToBase64(MultipartFile file) throws IOException {
+        if (file != null && !file.isEmpty()) {
+            return Base64.getEncoder().encodeToString(file.getBytes());
+        }
+        return null;
     }
 
     public UserDTO saveUser(UserModel userModel) {
@@ -107,18 +108,11 @@ public class UserService {
         user.setEmail(userModel.getEmail());
         user.setLanguage(userModel.getLanguage());
 
-        if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
-            String contentType = userModel.getAvatar().getContentType();
-
-            if (!contentType.startsWith("image/")) {
-                throw new IllegalArgumentException("File must be an image");
-            }
-
+        if (userModel.getAvatar() != null) {
             try {
-                String base64Image = convertToBase64(userModel.getAvatar());
-                user.setAvatar(base64Image);
+                user.setAvatar(convertToBase64(userModel.getAvatar()));
             } catch (IOException e) {
-                throw new RuntimeException("Failed to convert image to base64", e);
+                e.printStackTrace();
             }
         }
 
@@ -138,7 +132,7 @@ public class UserService {
                 try {
                     user.setAvatar(convertToBase64(userModel.getAvatar()));
                 } catch (IOException e) {
-                    throw new RuntimeException("Failed to convert image to base64", e);
+                    e.printStackTrace();
                 }
             }
 
@@ -153,9 +147,21 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    // Chuyển đổi MultipartFile thành base64
-    private String convertToBase64(MultipartFile file) throws IOException {
-        byte[] bytes = file.getBytes();
-        return Base64.getEncoder().encodeToString(bytes);
+    // Lấy tất cả người dùng với phân trang và tìm kiếm theo tên
+    public Page<UserDTO> getUsersWithPaginationAndSearch(String keyword, Pageable pageable) {
+        Page<User> users;
+        if (keyword != null && !keyword.isEmpty()) {
+            users = userRepository.searchByFullname(keyword, pageable);
+        } else {
+            users = userRepository.findAll(pageable);
+        }
+        return users.map(this::convertToDTO);
     }
+
+    public UserDTO getCurrentUser() {
+        String username = userLoginInfomation.getCurrentUsername();
+        User user = userRepository.findByUsername(username);
+        return convertToDTO(user);
+    }
+
 }
