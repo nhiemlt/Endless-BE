@@ -52,8 +52,11 @@ public class UserService {
                         address.getUserID().getUserID(),
                         address.getUserID().getUsername(),
                         address.getProvinceID() != null ? address.getProvinceID() : null,
+                        address.getProvinceName() != null ? address.getProvinceName() : null,
                         address.getDistrictID() != null ? address.getDistrictID() : null,
+                        address.getDistrictName() != null ? address.getDistrictName() : null,
                         address.getWardCode() != null ? address.getWardCode() : null,
+                        address.getWardName() != null ? address.getWardName() : null,
                         address.getDetailAddress() != null ? address.getDetailAddress() : null
                 ))
                 .collect(Collectors.toList()) : null;

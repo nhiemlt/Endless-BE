@@ -12,8 +12,11 @@ public class UseraddressDTO implements Serializable {
     String addressID;
     String userID;
     String username;
-    String provinceID;
+    Integer provinceID;
+    String provinceName;
+    Integer districtID;
     String districtName;
-    String wardSCode;
+    Integer wardCode;
+    String wardName;
     String detailAddress;
 }

@@ -1,8 +1,10 @@
 package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.UseraddressDTO;
+import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.UserAddressModel;
 import com.datn.endless.services.UserAddressService;
+import com.datn.endless.services.UserLoginInfomation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ public class UserAddressController {
 
     @Autowired
     private UserAddressService userAddressService;
+    @Autowired
+    private UserLoginInfomation userLoginInfomation;
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<UseraddressDTO>> getAllUserAddresses(@PathVariable("userId") String userId) {
@@ -36,6 +40,43 @@ public class UserAddressController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/current")
+    public ResponseEntity<?> getUserAddressesForCurrentUser() {
+        try {
+            // Lấy username của người dùng hiện tại
+            String username = userLoginInfomation.getCurrentUsername();
+            // Gọi service để lấy danh sách địa chỉ
+            List<UseraddressDTO> userAddresses = userAddressService.getUserAddressesForUser(username);
+            return ResponseEntity.ok(userAddresses); // Trả về danh sách địa chỉ
+        } catch (UserNotFoundException e) {
+            // Xử lý lỗi khi không tìm thấy người dùng
+            return ResponseEntity.status(404).body("User not found: " + e.getMessage());
+        } catch (Exception e) {
+            // Xử lý các lỗi khác (bao gồm lỗi giao dịch JPA)
+            return ResponseEntity.status(500).body("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/add-current")
+    public ResponseEntity<?> addUserAddressCurrent(@RequestBody UserAddressModel userAddressModel) {
+        try {
+            // Kiểm tra dữ liệu đầu vào cơ bản (nếu cần)
+            if (userAddressModel == null || userAddressModel.getDetailAddress() == null) {
+                return new ResponseEntity<>("Address details cannot be null", HttpStatus.BAD_REQUEST);
+            }
+
+            UseraddressDTO userAddressDTO = userAddressService.addUserAddressForUser(userAddressModel);
+            return new ResponseEntity<>(userAddressDTO, HttpStatus.CREATED);
+
+        } catch (UserNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            // Ghi log lỗi chi tiết
+            System.err.println("Failed to add new address: " + e.getMessage());
+            return new ResponseEntity<>("Could not add new address", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
