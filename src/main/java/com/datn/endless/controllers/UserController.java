@@ -134,22 +134,23 @@ public class UserController {
 
         // Kiểm tra định dạng base64 cho avatar
         if (!isValidBase64(userModel.getAvatar())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid avatar format")));
+            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Định dạng avatar không hợp lệ")));
         }
 
         try {
             UserDTO currentUser = userService.getCurrentUser();
             if (currentUser == null) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.notFound().build(); // Người dùng không tìm thấy
             }
             userModel.setUserID(currentUser.getUserID());
             UserDTO updatedUser = userService.updateCurrentUser(userModel);
-            return ResponseEntity.ok(updatedUser);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
+            return ResponseEntity.ok(updatedUser); // Trả về người dùng đã cập nhật
         } catch (RuntimeException e) {
+            // Phân loại thông báo lỗi dựa trên nội dung
+            return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse(List.of("Failed to update current user")));
+                    .body(new ErrorResponse(List.of("Đã xảy ra lỗi khi cập nhật người dùng")));
         }
     }
 

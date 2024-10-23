@@ -138,4 +138,18 @@ public class UserAddressService {
         }
         userAddressRepository.deleteById(addressId);
     }
+
+    // Xóa địa chỉ người dùng hiện tại
+    public void deleteForUser(String addressId) {
+        // Lấy tên người dùng hiện tại từ UserLoginInformation
+        String currentUsername = userLoginInfomation.getCurrentUsername();
+
+        // Kiểm tra xem địa chỉ có thuộc về người dùng hiện tại không
+        if (!userAddressRepository.existsByIdAndUsername(addressId, currentUsername)) {
+            throw new IllegalArgumentException("Địa chỉ không tồn tại hoặc không thuộc về người dùng hiện tại");
+        }
+
+        // Xóa địa chỉ
+        userAddressRepository.deleteById(addressId);
+    }
 }
