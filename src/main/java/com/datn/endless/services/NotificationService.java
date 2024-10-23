@@ -71,11 +71,7 @@ public class NotificationService {
         try {
             Notification notification = createNotificationForAll(notificationModel);
             notification = notificationRepository.save(notification);
-            System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n");
-            for(Notificationrecipient recipient : notification.getNotificationrecipients()){
-                System.out.println(recipient.getUserID().getUsername());
-            }
-
+//            notificationRecipientRepository.saveAll(notification.getNotificationrecipients());
             return buildSuccessResponse("Thông báo đã được gửi thành công!");
         } catch (Exception e) {
             return buildErrorResponse("Lỗi khi gửi thông báo: " + e.getMessage());
@@ -112,6 +108,7 @@ public class NotificationService {
             notificationrecipient.setStatus("UNREAD");
             recipients.add(notificationrecipient);
         }
+        notification.setNotificationrecipients(recipients);
         return notification;
     }
 
