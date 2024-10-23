@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class NotificationModel {
+public class NotificationModelForAll {
 
     @Size(max = 255, message = "Title cannot exceed 255 characters")
     @NotEmpty(message = "Title is required")
@@ -17,9 +17,6 @@ public class NotificationModel {
     private String content;
 
     @Size(max = 50, message = "Type cannot exceed 50 characters")
-    private String type = "Manual creation";
-
-    @NotEmpty(message = "At least one user ID is required")
-    private List<String> userIds;
+    private String type = "All";
 }
 

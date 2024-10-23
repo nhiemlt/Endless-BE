@@ -77,6 +77,7 @@ public class SecurityConfig {
 
                         // Các API yêu cầu quyền (dựa theo permission code)
                         .requestMatchers(HttpMethod.POST, "/notifications/send").hasAuthority("send_notifications")
+                        .requestMatchers(HttpMethod.POST, "/notifications/send-all").hasAuthority("send_notifications")
                         .requestMatchers(HttpMethod.POST, "/notifications/markAsRead").hasAuthority("notifications/markAsRead")
                         .requestMatchers(HttpMethod.POST, "/notifications/markAllAsRead").hasAuthority("notifications/markAllAsRead")
                         .requestMatchers(HttpMethod.DELETE, "/notifications/delete").hasAuthority("notifications/delete")

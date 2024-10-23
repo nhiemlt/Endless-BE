@@ -7,6 +7,7 @@ import com.datn.endless.entities.User;
 import com.datn.endless.exceptions.ResourceNotFoundException;
 import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.NotificationModel;
+import com.datn.endless.models.NotificationModelForAll;
 import com.datn.endless.models.NotificationModelForUser;
 import com.datn.endless.repositories.NotificationRepository;
 import com.datn.endless.repositories.NotificationrecipientRepository;
@@ -57,9 +58,27 @@ public class NotificationService {
     public void sendNotificationForOrder(@Valid NotificationModelForUser notificationModel) {
         try {
             Notification notification = createNotificationForUser(notificationModel);
-            Notification notification1 = notificationRepository.save(notification);
+            notificationRepository.save(notification);
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to send notification: " + e.getMessage());
+        }
+    }
+
+    public Map<String, Object> sendNotificationForAll(@Valid NotificationModelForAll notificationModel, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return buildErrorResponse("Lỗi dữ liệu truyền vào");
+        }
+        try {
+            Notification notification = createNotificationForAll(notificationModel);
+            notification = notificationRepository.save(notification);
+            System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n");
+            for(Notificationrecipient recipient : notification.getNotificationrecipients()){
+                System.out.println(recipient.getUserID().getUsername());
+            }
+
+            return buildSuccessResponse("Thông báo đã được gửi thành công!");
+        } catch (Exception e) {
+            return buildErrorResponse("Lỗi khi gửi thông báo: " + e.getMessage());
         }
     }
 
@@ -73,6 +92,26 @@ public class NotificationService {
         notification.setNotificationDate(Instant.now());
         notification.setStatus("SENT");
         notification.setNotificationrecipients(new HashSet<>()); // Khởi tạo Set nếu cần
+        return notification;
+    }
+
+    private Notification createNotificationForAll(NotificationModelForAll notificationModel) {
+        Notification notification = new Notification();
+        notification.setNotificationID(UUID.randomUUID().toString());
+        notification.setTitle(notificationModel.getTitle());
+        notification.setContent(notificationModel.getContent());
+        notification.setType(notificationModel.getType());
+        notification.setNotificationDate(Instant.now());
+        notification.setStatus("SENT");
+        Set<Notificationrecipient> recipients = new HashSet<>();
+        for(User user: userRepository.findAll()) {
+            Notificationrecipient notificationrecipient = new Notificationrecipient();
+            notificationrecipient.setNotificationRecipientID(UUID.randomUUID().toString());
+            notificationrecipient.setNotificationID(notification);
+            notificationrecipient.setUserID(user);
+            notificationrecipient.setStatus("UNREAD");
+            recipients.add(notificationrecipient);
+        }
         return notification;
     }
 

@@ -1,9 +1,8 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.dtos.NotificationDTO;
 import com.datn.endless.dtos.NotificationRecipientDTO;
-import com.datn.endless.entities.Notification;
 import com.datn.endless.models.NotificationModel;
+import com.datn.endless.models.NotificationModelForAll;
 import com.datn.endless.services.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +28,14 @@ public class NotificationController {
             @Valid @RequestBody NotificationModel notificationModel,
             BindingResult bindingResult) {
         Map<String, Object> response = notificationService.sendNotification(notificationModel, bindingResult);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/send-all")
+    public ResponseEntity<Map<String, Object>> sendNotificationForAll(
+            @Valid @RequestBody NotificationModelForAll notificationModel,
+            BindingResult bindingResult) {
+        Map<String, Object> response = notificationService.sendNotificationForAll(notificationModel, bindingResult);
         return ResponseEntity.ok(response);
     }
 
