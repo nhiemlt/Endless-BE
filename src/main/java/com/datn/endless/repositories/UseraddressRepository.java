@@ -14,4 +14,7 @@ public interface UseraddressRepository extends JpaRepository<Useraddress, String
     List<Useraddress> findByUser(User user);
     // Tìm địa chỉ theo userID và addressID
     Useraddress findByUserIDAndAddressID(User user, String addressID);
+
+    // Kiểm tra xem địa chỉ có tồn tại và thuộc về người dùng hiện tại không
+    boolean existsByIdAndUsername(String addressId, String username);
 }
