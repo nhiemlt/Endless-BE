@@ -30,6 +30,6 @@ public class UserModel {
 
     private String avatar;
 
-    @NotBlank(message = "Language is required")
-    private String language;
+
+    private String language = "vie";
 }
