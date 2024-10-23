@@ -175,12 +175,13 @@ public class NotificationService {
     }
 
     private NotificationRecipientDTO convertToDTO(Notificationrecipient recipient) {
-        return new NotificationRecipientDTO(recipient.getNotificationRecipientID(),
+        return new NotificationRecipientDTO(
+                recipient.getNotificationRecipientID(),
                 recipient.getNotificationID().getNotificationID(),
                 recipient.getStatus(),
                 recipient.getNotificationID().getTitle(),
-                recipient.getUserID().getUsername(),
-                recipient.getNotificationID().getContent());
+                recipient.getNotificationID().getContent(),
+                recipient.getUserID().getUsername());
     }
 
     @Transactional

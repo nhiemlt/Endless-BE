@@ -6,7 +6,7 @@ USE EndlessEcommerce;
 CREATE TABLE Brands (
     BrandID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     Name VARCHAR(255) NOT NULL,
-    Logo TEXT
+    Logo LONGTEXT
 );
 
 -- Tạo bảng Categories
@@ -77,7 +77,7 @@ CREATE TABLE Promotions (
     EN_name VARCHAR(255),
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
-    Poster VARCHAR(255),
+    Poster LONGTEXT,
     EN_description TEXT
 );
 
@@ -194,7 +194,7 @@ CREATE TABLE Ratings (
 CREATE TABLE RatingPictures (
     PictureID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     RatingID CHAR(36) NOT NULL,
-    Picture TEXT,
+    Picture LONGTEXT,
     FOREIGN KEY (RatingID) REFERENCES Ratings(RatingID)
 );
 
