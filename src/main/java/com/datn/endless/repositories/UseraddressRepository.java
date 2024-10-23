@@ -4,6 +4,7 @@ import com.datn.endless.entities.User;
 import com.datn.endless.entities.Useraddress;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,5 +17,6 @@ public interface UseraddressRepository extends JpaRepository<Useraddress, String
     Useraddress findByUserIDAndAddressID(User user, String addressID);
 
     // Kiểm tra xem địa chỉ có tồn tại và thuộc về người dùng hiện tại không
-    boolean existsByIdAndUsername(String addressId, String username);
+    @Query("SELECT ua FROM Useraddress ua WHERE ua.addressID =:addressId and ua.userID.username =:username")
+    Useraddress findByIdAndUsername(@Param("addressId") String addressId, @Param("username") String username);
 }

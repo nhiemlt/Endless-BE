@@ -113,14 +113,14 @@ public class UserService {
         }
 
         // Kiểm tra xem email có thay đổi và đã tồn tại không
-        if (!user.getEmail().equals(userModel.getEmail())) {
+        if (user.getEmail() !=null && !user.getEmail().equals(userModel.getEmail())) {
             if (userRepository.findByEmail(userModel.getEmail()) != null) {
                 throw new EmailAlreadyExistsException("Email đã tồn tại."); // Sử dụng ngoại lệ tùy chỉnh
             }
         }
 
         // Kiểm tra xem số điện thoại có thay đổi và đã tồn tại không
-        if (!user.getPhone().equals(userModel.getPhone())) {
+        if (user.getPhone() !=null && !user.getPhone().equals(userModel.getPhone())) {
             if (userRepository.findByPhone(userModel.getPhone()) != null) {
                 throw new PhoneAlreadyExistsException("Số điện thoại đã tồn tại."); // Sử dụng ngoại lệ tùy chỉnh
             }

@@ -109,7 +109,6 @@ public class UserAddressService {
             return convertToDTO(savedUserAddress);
         } catch (Exception e) {
             // Ghi log để theo dõi chi tiết lỗi
-            System.err.println("Error adding user address: " + e.getMessage());
             throw new RuntimeException("Could not save user address. Please try again later.");
         }
     }
@@ -139,17 +138,21 @@ public class UserAddressService {
         userAddressRepository.deleteById(addressId);
     }
 
-    // Xóa địa chỉ người dùng hiện tại
+    // Xóa địa chỉ của người dùng hiện tại
     public void deleteForUser(String addressId) {
-        // Lấy tên người dùng hiện tại từ UserLoginInformation
+        // Lấy tên người dùng hiện tại
         String currentUsername = userLoginInfomation.getCurrentUsername();
 
-        // Kiểm tra xem địa chỉ có thuộc về người dùng hiện tại không
-        if (!userAddressRepository.existsByIdAndUsername(addressId, currentUsername)) {
+        // Tìm kiếm địa chỉ dựa trên addressId và username
+        Useraddress userAddress = userAddressRepository.findByIdAndUsername(addressId, currentUsername);
+
+        // Kiểm tra xem địa chỉ có tồn tại không
+        if (userAddress == null) {
             throw new IllegalArgumentException("Địa chỉ không tồn tại hoặc không thuộc về người dùng hiện tại");
         }
 
         // Xóa địa chỉ
         userAddressRepository.deleteById(addressId);
     }
+
 }

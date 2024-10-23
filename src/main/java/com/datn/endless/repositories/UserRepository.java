@@ -31,5 +31,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u WHERE u.fullname LIKE %:keyword%")
     Page<User> searchByFullname(@Param("keyword") String keyword, Pageable pageable);
 
+    // Tìm tất cả người dùng có active là true
+    List<User> findByActiveTrue();
+
 
 }

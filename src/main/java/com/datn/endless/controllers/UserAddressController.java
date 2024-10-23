@@ -95,6 +95,24 @@ public class UserAddressController {
     }
 
 
+    // Xóa địa chỉ của người dùng hiện tại
+    @DeleteMapping("/current/{addressId}")
+    public ResponseEntity<?> deleteAddressForCurrentUser(@PathVariable String addressId) {
+        try {
+            // Gọi service để xóa địa chỉ
+            userAddressService.deleteForUser(addressId);
+            return ResponseEntity.ok("Địa chỉ đã được xóa thành công");
+        } catch (IllegalArgumentException e) {
+            // Trả về lỗi 400 nếu địa chỉ không tồn tại hoặc không thuộc về người dùng hiện tại
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            // Trả về lỗi 500 và thông báo lỗi khi xóa địa chỉ không thành công
+            return ResponseEntity.status(500).body("Đã xảy ra lỗi khi xóa địa chỉ" +e.getMessage());
+        }
+    }
+
+
+
     @DeleteMapping("/{addressId}")
     public ResponseEntity<Void> deleteUserAddress(@PathVariable("addressId") String addressId) {
         try {
