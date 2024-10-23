@@ -105,7 +105,7 @@ CREATE TABLE Users (
     Password VARCHAR(255),
     Phone VARCHAR(11),
     Email VARCHAR(255),
-    Avatar TEXT,
+    Avatar LONGTEXT,
     Language VARCHAR(50),
     active BOOLEAN DEFAULT TRUE,
     forgetPassword BOOLEAN DEFAULT FALSE

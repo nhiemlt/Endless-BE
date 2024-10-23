@@ -57,10 +57,8 @@ public class NotificationService {
     public void sendNotificationForOrder(@Valid NotificationModelForUser notificationModel) {
         try {
             Notification notification = createNotificationForUser(notificationModel);
-            notificationRepository.save(notification);
-            System.out.println("\n\n\n\n\n\n\n\n\n\n Notification sent for order: " + notificationModel.getUserID());
+            Notification notification1 = notificationRepository.save(notification);
         } catch (Exception e) {
-            System.err.println("Failed to send notification: " + e.getMessage());
             throw new IllegalArgumentException("Failed to send notification: " + e.getMessage());
         }
     }
