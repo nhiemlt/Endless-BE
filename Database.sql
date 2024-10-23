@@ -655,7 +655,8 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
 
     -- Quản lý đơn hàng (ENTRIES)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Xem tất cả đơn nhập', 'View all entries', 'view_all_entries'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Thêm đơn nhập mới', 'Add new entries', 'entries'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Thêm đơn nhập mới', 'Add new entries', 'add_new_entries'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Cập nhật đơn nhập', 'Update entries', 'update_entries'),
 
     -- Quản lý thuộc tính (ATTRIBUTE)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Xem tất cả thuộc tính', 'View all attributes', 'view_attributes'),
@@ -668,11 +669,14 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
     -- Quản lý thương hiệu (BRAND)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Xem tất cả thương hiệu', 'View all brands', 'view_all_brands'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Thêm thương hiệu mới', 'Add new brand', 'add_new_brand'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Cập nhật thương hiệu', 'Update new brand', 'update_brand'),
+	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Xóa thương hiệu', 'Delete brand', 'delete_brand'),
     
     -- Quản lý danh mục (CATEGORY)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Xem tất cả danh mục', 'View all categories', 'view_all_categories'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Thêm danh mục mới', 'Add new category', 'add_new_category'),
 	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Xóa danh mục', 'Remove category', 'delete_category'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Cập nhật danh mục', 'Update category', 'update_category'),
     
     -- Quản lý sản phẩm (PRODUCT)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Xem tất cả sản phẩm', 'View all products', 'view_all_products'),
