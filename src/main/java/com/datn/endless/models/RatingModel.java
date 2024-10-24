@@ -22,6 +22,6 @@ public class RatingModel {
     @Size(max = 500, message = "Comment cannot exceed 500 characters")
     private String comment;
 
-    private  MultipartFile[] pictures;
+    private List<String> pictures;
 }
 

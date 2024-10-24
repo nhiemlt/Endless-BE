@@ -1,17 +1,18 @@
 package com.datn.endless.dtos;
 
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import java.time.Instant;
 import java.util.List;
 
 @Data
-public class RatingDTO {
+public class RatingDTO2 {
     private String ratingID;
     private String userID;
     private String username;
     private String fullname;
+    private String avatar;
     private String orderDetailID;
     private String productVersionID;
     private String versionName;
@@ -19,6 +20,5 @@ public class RatingDTO {
     private Integer ratingValue;
     private String comment;
     private Instant ratingDate;
-    private double averageRating;
     private List<RatingPictureDTO> pictures;
 }
