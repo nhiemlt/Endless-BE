@@ -31,7 +31,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vouchers")
-@CrossOrigin(origins = "*")
 public class VoucherController {
 
     @Autowired
