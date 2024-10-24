@@ -29,7 +29,7 @@ public class NotificationController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String title,
             Pageable pageable) {
-        return notificationService.findAll(title, status, pageable);
+        return notificationService.getAllNotificationDTOs(title, status, pageable);
     }
 
     @PostMapping("/send")

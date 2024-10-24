@@ -42,14 +42,18 @@ public class NotificationService {
     @Autowired
     private UserLoginInfomation userLoginInfomation;
 
+    public Page<NotificationDTO> getAllNotificationDTOs(String title, String status, Pageable pageable) {
+        return findAll(title, status, pageable);
+    }
+
     // Phương thức lấy danh sách thông báo và chuyển đổi thành DTO
     public Page<NotificationDTO> findAll(String title, String status, Pageable pageable) {
-        Page<Notification> notifications = notificationRepository.findAllNotifications(title, status, pageable);
-        List<NotificationDTO> notificationDTOs = notifications.getContent().stream()
-                .map(this::convertToNotificationDTO)
-                .collect(Collectors.toList());
+        Page<Notification> notifications = notificationRepository.findAllNotifications(
+                title !=null ? title : "",
+                status !=null ? status : "",
+                pageable);
 
-        return new PageImpl<>(notificationDTOs, pageable, notifications.getTotalElements());
+        return notifications.map(this::convertToNotificationDTO);
     }
 
     private NotificationDTO convertToNotificationDTO(Notification notification) {
