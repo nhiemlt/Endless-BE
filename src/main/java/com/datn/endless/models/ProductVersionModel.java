@@ -29,6 +29,15 @@ public class ProductVersionModel {
     @NotNull(message = "Weight cannot be null.")
     private BigDecimal weight;
 
+    @NotNull(message = "Height cannot be null.")
+    private BigDecimal height;
+
+    @NotNull(message = "Length cannot be null.")
+    private BigDecimal length;
+
+    @NotNull(message = "Width cannot be null.")
+    private BigDecimal width;
+
     @NotNull(message = "Image cannot be null.")
     private MultipartFile image; // Chỉnh sửa ở đây
 
