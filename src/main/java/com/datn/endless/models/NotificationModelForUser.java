@@ -10,18 +10,19 @@ import java.util.List;
 @Data
 public class NotificationModelForUser {
 
-    @Size(max = 255, message = "Title cannot exceed 255 characters")
-    @NotEmpty(message = "Title is required")
+    @Size(max = 255, message = "Tiêu đề không được vượt quá 255 ký tự")
+    @NotEmpty(message = "Tiêu đề là bắt buộc")
     private String title;
 
-    @NotEmpty(message = "Content is required")
+    @NotEmpty(message = "Nội dung là bắt buộc")
     private String content;
 
-    @Size(max = 50, message = "Type cannot exceed 50 characters")
-    @NotEmpty(message = "Type is required")
-    private String type;
+    @Size(max = 50, message = "Loại không được vượt quá 50 ký tự")
+    @NotEmpty(message = "Loại là bắt buộc")
+    private String type = "Tự động";
 
-    @NotNull(message = "=user ID is required")
+    @NotNull(message = "ID người dùng là bắt buộc")
     private String userID;
 }
+
 

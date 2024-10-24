@@ -42,15 +42,15 @@ public class NotificationService {
     @Autowired
     private UserLoginInfomation userLoginInfomation;
 
-    public Page<NotificationDTO> getAllNotificationDTOs(String title, String status, Pageable pageable) {
-        return findAll(title, status, pageable);
+    public Page<NotificationDTO> getAllNotificationDTOs(String text, String type, Pageable pageable) {
+        return findAll(text, type, pageable);
     }
 
     // Phương thức lấy danh sách thông báo và chuyển đổi thành DTO
-    public Page<NotificationDTO> findAll(String title, String status, Pageable pageable) {
+    public Page<NotificationDTO> findAll(String text, String type, Pageable pageable) {
         Page<Notification> notifications = notificationRepository.findAllNotifications(
-                title !=null ? title : "",
-                status !=null ? status : "",
+                text !=null ? text : "",
+                type !=null ? type : "",
                 pageable);
 
         return notifications.map(this::convertToNotificationDTO);
@@ -88,15 +88,15 @@ public class NotificationService {
 
     public Map<String, Object> sendNotification(@Valid NotificationModel notificationModel, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return buildErrorResponse("Validation failed");
+            return buildErrorResponse("Lỗi dữ liệu");
         }
         try {
             Notification notification = createNotification(notificationModel);
             notificationRepository.save(notification);
             saveNotificationRecipients(notification, notificationModel.getUserIds());
-            return buildSuccessResponse("Notification sent successfully!");
+            return buildSuccessResponse("Thông báo đã được gửi thành công!");
         } catch (Exception e) {
-            return buildErrorResponse("Failed to send notification: " + e.getMessage());
+            return buildErrorResponse("Lỗi khi gửi thông báo: " + e.getMessage());
         }
     }
 
@@ -105,7 +105,7 @@ public class NotificationService {
             Notification notification = createNotificationForUser(notificationModel);
             notificationRepository.save(notification);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Failed to send notification: " + e.getMessage());
+            throw new IllegalArgumentException("Lỗi khi gửi thông báo: " + e.getMessage());
         }
     }
 
@@ -130,8 +130,7 @@ public class NotificationService {
         notification.setContent(notificationModel.getContent());
         notification.setType(notificationModel.getType());
         notification.setNotificationDate(Instant.now());
-        notification.setStatus("SENT");
-        notification.setNotificationrecipients(new HashSet<>()); // Khởi tạo Set nếu cần
+        notification.setStatus("Đã gửi");// Khởi tạo Set nếu cần
         return notification;
     }
 
@@ -142,7 +141,7 @@ public class NotificationService {
         notification.setContent(notificationModel.getContent());
         notification.setType(notificationModel.getType());
         notification.setNotificationDate(Instant.now());
-        notification.setStatus("SENT");
+        notification.setStatus("Đã gửi");
         Set<Notificationrecipient> recipients = new HashSet<>();
         for(User user: userRepository.findAll()) {
             Notificationrecipient notificationrecipient = new Notificationrecipient();
@@ -165,7 +164,7 @@ public class NotificationService {
         notification.setContent(notificationModel.getContent());
         notification.setType(notificationModel.getType());
         notification.setNotificationDate(Instant.now());
-        notification.setStatus("SENT");
+        notification.setStatus("Đã gửi");
 
         // Tìm user theo ID
         User user = userRepository.findById(notificationModel.getUserID())
