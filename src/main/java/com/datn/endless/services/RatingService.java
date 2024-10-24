@@ -1,6 +1,7 @@
 package com.datn.endless.services;
 
 import com.datn.endless.dtos.RatingDTO;
+import com.datn.endless.dtos.RatingDTO2;
 import com.datn.endless.dtos.RatingPictureDTO;
 import com.datn.endless.entities.*;
 import com.datn.endless.exceptions.EntityNotFoundException;
@@ -16,9 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.List;
-import java.util.OptionalDouble;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,15 +38,16 @@ public class RatingService {
     @Autowired
     private UserLoginInfomation userLoginInfomation;
 
-    public RatingDTO addRating(RatingModel ratingModel) {
-        // Kiểm tra người dùng
+    // Thêm đánh giá
+    public RatingDTO2 addRating(RatingModel ratingModel) {
+        // Kiểm tra người dùng hiện tại
         User user = userRepository.findByUsername(userLoginInfomation.getCurrentUsername());
 
         // Kiểm tra chi tiết đơn hàng
         Orderdetail orderDetail = orderDetailRepository.findById(ratingModel.getOrderDetailId())
                 .orElseThrow(() -> new OrderNotFoundException("Order detail not found"));
 
-        // Kiểm tra xem orderDetail có thuộc về user không
+        // Kiểm tra quyền của user đối với chi tiết đơn hàng
         if (!orderDetail.getOrderID().getUserID().getUserID().equals(user.getUserID())) {
             throw new RuntimeException("User does not have permission to rate this order detail");
         }
@@ -60,29 +60,47 @@ public class RatingService {
         rating.setRatingValue(ratingModel.getRatingValue());
         rating.setComment(ratingModel.getComment());
         rating.setRatingDate(Instant.now());
+        Set<Ratingpicture> ratingpictureSet = new HashSet<>();
+        for (String picture: ratingModel.getPictures()){
+            Ratingpicture ratingPicture = new Ratingpicture();
+            ratingPicture.setPictureID(picture);
+            ratingPicture.setRatingID(rating);
+            ratingPicture.setPictureID(UUID.randomUUID().toString());
+            ratingpictureSet.add(ratingPicture);
+        }
+        rating.setRatingpictures(ratingpictureSet);
 
-        // Lưu Rating
+        // Lưu đánh giá
         Rating savedRating = ratingRepository.save(rating);
 
         // Xử lý hình ảnh nếu có
-        if (ratingModel.getPictures() != null) {
-            for (MultipartFile file : ratingModel.getPictures()) {
-                if (!file.isEmpty()) {
-                    try {
-                        Ratingpicture ratingPicture = new Ratingpicture();
-                        ratingPicture.setPictureID(UUID.randomUUID().toString());
-                        ratingPicture.setRatingID(savedRating);
-                        ratingPicture.setPicture(ImageUtil.convertToBase64(file)); // Chuyển đổi hình ảnh
 
-                        ratingPictureRepository.save(ratingPicture);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Error processing image: " + file.getOriginalFilename(), e);
-                    }
-                }
-            }
-        }
+        return convertToDTO2(savedRating);
+    }
 
-        return convertToDTO(savedRating);
+    // Chuyển đổi đối tượng Rating sang RatingDTO
+    private RatingDTO2 convertToDTO2(Rating rating) {
+        RatingDTO2 ratingDTO2 = new RatingDTO2();
+        ratingDTO2.setRatingID(rating.getRatingID());
+        ratingDTO2.setUserID(rating.getUserID().getUserID());
+        ratingDTO2.setUsername(rating.getUserID().getUsername());
+        ratingDTO2.setFullname(rating.getUserID().getFullname());
+        ratingDTO2.setAvatar(rating.getUserID().getAvatar());
+        ratingDTO2.setOrderDetailID(rating.getOrderDetailID().getOrderDetailID());
+        ratingDTO2.setProductVersionID(rating.getOrderDetailID().getProductVersionID().getProductVersionID());
+        ratingDTO2.setVersionName(rating.getOrderDetailID().getProductVersionID().getVersionName());
+        ratingDTO2.setImage(rating.getOrderDetailID().getProductVersionID().getImage());
+        ratingDTO2.setRatingValue(rating.getRatingValue());
+        ratingDTO2.setComment(rating.getComment());
+        ratingDTO2.setRatingDate(rating.getRatingDate());
+
+        // Thêm hình ảnh vào DTO
+        List<RatingPictureDTO> pictureDTOs = rating.getRatingpictures().stream()
+                .map(this::convertToPictureDTO)
+                .collect(Collectors.toList());
+
+        ratingDTO2.setPictures(pictureDTOs);
+        return ratingDTO2;
     }
 
 
@@ -91,40 +109,48 @@ public class RatingService {
         RatingDTO ratingDTO = new RatingDTO();
         ratingDTO.setRatingID(rating.getRatingID());
         ratingDTO.setUserID(rating.getUserID().getUserID());
+        ratingDTO.setUsername(rating.getUserID().getUsername());
+        ratingDTO.setFullname(rating.getUserID().getFullname());
         ratingDTO.setOrderDetailID(rating.getOrderDetailID().getOrderDetailID());
+        ratingDTO.setProductVersionID(rating.getOrderDetailID().getProductVersionID().getProductVersionID());
+        ratingDTO.setVersionName(rating.getOrderDetailID().getProductVersionID().getVersionName());
+        ratingDTO.setImage(rating.getOrderDetailID().getProductVersionID().getImage());
         ratingDTO.setRatingValue(rating.getRatingValue());
         ratingDTO.setComment(rating.getComment());
         ratingDTO.setRatingDate(rating.getRatingDate());
 
         // Thêm hình ảnh vào DTO
         List<RatingPictureDTO> pictureDTOs = rating.getRatingpictures().stream()
-                .map(rp -> {
-                    RatingPictureDTO dto = new RatingPictureDTO();
-                    dto.setPictureID(rp.getPictureID());
-                    dto.setRatingID(rp.getRatingID().getRatingID());
-                    dto.setPicture(rp.getPicture());
-                    return dto;
-                })
+                .map(this::convertToPictureDTO)
                 .collect(Collectors.toList());
 
         ratingDTO.setPictures(pictureDTOs);
         return ratingDTO;
     }
 
-    // Lấy tất cả các đánh giá với lọc và phân trang
-    public Page<RatingDTO> getAllRatings(String userId, Pageable pageable) {
-        Page<Rating> ratings;
+    public Page<RatingDTO2> getRatingsByProductNameOrAll(String productName, Pageable pageable) {
+        Page<Rating> ratings = ratingRepository.findByProductNameOrAll(productName, pageable);
+        return ratings.map(this::convertToDTO2);
+    }
 
-        if (userId != null) {
-            ratings = ratingRepository.findByUserID_UserID(userId, pageable);
-        } else {
-            ratings = ratingRepository.findAll(pageable);
-        }
 
-        return ratings.map(this::convertToDTO);
+    // Chuyển đổi đối tượng RatingPicture sang RatingPictureDTO
+    private RatingPictureDTO convertToPictureDTO(Ratingpicture ratingPicture) {
+        RatingPictureDTO dto = new RatingPictureDTO();
+        dto.setPictureID(ratingPicture.getPictureID());
+        dto.setRatingID(ratingPicture.getRatingID().getRatingID());
+        dto.setPicture(ratingPicture.getPicture());
+        return dto;
     }
 
     // Lấy đánh giá theo ID
+    public RatingDTO2 getRatingById2(String id) {
+        Rating rating = ratingRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Rating not found"));
+
+        return convertToDTO2(rating);
+    }
+
     public RatingDTO getRatingById(String id) {
         Rating rating = ratingRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Rating not found"));
@@ -132,23 +158,18 @@ public class RatingService {
         return convertToDTO(rating);
     }
 
-    // Lấy điểm trung bình rating theo productVersionID
-    public double getAverageRatingByProductVersionId(String productVersionID) {
-        return ratingRepository.findAverageRatingByProductVersionId(productVersionID).orElse(0.0);
-    }
-
     // Lấy đánh giá theo productVersionID và tính trung bình rating
     public List<RatingDTO> getRatingsByProductVersionId(String productVersionID) {
         List<Rating> ratings = ratingRepository.findByOrderDetailID_ProductVersionID_ProductVersionID(productVersionID);
 
-        // Tính tổng trung bình rating
+        // Tính điểm trung bình rating
         OptionalDouble averageRating = ratings.stream()
                 .mapToDouble(Rating::getRatingValue)
                 .average();
 
         double average = averageRating.isPresent() ? averageRating.getAsDouble() : 0;
 
-        // Chuyển đổi các đối tượng Rating sang RatingDTO và đặt giá trị averageRating
+        // Chuyển đổi danh sách Rating sang RatingDTO và gán giá trị averageRating
         List<RatingDTO> ratingDTOs = ratings.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -158,7 +179,7 @@ public class RatingService {
         return ratingDTOs;
     }
 
-    // Hàm tính số lượng đánh giá của phiên bản sản phẩm
+    // Đếm số lượng đánh giá của phiên bản sản phẩm
     public long getRatingCountByProductVersionId(String productVersionID) {
         return ratingRepository.countByOrderDetailID_ProductVersionID_ProductVersionID(productVersionID);
     }
