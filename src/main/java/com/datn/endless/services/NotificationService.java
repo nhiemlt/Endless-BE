@@ -1,5 +1,6 @@
 package com.datn.endless.services;
 
+import com.datn.endless.dtos.NotificationDTO;
 import com.datn.endless.dtos.NotificationRecipientDTO;
 import com.datn.endless.entities.Notification;
 import com.datn.endless.entities.Notificationrecipient;
@@ -41,6 +42,46 @@ public class NotificationService {
     @Autowired
     private UserLoginInfomation userLoginInfomation;
 
+    // Phương thức lấy danh sách thông báo và chuyển đổi thành DTO
+    public Page<NotificationDTO> findAll(String title, String status, Pageable pageable) {
+        Page<Notification> notifications = notificationRepository.findAllNotifications(title, status, pageable);
+        List<NotificationDTO> notificationDTOs = notifications.getContent().stream()
+                .map(this::convertToNotificationDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(notificationDTOs, pageable, notifications.getTotalElements());
+    }
+
+    private NotificationDTO convertToNotificationDTO(Notification notification) {
+        return new NotificationDTO(
+                notification.getNotificationID(),
+                notification.getTitle(),
+                notification.getContent(),
+                notification.getType(),
+                notification.getNotificationDate(),
+                notification.getStatus(),
+                convertToNotifiRecipientDTO(notification.getNotificationrecipients())
+        );
+    }
+
+    private List<NotificationRecipientDTO> convertToNotifiRecipientDTO(Set<Notificationrecipient> notificationRecipients) {
+        if (notificationRecipients == null) return Collections.emptyList(); // Kiểm tra null
+
+        return notificationRecipients.stream()
+                .map(notificationRecipient -> {
+                    NotificationRecipientDTO dto = new NotificationRecipientDTO();
+                    dto.setContent(notificationRecipient.getNotificationRecipientID());
+                    dto.setNotificationID(notificationRecipient.getNotificationID().getNotificationID());
+                    dto.setNotificationRecipientID(notificationRecipient.getNotificationRecipientID());
+                    dto.setStatus(notificationRecipient.getStatus());
+                    dto.setDate(notificationRecipient.getNotificationID().getNotificationDate());
+                    dto.setNotificationTitle(notificationRecipient.getNotificationID().getTitle());
+                    dto.setUserName(notificationRecipient.getUserID().getUsername());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
     public Map<String, Object> sendNotification(@Valid NotificationModel notificationModel, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return buildErrorResponse("Validation failed");
@@ -70,8 +111,7 @@ public class NotificationService {
         }
         try {
             Notification notification = createNotificationForAll(notificationModel);
-            notification = notificationRepository.save(notification);
-//            notificationRecipientRepository.saveAll(notification.getNotificationrecipients());
+            notificationRepository.save(notification);
             return buildSuccessResponse("Thông báo đã được gửi thành công!");
         } catch (Exception e) {
             return buildErrorResponse("Lỗi khi gửi thông báo: " + e.getMessage());
@@ -215,6 +255,7 @@ public class NotificationService {
                 recipient.getNotificationRecipientID(),
                 recipient.getNotificationID().getNotificationID(),
                 recipient.getStatus(),
+                recipient.getNotificationID().getNotificationDate(),
                 recipient.getNotificationID().getTitle(),
                 recipient.getNotificationID().getContent(),
                 recipient.getUserID().getUsername());

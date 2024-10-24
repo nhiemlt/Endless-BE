@@ -1,5 +1,6 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.NotificationDTO;
 import com.datn.endless.dtos.NotificationRecipientDTO;
 import com.datn.endless.models.NotificationModel;
 import com.datn.endless.models.NotificationModelForAll;
@@ -22,6 +23,14 @@ public class NotificationController {
 
     @Autowired
     private NotificationService notificationService;
+
+    @GetMapping()
+    public Page<NotificationDTO> getNotifications(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String title,
+            Pageable pageable) {
+        return notificationService.findAll(title, status, pageable);
+    }
 
     @PostMapping("/send")
     public ResponseEntity<Map<String, Object>> sendNotification(
