@@ -11,8 +11,7 @@ import org.springframework.data.repository.query.Param;
 public interface NotificationRepository extends JpaRepository<Notification, String> {
     // Tìm tất cả thông báo với phân trang và lọc
     @Query("SELECT n FROM Notification n WHERE " +
-            "(:text IS NULL OR n.title LIKE %:text%) AND " +
-            "(:text IS NULL OR n.content LIKE %:text%) AND " +
+            "(:text IS NULL OR n.title LIKE %:text% OR n.content LIKE %:text%) AND " +
             "(:type IS NULL OR n.type LIKE %:type%)")
     Page<Notification> findAllNotifications(
             @Param("text") String text,

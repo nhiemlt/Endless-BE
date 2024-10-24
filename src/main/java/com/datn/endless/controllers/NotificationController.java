@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +27,12 @@ public class NotificationController {
 
     @GetMapping()
     public Page<NotificationDTO> getNotifications(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String title,
-            Pageable pageable) {
-        return notificationService.getAllNotificationDTOs(title, status, pageable);
+            @RequestParam(required = false) String text,
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @SortDefault(sort = "notificationDate", direction = Sort.Direction.DESC) Pageable pageable) {
+        return notificationService.getAllNotificationDTOs(text, type, PageRequest.of(page, size, pageable.getSort()));
     }
 
     @PostMapping("/send")
