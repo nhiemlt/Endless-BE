@@ -92,25 +92,23 @@ public class UserAddressService {
             if (user == null) {
                 throw new UserNotFoundException("User not found");
             }
-
             // Tạo đối tượng Useraddress mới để lưu địa chỉ
             Useraddress userAddress = new Useraddress();
             userAddress.setAddressID(UUID.randomUUID().toString());
             userAddress.setUserID(user); // Gán người dùng hiện tại
             userAddress.setProvinceID(userAddressModel.getProvinceID());
+            userAddress.setProvinceName(userAddressModel.getProvinceName());
             userAddress.setDistrictID(userAddressModel.getDistrictID());
+            userAddress.setDistrictName(userAddressModel.getDistrictName());
             userAddress.setWardCode(userAddressModel.getWardCode());
+            userAddress.setWardName(userAddressModel.getWardName());
             userAddress.setDetailAddress(userAddressModel.getDetailAddress());
-
             // Lưu địa chỉ người dùng vào cơ sở dữ liệu
             Useraddress savedUserAddress = userAddressRepository.save(userAddress);
-
             // Chuyển đổi đối tượng Useraddress thành UseraddressDTO để trả về
             return convertToDTO(savedUserAddress);
-
         } catch (Exception e) {
             // Ghi log để theo dõi chi tiết lỗi
-            System.err.println("Error adding user address: " + e.getMessage());
             throw new RuntimeException("Could not save user address. Please try again later.");
         }
     }
@@ -139,4 +137,22 @@ public class UserAddressService {
         }
         userAddressRepository.deleteById(addressId);
     }
+
+    // Xóa địa chỉ của người dùng hiện tại
+    public void deleteForUser(String addressId) {
+        // Lấy tên người dùng hiện tại
+        String currentUsername = userLoginInfomation.getCurrentUsername();
+
+        // Tìm kiếm địa chỉ dựa trên addressId và username
+        Useraddress userAddress = userAddressRepository.findByIdAndUsername(addressId, currentUsername);
+
+        // Kiểm tra xem địa chỉ có tồn tại không
+        if (userAddress == null) {
+            throw new IllegalArgumentException("Địa chỉ không tồn tại hoặc không thuộc về người dùng hiện tại");
+        }
+
+        // Xóa địa chỉ
+        userAddressRepository.deleteById(addressId);
+    }
+
 }

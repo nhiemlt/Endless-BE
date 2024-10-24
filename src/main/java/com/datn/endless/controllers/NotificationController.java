@@ -2,8 +2,8 @@ package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.NotificationDTO;
 import com.datn.endless.dtos.NotificationRecipientDTO;
-import com.datn.endless.entities.Notification;
 import com.datn.endless.models.NotificationModel;
+import com.datn.endless.models.NotificationModelForAll;
 import com.datn.endless.services.NotificationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +25,29 @@ public class NotificationController {
     @Autowired
     private NotificationService notificationService;
 
+    @GetMapping()
+    public Page<NotificationDTO> getNotifications(
+            @RequestParam(required = false) String text,
+            @RequestParam(required = false) String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @SortDefault(sort = "notificationDate", direction = Sort.Direction.DESC) Pageable pageable) {
+        return notificationService.getAllNotificationDTOs(text, type, PageRequest.of(page, size, pageable.getSort()));
+    }
+
     @PostMapping("/send")
     public ResponseEntity<Map<String, Object>> sendNotification(
             @Valid @RequestBody NotificationModel notificationModel,
             BindingResult bindingResult) {
         Map<String, Object> response = notificationService.sendNotification(notificationModel, bindingResult);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/send-all")
+    public ResponseEntity<Map<String, Object>> sendNotificationForAll(
+            @Valid @RequestBody NotificationModelForAll notificationModel,
+            BindingResult bindingResult) {
+        Map<String, Object> response = notificationService.sendNotificationForAll(notificationModel, bindingResult);
         return ResponseEntity.ok(response);
     }
 

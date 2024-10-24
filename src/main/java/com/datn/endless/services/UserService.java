@@ -6,9 +6,13 @@ import com.datn.endless.dtos.UserDTO;
 import com.datn.endless.dtos.UseraddressDTO;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Useraddress;
+import com.datn.endless.exceptions.EmailAlreadyExistsException;
+import com.datn.endless.exceptions.PhoneAlreadyExistsException;
+import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.UserModel;
 import com.datn.endless.repositories.UserRepository;
 import com.datn.endless.repositories.UseraddressRepository;
+import jdk.jshell.spi.ExecutionControl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -102,23 +106,42 @@ public class UserService {
     }
 
     public UserDTO updateCurrentUser(UserModel userModel) {
+        // Tìm người dùng theo ID
         User user = userRepository.findById(userModel.getUserID()).orElse(null);
-        if (user != null) {
-            user.setFullname(userModel.getFullname());
-            user.setPhone(userModel.getPhone());
-            user.setEmail(userModel.getEmail());
-            user.setLanguage(userModel.getLanguage());
-
-            // Cập nhật chuỗi base64 của avatar từ frontend
-            if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
-                user.setAvatar(userModel.getAvatar());
-            }
-
-            userRepository.save(user);
-            return convertToDTO(user);
+        if (user == null) {
+            throw new UserNotFoundException("Người dùng không tồn tại."); // Sử dụng ngoại lệ tùy chỉnh
         }
-        return null;
+
+        // Kiểm tra xem email có thay đổi và đã tồn tại không
+        if (user.getEmail() !=null && !user.getEmail().equals(userModel.getEmail())) {
+            if (userRepository.findByEmail(userModel.getEmail()) != null) {
+                throw new EmailAlreadyExistsException("Email đã tồn tại."); // Sử dụng ngoại lệ tùy chỉnh
+            }
+        }
+
+        // Kiểm tra xem số điện thoại có thay đổi và đã tồn tại không
+        if (user.getPhone() !=null && !user.getPhone().equals(userModel.getPhone())) {
+            if (userRepository.findByPhone(userModel.getPhone()) != null) {
+                throw new PhoneAlreadyExistsException("Số điện thoại đã tồn tại."); // Sử dụng ngoại lệ tùy chỉnh
+            }
+        }
+
+        // Cập nhật thông tin người dùng
+        user.setFullname(userModel.getFullname());
+        user.setPhone(userModel.getPhone());
+        user.setEmail(userModel.getEmail());
+        user.setLanguage(userModel.getLanguage());
+
+        // Cập nhật chuỗi base64 của avatar từ frontend
+        if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
+            user.setAvatar(userModel.getAvatar());
+        }
+
+        // Lưu thay đổi vào cơ sở dữ liệu
+        userRepository.save(user);
+        return convertToDTO(user); // Trả về DTO của người dùng đã cập nhật
     }
+
 
     public UserDTO updateUserById(UserModel userModel) {
         User user = userRepository.findById(userModel.getUserID()).orElse(null);

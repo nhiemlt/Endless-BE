@@ -305,7 +305,7 @@ public class OrderService {
         notificationModel.setTitle(title);
         notificationModel.setContent(content);
         notificationModel.setUserID(order.getUserID().getUserID());
-
+        notificationModel.setType("AUTO");
         notificationService.sendNotificationForOrder(notificationModel);
     }
 

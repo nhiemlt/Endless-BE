@@ -1,9 +1,13 @@
 package com.datn.endless.services;
 
 import com.datn.endless.dtos.VoucherDTO;
+import com.datn.endless.entities.User;
+import com.datn.endless.entities.Uservoucher;
 import com.datn.endless.exceptions.VoucherNotFoundException;
 import com.datn.endless.models.VoucherModel;
 import com.datn.endless.entities.Voucher;
+import com.datn.endless.repositories.UserRepository;
+import com.datn.endless.repositories.UservoucherRepository;
 import com.datn.endless.repositories.VoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -11,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,6 +23,10 @@ public class VoucherService {
 
     @Autowired
     private VoucherRepository voucherRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UservoucherRepository uservoucherRepository;
 
     private VoucherDTO convertToDTO(Voucher voucher) {
         VoucherDTO dto = new VoucherDTO();
@@ -67,6 +76,48 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
 
         voucherRepository.save(voucher);
     }
+
+
+    public void addVoucherAllUser(VoucherModel voucherModel) {
+        // Kiểm tra mã voucher có tồn tại không
+        if (voucherRepository.findByVoucherCode(voucherModel.getVoucherCode()).isPresent()) {
+            throw new RuntimeException("Voucher code already exists");
+        }
+
+        // Kiểm tra startDate phải trước endDate
+        if (!voucherModel.getStartDate().isBefore(voucherModel.getEndDate())) {
+            throw new RuntimeException("startDate must be before endDate");
+        }
+
+        // Tạo đối tượng voucher
+        Voucher voucher = new Voucher();
+        voucher.setVoucherCode(voucherModel.getVoucherCode());
+        voucher.setLeastBill(voucherModel.getLeastBill());
+        voucher.setLeastDiscount(voucherModel.getLeastDiscount());
+        voucher.setBiggestDiscount(voucherModel.getBiggestDiscount());
+        voucher.setDiscountLevel(voucherModel.getDiscountLevel());
+        voucher.setDiscountForm(voucherModel.getDiscountForm());
+        voucher.setStartDate(voucherModel.getStartDate());
+        voucher.setEndDate(voucherModel.getEndDate());
+
+        // Lưu voucher vào database
+        voucherRepository.save(voucher);
+
+        // Lấy danh sách tất cả user có active là true
+        List<User> activeUsers = userRepository.findByActiveTrue();
+
+        // Cấp voucher cho tất cả user có active là true
+        for (User user : activeUsers) {
+            Uservoucher userVoucher = new Uservoucher();
+            userVoucher.setUserID(user);
+            userVoucher.setVoucherID(voucher);
+            uservoucherRepository.save(userVoucher);
+        }
+    }
+
+
+
+
 
     public void updateVoucher(String id, VoucherModel updatedVoucher) {
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);

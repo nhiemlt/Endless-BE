@@ -18,6 +18,8 @@ public interface UserRepository extends JpaRepository<User, String> {
     // Tìm người dùng theo email
     User findByEmail(String email);
 
+    User findByPhone(String phone);
+
     // Tìm người dùng theo từ khóa (tên đăng nhập hoặc email)
     @Query("SELECT u FROM User u WHERE u.username = :keyword OR u.email = :keyword")
     User findByKeyword(@Param("keyword") String keyword);
@@ -28,5 +30,9 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("SELECT u FROM User u WHERE u.fullname LIKE %:keyword%")
     Page<User> searchByFullname(@Param("keyword") String keyword, Pageable pageable);
+
+    // Tìm tất cả người dùng có active là true
+    List<User> findByActiveTrue();
+
 
 }

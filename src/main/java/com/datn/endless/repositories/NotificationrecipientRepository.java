@@ -31,4 +31,16 @@ public interface NotificationrecipientRepository extends JpaRepository<Notificat
     @Modifying
     @Query("DELETE FROM Notificationrecipient nr WHERE nr.notificationRecipientID = :notificationRecipientID")
     void deleteNotificationReceptionByRecipientID(@Param("notificationRecipientID") String notificationRecipientID);
+
+    @Query("SELECT nr FROM Notificationrecipient nr " +
+            "JOIN nr.notificationID n " +
+            "WHERE (:userId IS NULL OR nr.userID.username = :userId) " +
+            "AND (:status IS NULL OR nr.status = :status) " +
+            "AND (:title IS NULL OR LOWER(n.title) LIKE LOWER(CONCAT('%', :title, '%'))) " +
+            "ORDER BY n.notificationDate DESC")
+    Page<Notificationrecipient> findAllNotifications(
+            @Param("userId") String userId,
+            @Param("status") String status,
+            @Param("title") String title,
+            Pageable pageable);
 }

@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/products/{id}").permitAll()  // Sử dụng quyền view_product_details
                         .requestMatchers("/ratings").permitAll()  // Sử dụng quyền view_all_ratings
                         .requestMatchers("/ratings/{id}").permitAll()  // Sử dụng quyền view_rating_details
+                        .requestMatchers("/api/user-vouchers").permitAll()
 
                         // Các API yêu cầu đăng nhập
                         .requestMatchers("/logout").authenticated()  // Sử dụng quyền logout
@@ -77,9 +78,13 @@ public class SecurityConfig {
 
                         // Các API yêu cầu quyền (dựa theo permission code)
                         .requestMatchers(HttpMethod.POST, "/notifications/send").hasAuthority("send_notifications")
+                        .requestMatchers(HttpMethod.POST, "/notifications/send-all").hasAuthority("send_notifications")
                         .requestMatchers(HttpMethod.POST, "/notifications/markAsRead").hasAuthority("notifications/markAsRead")
                         .requestMatchers(HttpMethod.POST, "/notifications/markAllAsRead").hasAuthority("notifications/markAllAsRead")
                         .requestMatchers(HttpMethod.DELETE, "/notifications/delete").hasAuthority("notifications/delete")
+
+                        .requestMatchers("/api/vouchers").hasAuthority("manage_voucher")
+                        .requestMatchers("/api/vouchers/**").hasAuthority("manage_voucher")
 
                         .requestMatchers(HttpMethod.POST, "/orders").hasAuthority("orders/create")
                         .requestMatchers(HttpMethod.GET, "/orders/{id}").hasAuthority("view_all_orders")

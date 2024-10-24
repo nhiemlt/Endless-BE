@@ -1,5 +1,6 @@
 package com.datn.endless.services;
 
+import com.datn.endless.dtos.NotificationDTO;
 import com.datn.endless.dtos.NotificationRecipientDTO;
 import com.datn.endless.entities.Notification;
 import com.datn.endless.entities.Notificationrecipient;
@@ -7,6 +8,7 @@ import com.datn.endless.entities.User;
 import com.datn.endless.exceptions.ResourceNotFoundException;
 import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.NotificationModel;
+import com.datn.endless.models.NotificationModelForAll;
 import com.datn.endless.models.NotificationModelForUser;
 import com.datn.endless.repositories.NotificationRepository;
 import com.datn.endless.repositories.NotificationrecipientRepository;
@@ -40,17 +42,61 @@ public class NotificationService {
     @Autowired
     private UserLoginInfomation userLoginInfomation;
 
+    public Page<NotificationDTO> getAllNotificationDTOs(String text, String type, Pageable pageable) {
+        return findAll(text, type, pageable);
+    }
+
+    // Phương thức lấy danh sách thông báo và chuyển đổi thành DTO
+    public Page<NotificationDTO> findAll(String text, String type, Pageable pageable) {
+        Page<Notification> notifications = notificationRepository.findAllNotifications(
+                text !=null ? text : "",
+                type !=null ? type : "",
+                pageable);
+
+        return notifications.map(this::convertToNotificationDTO);
+    }
+
+    private NotificationDTO convertToNotificationDTO(Notification notification) {
+        return new NotificationDTO(
+                notification.getNotificationID(),
+                notification.getTitle(),
+                notification.getContent(),
+                notification.getType(),
+                notification.getNotificationDate(),
+                notification.getStatus(),
+                convertToNotifiRecipientDTO(notification.getNotificationrecipients())
+        );
+    }
+
+    private List<NotificationRecipientDTO> convertToNotifiRecipientDTO(Set<Notificationrecipient> notificationRecipients) {
+        if (notificationRecipients == null) return Collections.emptyList(); // Kiểm tra null
+
+        return notificationRecipients.stream()
+                .map(notificationRecipient -> {
+                    NotificationRecipientDTO dto = new NotificationRecipientDTO();
+                    dto.setContent(notificationRecipient.getNotificationRecipientID());
+                    dto.setNotificationID(notificationRecipient.getNotificationID().getNotificationID());
+                    dto.setNotificationRecipientID(notificationRecipient.getNotificationRecipientID());
+                    dto.setStatus(notificationRecipient.getStatus());
+                    dto.setDate(notificationRecipient.getNotificationID().getNotificationDate());
+                    dto.setNotificationTitle(notificationRecipient.getNotificationID().getTitle());
+                    dto.setUserName(notificationRecipient.getUserID().getUsername());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
     public Map<String, Object> sendNotification(@Valid NotificationModel notificationModel, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return buildErrorResponse("Validation failed");
+            return buildErrorResponse("Lỗi dữ liệu");
         }
         try {
             Notification notification = createNotification(notificationModel);
             notificationRepository.save(notification);
             saveNotificationRecipients(notification, notificationModel.getUserIds());
-            return buildSuccessResponse("Notification sent successfully!");
+            return buildSuccessResponse("Thông báo đã được gửi thành công!");
         } catch (Exception e) {
-            return buildErrorResponse("Failed to send notification: " + e.getMessage());
+            return buildErrorResponse("Lỗi khi gửi thông báo: " + e.getMessage());
         }
     }
 
@@ -58,10 +104,21 @@ public class NotificationService {
         try {
             Notification notification = createNotificationForUser(notificationModel);
             notificationRepository.save(notification);
-            System.out.println("\n\n\n\n\n\n\n\n\n\n Notification sent for order: " + notificationModel.getUserID());
         } catch (Exception e) {
-            System.err.println("Failed to send notification: " + e.getMessage());
-            throw new IllegalArgumentException("Failed to send notification: " + e.getMessage());
+            throw new IllegalArgumentException("Lỗi khi gửi thông báo: " + e.getMessage());
+        }
+    }
+
+    public Map<String, Object> sendNotificationForAll(@Valid NotificationModelForAll notificationModel, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return buildErrorResponse("Lỗi dữ liệu truyền vào");
+        }
+        try {
+            Notification notification = createNotificationForAll(notificationModel);
+            notificationRepository.save(notification);
+            return buildSuccessResponse("Thông báo đã được gửi thành công!");
+        } catch (Exception e) {
+            return buildErrorResponse("Lỗi khi gửi thông báo: " + e.getMessage());
         }
     }
 
@@ -73,8 +130,28 @@ public class NotificationService {
         notification.setContent(notificationModel.getContent());
         notification.setType(notificationModel.getType());
         notification.setNotificationDate(Instant.now());
-        notification.setStatus("SENT");
-        notification.setNotificationrecipients(new HashSet<>()); // Khởi tạo Set nếu cần
+        notification.setStatus("Đã gửi");// Khởi tạo Set nếu cần
+        return notification;
+    }
+
+    private Notification createNotificationForAll(NotificationModelForAll notificationModel) {
+        Notification notification = new Notification();
+        notification.setNotificationID(UUID.randomUUID().toString());
+        notification.setTitle(notificationModel.getTitle());
+        notification.setContent(notificationModel.getContent());
+        notification.setType(notificationModel.getType());
+        notification.setNotificationDate(Instant.now());
+        notification.setStatus("Đã gửi");
+        Set<Notificationrecipient> recipients = new HashSet<>();
+        for(User user: userRepository.findAll()) {
+            Notificationrecipient notificationrecipient = new Notificationrecipient();
+            notificationrecipient.setNotificationRecipientID(UUID.randomUUID().toString());
+            notificationrecipient.setNotificationID(notification);
+            notificationrecipient.setUserID(user);
+            notificationrecipient.setStatus("UNREAD");
+            recipients.add(notificationrecipient);
+        }
+        notification.setNotificationrecipients(recipients);
         return notification;
     }
 
@@ -87,7 +164,7 @@ public class NotificationService {
         notification.setContent(notificationModel.getContent());
         notification.setType(notificationModel.getType());
         notification.setNotificationDate(Instant.now());
-        notification.setStatus("SENT");
+        notification.setStatus("Đã gửi");
 
         // Tìm user theo ID
         User user = userRepository.findById(notificationModel.getUserID())
@@ -177,12 +254,14 @@ public class NotificationService {
     }
 
     private NotificationRecipientDTO convertToDTO(Notificationrecipient recipient) {
-        return new NotificationRecipientDTO(recipient.getNotificationRecipientID(),
+        return new NotificationRecipientDTO(
+                recipient.getNotificationRecipientID(),
                 recipient.getNotificationID().getNotificationID(),
                 recipient.getStatus(),
+                recipient.getNotificationID().getNotificationDate(),
                 recipient.getNotificationID().getTitle(),
-                recipient.getUserID().getUsername(),
-                recipient.getNotificationID().getContent());
+                recipient.getNotificationID().getContent(),
+                recipient.getUserID().getUsername());
     }
 
     @Transactional

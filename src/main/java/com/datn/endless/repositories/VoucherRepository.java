@@ -17,7 +17,7 @@ public interface VoucherRepository extends JpaRepository<Voucher, String> {
     Optional<Voucher> findByVoucherCode(String voucherCode);
 
     @Query("SELECT v FROM Voucher v " +
-            "WHERE (:voucherCode IS NULL OR v.voucherCode = :voucherCode) " +
+            "WHERE (:voucherCode IS NULL OR v.voucherCode LIKE %:voucherCode%) " +
             "AND (:leastBill IS NULL OR v.leastBill = :leastBill) " +
             "AND (:leastDiscount IS NULL OR v.leastDiscount = :leastDiscount)")
     Page<Voucher> findByFilters(@Param("voucherCode") String voucherCode,

@@ -2,8 +2,14 @@ package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.ErrorResponse;
 import com.datn.endless.dtos.VoucherDTO;
+import com.datn.endless.entities.User;
+import com.datn.endless.entities.Uservoucher;
+import com.datn.endless.entities.Voucher;
 import com.datn.endless.exceptions.VoucherNotFoundException;
 import com.datn.endless.models.VoucherModel;
+import com.datn.endless.repositories.UserRepository;
+import com.datn.endless.repositories.UservoucherRepository;
+import com.datn.endless.repositories.VoucherRepository;
 import com.datn.endless.services.VoucherService;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
@@ -20,15 +26,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vouchers")
-@CrossOrigin(origins = "*")
 public class VoucherController {
 
     @Autowired
     private VoucherService voucherService;
+    @Autowired
+    private VoucherRepository voucherRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UservoucherRepository uservoucherRepository;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllVouchers(
@@ -61,7 +73,6 @@ public class VoucherController {
     public ResponseEntity<Map<String, Object>> getVoucherById(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
         try {
-            // Capture the voucher found
             VoucherDTO voucher = voucherService.getVoucherById(id); // Gọi phương thức từ service
 
             response.put("success", true);
@@ -79,6 +90,16 @@ public class VoucherController {
         }
     }
 
+    // API để thêm voucher cho tất cả các user có trạng thái active là true
+    @PostMapping("/add-to-all-active-users")
+    public ResponseEntity<String> addVoucherToAllActiveUsers(@RequestBody VoucherModel voucherModel) {
+        try {
+            voucherService.addVoucherAllUser(voucherModel);
+            return ResponseEntity.ok("Voucher created and assigned to all active users successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request"+e.getMessage());
+        }
+    }
 
 
     @PostMapping("/add")
@@ -125,30 +146,5 @@ public class VoucherController {
         }
     }
 
-    // Phương thức xử lý ngoại lệ để trả về thông báo lỗi xác thực
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            errors.put(error.getField(), error.getDefaultMessage());
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
-    }
-
-    // Delete Voucher
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Map<String, Object>> deleteVoucher(@PathVariable String id) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            voucherService.deleteVoucher(id);
-            response.put("success", true);
-            response.put("message", "Voucher deleted successfully");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-    }
 
 }

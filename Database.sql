@@ -6,7 +6,7 @@ USE EndlessEcommerce;
 CREATE TABLE Brands (
     BrandID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     Name VARCHAR(255) NOT NULL,
-    Logo TEXT
+    Logo LONGTEXT
 );
 
 -- Tạo bảng Categories
@@ -77,7 +77,7 @@ CREATE TABLE Promotions (
     EN_name VARCHAR(255),
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
-    Poster VARCHAR(255),
+    Poster LONGTEXT,
     EN_description TEXT
 );
 
@@ -105,7 +105,7 @@ CREATE TABLE Users (
     Password VARCHAR(255),
     Phone VARCHAR(11),
     Email VARCHAR(255),
-    Avatar TEXT,
+    Avatar LONGTEXT,
     Language VARCHAR(50),
     active BOOLEAN DEFAULT TRUE,
     forgetPassword BOOLEAN DEFAULT FALSE
@@ -194,7 +194,7 @@ CREATE TABLE Ratings (
 CREATE TABLE RatingPictures (
     PictureID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     RatingID CHAR(36) NOT NULL,
-    Picture TEXT,
+    Picture LONGTEXT,
     FOREIGN KEY (RatingID) REFERENCES Ratings(RatingID)
 );
 
@@ -720,7 +720,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Cart Management'), 'Thêm sản phẩm vào giỏ hàng', 'Add product to cart', 'add_product_to_cart'),
     
     -- Quản lý voucher (VOUCHER)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Voucher Management'), 'Xem tất cả voucher', 'View all vouchers', 'view_all_vouchers'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Voucher Management'), 'Quản lý voucher', 'Manage voucher', 'manage_voucher'),
     
     -- Quản lý quyền (ROLE)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Role Management'), 'Xem tất cả quyền', 'View all roles', 'view_all_roles'),

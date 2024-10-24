@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/user-vouchers")
-@CrossOrigin(origins = "*")
 public class UserVoucherController {
 
     @Autowired
