@@ -607,6 +607,7 @@ INSERT INTO Modules (ModuleName, EN_ModuleName) VALUES
     ('Quản lý thông báo', 'Notification Management'),
     ('Quản lý đơn hàng', 'Order Management'),
     ('Quản lý nhập hàng', 'Entry Management'),
+    ('Quản lý người dùng', 'User Management'),
     ('Quản lý thuộc tính', 'Attribute Management'),
     ('Quản lý thương hiệu', 'Brand Management'),
     ('Quản lý danh mục', 'Category Management'),
@@ -677,6 +678,12 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Thêm danh mục mới', 'Add new category', 'add_new_category'),
 	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Xóa danh mục', 'Remove category', 'delete_category'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Cập nhật danh mục', 'Update category', 'update_category'),
+    
+    -- Quản lý người dùng (USER)
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'User Management'), 'Xem tất cả người dùng', 'View all users', 'view_all_users'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'User Management'), 'Thêm người dùng mới', 'Add new user', 'add_new_user'),
+	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'User Management'), 'Xóa người dùng', 'Remove user', 'delete_user'),
+    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'User Management'), 'Cập nhật người dùngc', 'Update user', 'update_user'),
     
     -- Quản lý sản phẩm (PRODUCT)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Xem tất cả sản phẩm', 'View all products', 'view_all_products'),

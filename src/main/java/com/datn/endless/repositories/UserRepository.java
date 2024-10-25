@@ -34,5 +34,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     // Tìm tất cả người dùng có active là true
     List<User> findByActiveTrue();
 
+    @Query("SELECT u FROM User u WHERE u.fullname LIKE %:keyword% or u.username like %:keyword% or u.email like %:keyword% or u.phone like %:keyword%")
+    Page<User> findAllUser(@Param("keyword") String keyword, Pageable pageable);
 
 }

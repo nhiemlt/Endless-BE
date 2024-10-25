@@ -122,6 +122,16 @@ public class NotificationService {
         }
     }
 
+    public Map<String, Object> sendNotificationForAll(@Valid NotificationModelForAll notificationModel) {
+        try {
+            Notification notification = createNotificationForAll(notificationModel);
+            notificationRepository.save(notification);
+            return buildSuccessResponse("Thông báo đã được gửi thành công!");
+        } catch (Exception e) {
+            return buildErrorResponse("Lỗi khi gửi thông báo: " + e.getMessage());
+        }
+    }
+
 
     private Notification createNotification(NotificationModel notificationModel) {
         Notification notification = new Notification();

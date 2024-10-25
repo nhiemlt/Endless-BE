@@ -1,9 +1,13 @@
 package com.datn.endless.services;
 
 import com.datn.endless.dtos.VoucherDTO;
+import com.datn.endless.entities.Order;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Uservoucher;
+import com.datn.endless.exceptions.StatusTypeNotFoundException;
 import com.datn.endless.exceptions.VoucherNotFoundException;
+import com.datn.endless.models.NotificationModelForAll;
+import com.datn.endless.models.NotificationModelForUser;
 import com.datn.endless.models.VoucherModel;
 import com.datn.endless.entities.Voucher;
 import com.datn.endless.repositories.UserRepository;
@@ -27,6 +31,9 @@ public class VoucherService {
     private UserRepository userRepository;
     @Autowired
     private UservoucherRepository uservoucherRepository;
+
+    @Autowired
+    NotificationService notificationService;
 
     private VoucherDTO convertToDTO(Voucher voucher) {
         VoucherDTO dto = new VoucherDTO();
@@ -113,10 +120,13 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
             userVoucher.setVoucherID(voucher);
             uservoucherRepository.save(userVoucher);
         }
+
+        NotificationModelForAll notification = new NotificationModelForAll();
+        notification.setContent("Bạn vừa nhận được voucher với mẫ "+voucher.getVoucherCode()+" giảm đến "+voucher.getBiggestDiscount()+" VNĐ cho đơn từ "+voucher.getLeastBill()+" VNĐ");
+        notification.setType("AUTO");
+        notification.setTitle("Thông báo nhận voucher");
+        notificationService.sendNotificationForAll(notification);
     }
-
-
-
 
 
     public void updateVoucher(String id, VoucherModel updatedVoucher) {

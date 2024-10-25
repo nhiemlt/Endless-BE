@@ -57,6 +57,9 @@ public class SecurityConfig {
                         .requestMatchers("/ratings").permitAll()  // Sử dụng quyền view_all_ratings
                         .requestMatchers("/ratings/{id}").permitAll()  // Sử dụng quyền view_rating_details
                         .requestMatchers("/api/user-vouchers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ratings/id/{id}").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/ratings/add").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/ratings/productVersion/{productVersionID}").permitAll()
 
                         // Các API yêu cầu đăng nhập
                         .requestMatchers("/logout").authenticated()  // Sử dụng quyền logout
@@ -147,6 +150,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/user-roles/{id}").hasAuthority("view_user_role")
                         .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
                         .requestMatchers(HttpMethod.DELETE, "/user-roles/{id}").hasAuthority("delete_user_role")
+
+                        .requestMatchers(HttpMethod.POST, "/api/ratings").hasAuthority("view_reviews")
+                        .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
+                        .requestMatchers(HttpMethod.DELETE, "/user-roles/{id}").hasAuthority("delete_user_role")
+
+                        .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("view_all_users")
+                        .requestMatchers(HttpMethod.GET, "/api/users/get-infor").hasAuthority("view_all_users")
+                        .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAuthority("view_all_users")
+                        .requestMatchers(HttpMethod.PUT, "/api/users/{id}").hasAuthority("update_user")
+                        .requestMatchers(HttpMethod.POST, "/api/users/get-infor").hasAuthority("add_new_user")
                         .anyRequest().authenticated()
                 )
 
@@ -165,7 +178,7 @@ public class SecurityConfig {
                         })
                 )
                 .addFilterBefore(new JWTAuthenticationFilter(customUserDetailsService, jwtService),
-                        UsernamePasswordAuthenticationFilter.class); // Thêm JWTAuthenticationFilter vào chuỗi bảo mật
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

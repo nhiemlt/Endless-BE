@@ -1,9 +1,7 @@
 package com.datn.endless.services;
 
-import com.datn.endless.dtos.PermissionDTO;
-import com.datn.endless.dtos.RoleDTO;
-import com.datn.endless.dtos.UserDTO;
-import com.datn.endless.dtos.UseraddressDTO;
+import com.datn.endless.dtos.*;
+import com.datn.endless.entities.Role;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Useraddress;
 import com.datn.endless.exceptions.EmailAlreadyExistsException;
@@ -18,7 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -76,6 +76,30 @@ public class UserService {
                 .roles(roles)
                 .addresses(addressDTOs)
                 .build();
+    }
+
+    private InforDTO convertToInfor(User user) {
+        InforDTO inforDto = new InforDTO();
+        inforDto.setUserID(user.getUserID());
+        inforDto.setUsername(user.getUsername());
+        inforDto.setFullName(user.getFullname());
+        inforDto.setEmail(user.getEmail());
+        inforDto.setPhone(user.getPhone());
+        inforDto.setAvatar(user.getAvatar());
+        inforDto.setActive(user.getActive());
+        Set<Role> roles = user.getRoles();
+        List<String> roleNames = new ArrayList<>();
+        for(Role role: roles){
+            roleNames.add(role.getRoleName());
+        }
+        inforDto.setRoles(roleNames);
+        return inforDto;
+    }
+
+    public Page<InforDTO> getUsersInfor(String keyword, Pageable pageable) {
+        Page<User> users;
+        users = userRepository.findAllUser(keyword == null ? "" : keyword , pageable);
+        return users.map(this::convertToInfor);
     }
 
     // Chuyển đổi danh sách User thành danh sách UserDTO
