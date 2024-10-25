@@ -20,20 +20,16 @@ public class BrandService {
     @Autowired
     private BrandRepository brandRepository;
 
+
+
     public BrandDTO createBrand(BrandModel brandModel) {
         Brand newBrand = new Brand();
         newBrand.setBrandID(UUID.randomUUID().toString());
         newBrand.setName(brandModel.getName());
 
-        if (brandModel.getLogo() != null && !brandModel.getLogo().isEmpty()) {
-            try {
-                newBrand.setLogo(ImageUtil.convertToBase64(brandModel.getLogo()));
-            } catch (IOException e) {
-                throw new ConvertImageException("Could not convert logo to Base64");
-            }
-        } else {
-            newBrand.setLogo(null); // Hoặc có thể để trống
-        }
+        newBrand.setLogo(brandModel.getLogo());
+
+
 
         return convertToDTO(brandRepository.save(newBrand));
     }
@@ -43,14 +39,9 @@ public class BrandService {
                 .orElseThrow(() -> new RuntimeException("Brand not found with ID: " + id));
 
         existingBrand.setName(brandModel.getName());
+        existingBrand.setLogo(brandModel.getLogo());
 
-        if (brandModel.getLogo() != null && !brandModel.getLogo().isEmpty()) {
-            try {
-                existingBrand.setLogo(ImageUtil.convertToBase64(brandModel.getLogo()));
-            } catch (IOException e) {
-                throw new ConvertImageException("Could not convert logo to Base64");
-            }
-        }
+
 
         return convertToDTO(brandRepository.save(existingBrand));
     }

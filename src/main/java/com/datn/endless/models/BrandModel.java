@@ -13,5 +13,5 @@ public class BrandModel {
     @Column(name = "Name", nullable = false)
     private String name;
 
-    private MultipartFile logo;
+    private String logo;
 }
