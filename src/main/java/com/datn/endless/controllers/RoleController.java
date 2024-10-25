@@ -39,6 +39,12 @@ public class RoleController {
         return ResponseEntity.ok(permissions);
     }
 
+    @GetMapping("/{roleId}/count")
+    public ResponseEntity<Integer> getUserCountByRole(@PathVariable("roleId") String roleId) {
+        int userCount = roleService.countUsersInRole(roleId);
+        return ResponseEntity.ok(userCount);
+    }
+
     @GetMapping
     public ResponseEntity<List<RoleDTO>> getAllRoles() {
         return ResponseEntity.ok(roleService.getAllRoles());
