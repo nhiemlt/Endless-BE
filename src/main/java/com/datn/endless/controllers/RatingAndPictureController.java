@@ -28,17 +28,18 @@ public class RatingAndPictureController {
     @Autowired
     private RatingService ratingService;
 
-    // Lấy tất cả đánh giá, có thể lọc theo tên sản phẩm
+    // Lấy tất cả đánh giá
     @GetMapping
     public ResponseEntity<Map<String, Object>> getRatings(
-            @RequestParam(required = false) String productName,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int ratingValue,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Map<String, Object> response = new HashMap<>();
         try {
             PageRequest pageable = PageRequest.of(page, size, Sort.by("ratingDate").ascending()); // Sắp xếp theo ratingDate
-            Page<RatingDTO2> ratings = ratingService.getRatingsByProductNameOrAll(productName, pageable);
+            Page<RatingDTO2> ratings = ratingService.getRatingsByKeyWord(keyword, ratingValue, pageable);
 
             response.put("success", true);
             response.put("data", ratings);

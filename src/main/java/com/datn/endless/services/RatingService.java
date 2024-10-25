@@ -128,8 +128,8 @@ public class RatingService {
         return ratingDTO;
     }
 
-    public Page<RatingDTO2> getRatingsByProductNameOrAll(String productName, Pageable pageable) {
-        Page<Rating> ratings = ratingRepository.findByProductNameOrAll(productName, pageable);
+    public Page<RatingDTO2> getRatingsByKeyWord(String keyword, int ratingValue, Pageable pageable) {
+        Page<Rating> ratings = ratingRepository.findByKeyWord(keyword, ratingValue, pageable);
         return ratings.map(this::convertToDTO2);
     }
 
