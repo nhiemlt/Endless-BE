@@ -10,13 +10,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "brands")
 public class Brand {
     @Id
     @Size(max = 36)
     @Column(name = "BrandID", nullable = false, length = 36)
-    private String brandID = java.util.UUID.randomUUID().toString();
+    private String brandID;
 
     @Size(max = 255)
     @NotNull

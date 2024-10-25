@@ -8,6 +8,7 @@ import com.datn.endless.utils.ErrorResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,20 +28,21 @@ public class BrandController {
             return false;
         }
 
-        // Kiểm tra xem có chứa phần header "data:image" hay không
+        // Kiểm tra header "data:image"
+        String base64Data = base64;
         if (base64.startsWith("data:image")) {
-            // Tách phần header và chỉ giữ lại phần base64
             String[] parts = base64.split(",");
             if (parts.length == 2) {
-                base64 = parts[1]; // Phần mã base64 không có header
+                base64Data = parts[1];
             } else {
-                return false; // Không hợp lệ nếu không có mã base64 sau dấu phẩy
+                return false;
             }
         }
 
         // Kiểm tra định dạng base64
-        return base64.matches("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
+        return base64Data.matches("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
     }
+
 
     // Tạo mới một brand
     @PostMapping

@@ -26,11 +26,7 @@ public class BrandService {
         Brand newBrand = new Brand();
         newBrand.setBrandID(UUID.randomUUID().toString());
         newBrand.setName(brandModel.getName());
-
         newBrand.setLogo(brandModel.getLogo());
-
-
-
         return convertToDTO(brandRepository.save(newBrand));
     }
 

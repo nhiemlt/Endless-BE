@@ -10,7 +10,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class BrandModel {
     @Size(max = 255)
     @NotNull
-    @Column(name = "Name", nullable = false)
     private String name;
 
     private String logo;
