@@ -1,5 +1,6 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.InforDTO;
 import com.datn.endless.dtos.UserDTO;
 import com.datn.endless.models.UserModel;
 import com.datn.endless.repositories.UserRepository;
@@ -46,6 +47,16 @@ public class UserController {
 
         // Kiểm tra định dạng base64
         return base64.matches("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
+    }
+
+    @GetMapping("/get-infor")
+    public ResponseEntity<Page<InforDTO>> getAllUsersInfor(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "keyword", required = false) String keyword) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<InforDTO> users = userService.getUsersInfor(keyword, pageable);
+        return ResponseEntity.ok(users);
     }
 
     // Lấy tất cả người dùng

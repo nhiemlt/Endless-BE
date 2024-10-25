@@ -7,6 +7,7 @@ import com.datn.endless.entities.Role;
 import com.datn.endless.models.RoleModel;
 import com.datn.endless.repositories.PermissionRepository;
 import com.datn.endless.repositories.RoleRepository;
+import com.datn.endless.repositories.UserroleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,9 @@ public class RoleService {
     private RoleRepository roleRepository;
 
     @Autowired
+    private UserroleRepository userroleRepository;
+
+    @Autowired
     private PermissionRepository permissionRepository;
 
     public List<RoleDTO> getAllRoles() {
@@ -30,6 +34,11 @@ public class RoleService {
         }
         return dtos;
     }
+
+    public int countUsersInRole(String roleId) {
+        return userroleRepository.countUsersByRole(roleId);
+    }
+
 
     public RoleDTO getRoleById(String roleId) {
         return toDto(roleRepository.findById(roleId).orElse(null));
