@@ -14,8 +14,13 @@ public interface RatingRepository extends JpaRepository<Rating, String> {
     // Tìm đánh giá theo userId với phân trang
     Page<Rating> findByUserID_UserID(String userId, Pageable pageable);
 
-    @Query("SELECT r FROM Rating r WHERE (:productName IS NULL OR r.orderDetailID.productVersionID.versionName LIKE %:productName%)")
-    Page<Rating> findByProductNameOrAll(@Param("productName") String productName, Pageable pageable);
+    @Query("SELECT r FROM Rating r WHERE (:keyword IS NULL OR " +
+            "r.orderDetailID.productVersionID.versionName LIKE %:keyword% OR " +
+            "r.userID.username LIKE %:keyword% OR " +
+            "r.userID.fullname LIKE %:keyword% OR " +
+            "r.comment LIKE %:keyword%) " +
+            "AND (:value = 0 OR r.ratingValue = :value)")
+    Page<Rating> findByKeyWord(@Param("keyword") String keyword, @Param("value") int value, Pageable pageable);
 
     // Lấy danh sách đánh giá theo productVersionID
     List<Rating> findByOrderDetailID_ProductVersionID_ProductVersionID(String productVersionID);
