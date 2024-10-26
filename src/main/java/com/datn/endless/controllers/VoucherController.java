@@ -35,12 +35,6 @@ public class VoucherController {
 
     @Autowired
     private VoucherService voucherService;
-    @Autowired
-    private VoucherRepository voucherRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private UservoucherRepository uservoucherRepository;
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllVouchers(
@@ -76,7 +70,7 @@ public class VoucherController {
             VoucherDTO voucher = voucherService.getVoucherById(id); // Gọi phương thức từ service
 
             response.put("success", true);
-            response.put("message", "Voucher found successfully"); // Trả về thông báo thành công
+            response.put("message", "Voucher found successfully"); // Trả về thông báo thành côn    g
             response.put("data", voucher); // Include the found voucher in the response
             return ResponseEntity.ok(response);
         } catch (VoucherNotFoundException e) {
