@@ -540,15 +540,15 @@ VALUES
 -- Thêm dữ liệu mẫu cho bảng EntryDetails
 INSERT INTO EntryDetails (EntryID, ProductVersionID, Quantity, Price)
 VALUES
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-07-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-07-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Đen'), 10, 600000),
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-08-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-08-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '256GB - Trắng'), 5, 1500000),
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-09-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-09-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 512GB SSD'), 2, 900000),
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-10-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-10-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 1TB SSD'), 3, 800000),
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-11-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-11-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 15, 700000);
 
 -- Thêm dữ liệu mẫu cho bảng Carts
