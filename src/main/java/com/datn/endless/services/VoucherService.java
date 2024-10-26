@@ -1,15 +1,12 @@
 package com.datn.endless.services;
 
 import com.datn.endless.dtos.VoucherDTO;
-import com.datn.endless.entities.Order;
-import com.datn.endless.entities.User;
-import com.datn.endless.entities.Uservoucher;
-import com.datn.endless.exceptions.StatusTypeNotFoundException;
+import com.datn.endless.entities.*;
 import com.datn.endless.exceptions.VoucherNotFoundException;
 import com.datn.endless.models.NotificationModelForAll;
 import com.datn.endless.models.NotificationModelForUser;
 import com.datn.endless.models.VoucherModel;
-import com.datn.endless.entities.Voucher;
+import com.datn.endless.models.VoucherModel2;
 import com.datn.endless.repositories.UserRepository;
 import com.datn.endless.repositories.UservoucherRepository;
 import com.datn.endless.repositories.VoucherRepository;
@@ -19,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -122,11 +120,56 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
         }
 
         NotificationModelForAll notification = new NotificationModelForAll();
-        notification.setContent("Bạn vừa nhận được voucher với mẫ "+voucher.getVoucherCode()+" giảm đến "+voucher.getBiggestDiscount()+" VNĐ cho đơn từ "+voucher.getLeastBill()+" VNĐ");
+        notification.setContent("Bạn vừa nhận được voucher với mã "+voucher.getVoucherCode()+" giảm đến "+voucher.getBiggestDiscount()+" VNĐ cho đơn từ "+voucher.getLeastBill()+" VNĐ");
         notification.setType("AUTO");
         notification.setTitle("Thông báo nhận voucher");
         notificationService.sendNotificationForAll(notification);
     }
+
+
+    public void addVoucherForUser(VoucherModel2 voucherModel) {
+        // Kiểm tra mã voucher có tồn tại không
+        if (voucherRepository.findByVoucherCode(voucherModel.getVoucherCode()).isPresent()) {
+            throw new RuntimeException("Voucher code already exists");
+        }
+
+        // Kiểm tra startDate phải trước endDate
+        if (!voucherModel.getStartDate().isBefore(voucherModel.getEndDate())) {
+            throw new RuntimeException("startDate must be before endDate");
+        }
+
+        // Tạo đối tượng voucher
+        Voucher voucher = new Voucher();
+        voucher.setVoucherCode(voucherModel.getVoucherCode());
+        voucher.setLeastBill(voucherModel.getLeastBill());
+        voucher.setLeastDiscount(voucherModel.getLeastDiscount());
+        voucher.setBiggestDiscount(voucherModel.getBiggestDiscount());
+        voucher.setDiscountLevel(voucherModel.getDiscountLevel());
+        voucher.setDiscountForm(voucherModel.getDiscountForm());
+        voucher.setStartDate(voucherModel.getStartDate());
+        voucher.setEndDate(voucherModel.getEndDate());
+
+        // Lưu voucher vào database
+        Voucher saveVoucher = voucherRepository.save(voucher);
+        List<User> users = new ArrayList<>();
+
+        for(String id: voucherModel.getUserIds()){
+            User user = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+            Uservoucher userVoucher = new Uservoucher();
+            userVoucher.setUserID(user);
+            userVoucher.setVoucherID(saveVoucher);
+            uservoucherRepository.save(userVoucher);
+            NotificationModelForUser notification = new NotificationModelForUser();
+            notification.setContent("Bạn vừa nhận được voucher với mã "+voucher.getVoucherCode()+" giảm đến "+voucher.getBiggestDiscount()+" VNĐ cho đơn từ "+voucher.getLeastBill()+" VNĐ");
+            notification.setType("AUTO");
+            notification.setTitle("Thông báo nhận voucher");
+            notification.setUserID(user.getUserID());
+
+            notificationService.sendNotificationForOrder(notification);
+        }
+    }
+
 
 
     public void updateVoucher(String id, VoucherModel updatedVoucher) {

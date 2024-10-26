@@ -2,14 +2,9 @@ package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.ErrorResponse;
 import com.datn.endless.dtos.VoucherDTO;
-import com.datn.endless.entities.User;
-import com.datn.endless.entities.Uservoucher;
-import com.datn.endless.entities.Voucher;
 import com.datn.endless.exceptions.VoucherNotFoundException;
 import com.datn.endless.models.VoucherModel;
-import com.datn.endless.repositories.UserRepository;
-import com.datn.endless.repositories.UservoucherRepository;
-import com.datn.endless.repositories.VoucherRepository;
+import com.datn.endless.models.VoucherModel2;
 import com.datn.endless.services.VoucherService;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
@@ -20,8 +15,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -90,6 +83,16 @@ public class VoucherController {
         try {
             voucherService.addVoucherAllUser(voucherModel);
             return ResponseEntity.ok("Voucher created and assigned to all active users successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request"+e.getMessage());
+        }
+    }
+
+    @PostMapping("/add-voucher-users")
+    public ResponseEntity<String> addVoucherUsers(@RequestBody VoucherModel2 voucherModel) {
+        try {
+            voucherService.addVoucherForUser(voucherModel);
+            return ResponseEntity.ok("Voucher created and assigned to users successfully");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request"+e.getMessage());
         }
