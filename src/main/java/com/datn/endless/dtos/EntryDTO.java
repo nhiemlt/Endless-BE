@@ -8,8 +8,8 @@ import java.util.List;
 
 @Data
 public class EntryDTO {
-    private String purchaseOrderID;
-    private LocalDate purchaseDate;
+    private String EntryID;
+    private LocalDate entryDate;
     private BigDecimal totalMoney;
     private List<EntryDetailDTO> details;
 }
