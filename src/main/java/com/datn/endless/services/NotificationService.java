@@ -240,13 +240,13 @@ public class NotificationService {
         return buildSuccessResponse("All notifications in the current page marked as read.");
     }
 
-    public Page<NotificationRecipientDTO> getNotificationsByUserId(Pageable pageable) {
+    public List<NotificationRecipientDTO> getNotificationsByUserId() {
         User user = validateUser(userLoginInfomation.getCurrentUsername());
-        if(user==null){
+        if (user == null) {
             throw new UserNotFoundException("User not found");
         }
         List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
-        return convertToDTOPage(allRecipients, pageable);
+        return convertToDTOList(allRecipients);
     }
 
 
@@ -261,6 +261,14 @@ public class NotificationService {
         List<NotificationRecipientDTO> dtoList = recipients.subList(start, end).stream()
                 .map(this::convertToDTO).collect(Collectors.toList());
         return new PageImpl<>(dtoList, pageable, recipients.size());
+    }
+
+    private List<NotificationRecipientDTO> convertToDTOList(List<Notificationrecipient> recipients) {
+        // Sắp xếp danh sách trước khi chuyển đổi sang DTO
+        recipients.sort(Comparator.comparing(nr -> nr.getNotificationID().getNotificationDate(), Comparator.reverseOrder()));
+        return recipients.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     private NotificationRecipientDTO convertToDTO(Notificationrecipient recipient) {

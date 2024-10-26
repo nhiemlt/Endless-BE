@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -29,10 +30,8 @@ public class NotificationController {
     public Page<NotificationDTO> getNotifications(
             @RequestParam(required = false) String text,
             @RequestParam(required = false) String type,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
             @SortDefault(sort = "notificationDate", direction = Sort.Direction.DESC) Pageable pageable) {
-        return notificationService.getAllNotificationDTOs(text, type, PageRequest.of(page, size, pageable.getSort()));
+        return notificationService.getAllNotificationDTOs(text, type, pageable);
     }
 
     @PostMapping("/send")
@@ -51,32 +50,10 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<Page<NotificationRecipientDTO>> getNotificationsByUserId(
-            @PathVariable String userId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "NotificationDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
-
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-
-        Page<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserId(pageable);
-        return ResponseEntity.ok(notifications);
-    }
 
     @GetMapping("/user")
-    public ResponseEntity<Page<NotificationRecipientDTO>> getNotificationsByUserLogin(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "NotificationDate") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
-
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
-
-        Page<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserId(pageable);
+    public ResponseEntity<List<NotificationRecipientDTO>> getNotificationsByUserLogin() {
+        List<NotificationRecipientDTO> notifications = notificationService.getNotificationsByUserId();
         return ResponseEntity.ok(notifications);
     }
 
