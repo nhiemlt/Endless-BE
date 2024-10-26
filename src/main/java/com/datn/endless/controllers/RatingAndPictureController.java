@@ -96,7 +96,7 @@ public class RatingAndPictureController {
     @GetMapping("/productVersion/{productVersionID}")
     public List<RatingDTO> getRatingsByProductVersionId(@PathVariable String productVersionID) {
         return ratingService.getRatingsByProductVersionId(productVersionID);
-    }
+    } 
 
     // Thêm đánh giá mới
     @PostMapping("/add")

@@ -17,16 +17,16 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
-@RequestMapping("/purchase-orders")
+@RequestMapping("/entry-orders")
 public class EntryController {
 
     @Autowired
     private EntryService entryService;
 
     @PostMapping
-    public ResponseEntity<Object> createPurchaseOrder(@RequestBody EntryModel purchaseOrderModel) {
+    public ResponseEntity<Object> createEntry(@RequestBody EntryModel purchaseOrderModel) {
         try {
-            EntryDTO createdOrder = entryService.createPurchaseOrder(purchaseOrderModel);
+            EntryDTO createdOrder = entryService.createEntry(purchaseOrderModel);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -41,8 +41,8 @@ public class EntryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getPurchaseOrderById(@PathVariable("id") String id) {
-        EntryDTO purchaseOrder = entryService.getPurchaseOrderById(id);
+    public ResponseEntity<Object> getEntryById(@PathVariable("id") String id) {
+        EntryDTO purchaseOrder = entryService.getEntryById(id);
         if (purchaseOrder != null) {
             return ResponseEntity.ok(purchaseOrder);
         } else {
@@ -52,12 +52,12 @@ public class EntryController {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getAllPurchaseOrders(
+    public ResponseEntity<Object> getAllEntries(
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
             Pageable pageable) {
         try {
-            Page<EntryDTO> purchaseOrders = entryService.getAllPurchaseOrders(startDate, endDate, pageable);
+            Page<EntryDTO> purchaseOrders = entryService.getAllEntries(startDate, endDate, pageable);
             return ResponseEntity.ok(purchaseOrders);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -66,8 +66,8 @@ public class EntryController {
     }
 
     @GetMapping("/{id}/details")
-    public ResponseEntity<Object> getPurchaseOrderDetails(@PathVariable("id") String id) {
-        List<EntryDetailDTO> details = entryService.getPurchaseOrderDetails(id);
+    public ResponseEntity<Object> getEntryDetails(@PathVariable("id") String id) {
+        List<EntryDetailDTO> details = entryService.getEntryDetails(id);
         if (details != null) {
             return ResponseEntity.ok(details);
         } else {

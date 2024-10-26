@@ -37,13 +37,13 @@ public class EntryService {
     @Autowired
     private ProductversionRepository productversionRepository;
 
-    public EntryDTO createPurchaseOrder(EntryModel purchaseOrderModel) {
+    public EntryDTO createEntry(EntryModel entryModel) {
         Entry entry = new Entry();
         entry.setEntryID(UUID.randomUUID().toString());
         entry.setOrderDate(LocalDate.now());
         entry.setTotalMoney(BigDecimal.ZERO);
 
-        List<Entrydetail> orderDetails = purchaseOrderModel.getDetails().stream()
+        List<Entrydetail> orderDetails = entryModel.getDetails().stream()
                 .map(detailModel -> {
                     Productversion productVersion = productversionRepository.findById(detailModel.getProductVersionID())
                             .orElseThrow(() -> new NoSuchElementException("Product version not found"));
@@ -73,19 +73,19 @@ public class EntryService {
         return mapToDTO(savedOrder);
     }
 
-    public EntryDTO getPurchaseOrderById(String id) {
+    public EntryDTO getEntryById(String id) {
         return entryRepository.findById(id)
                 .map(this::mapToDTO)
                 .orElse(null);
     }
 
-    public Page<EntryDTO> getAllPurchaseOrders(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<EntryDTO> getAllEntries(LocalDate startDate, LocalDate endDate, Pageable pageable) {
         return entryRepository.findByPurchaseDateBetween(
                         startDate, endDate, pageable)
                 .map(this::mapToDTO);
     }
 
-    public List<EntryDetailDTO> getPurchaseOrderDetails(String id) {
+    public List<EntryDetailDTO> getEntryDetails(String id) {
         Entry order = entryRepository.findById(id).orElse(null);
         return (order != null) ? order.getDetails().stream()
                 .map(detail -> {
@@ -101,8 +101,8 @@ public class EntryService {
 
     private EntryDTO mapToDTO(Entry entry) {
         EntryDTO dto = new EntryDTO();
-        dto.setPurchaseOrderID(entry.getEntryID());
-        dto.setPurchaseDate(entry.getOrderDate());
+        dto.setEntryID(entry.getEntryID());
+        dto.setEntryDate(entry.getOrderDate());
         dto.setTotalMoney(entry.getTotalMoney());
 
 
@@ -121,7 +121,7 @@ public class EntryService {
         return dto;
     }
 
-    Integer getProductVersionPurchaseQuantity(String productVersionID){
+    Integer getProductVersionEntryQuantity(String productVersionID){
         Integer quantity = quantity = entrydetailRepository.findTotalPurchasedQuantityByProductVersion(productVersionID);
         return quantity == null ? 0 : quantity;
     }
@@ -132,6 +132,6 @@ public class EntryService {
     }
 
     Integer getProductVersionQuantity(String productVersionID){
-        return getProductVersionPurchaseQuantity(productVersionID) - getProductVersionOrderQuantity(productVersionID);
+        return getProductVersionEntryQuantity(productVersionID) - getProductVersionOrderQuantity(productVersionID);
     }
 }
