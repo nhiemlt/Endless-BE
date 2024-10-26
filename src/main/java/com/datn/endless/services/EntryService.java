@@ -40,7 +40,7 @@ public class EntryService {
     public EntryDTO createEntry(EntryModel entryModel) {
         Entry entry = new Entry();
         entry.setEntryID(UUID.randomUUID().toString());
-        entry.setOrderDate(LocalDate.now());
+        entry.setEntryDate(LocalDate.now());
         entry.setTotalMoney(BigDecimal.ZERO);
 
         List<Entrydetail> orderDetails = entryModel.getDetails().stream()
@@ -102,7 +102,7 @@ public class EntryService {
     private EntryDTO mapToDTO(Entry entry) {
         EntryDTO dto = new EntryDTO();
         dto.setEntryID(entry.getEntryID());
-        dto.setEntryDate(entry.getOrderDate());
+        dto.setEntryDate(entry.getEntryDate());
         dto.setTotalMoney(entry.getTotalMoney());
 
 

@@ -201,7 +201,7 @@ CREATE TABLE RatingPictures (
 -- Tạo bảng Entries
 CREATE TABLE Entries (
     EntryID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    OrderDate DATE NOT NULL,
+    EntryDate DATE NOT NULL,
     TotalMoney DECIMAL(18, 2) NOT NULL
 );
 
@@ -529,7 +529,7 @@ INSERT INTO RatingPictures (RatingID, Picture) VALUES
 ((SELECT RatingID FROM Ratings WHERE Comment = 'Rất thất vọng về sản phẩm.'), 'image_bad2.png');
 
 -- Thêm dữ liệu mẫu cho bảng Entries
-INSERT INTO Entries (OrderDate, TotalMoney)
+INSERT INTO Entries (EntryDate, TotalMoney)
 VALUES
 ('2024-07-01', 10000000),
 ('2024-08-01', 5000000),
@@ -574,11 +574,11 @@ INSERT INTO Favorite (UserID, ProductID) VALUES
 
 -- Insert data into Notifications
 INSERT INTO Notifications (Title, Content, Type, NotificationDate, Status) VALUES
-('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'Promotion', '2024-06-01 08:00:00', 'Sent'),
-('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'Promotion', '2024-11-25 09:00:00', 'Scheduled'),
-('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'Promotion', '2024-01-15 07:00:00', 'Sent'),
-('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'Promotion', '2024-12-20 10:00:00', 'Sent'),
-('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'Promotion', '2024-05-10 08:30:00', 'Scheduled');
+('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'All', '2024-06-01 08:00:00', 'Sent'),
+('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'All', '2024-11-25 09:00:00', 'Scheduled'),
+('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'All', '2024-01-15 07:00:00', 'Sent'),
+('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'All', '2024-12-20 10:00:00', 'Sent'),
+('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'All', '2024-05-10 08:30:00', 'Scheduled');
 
 -- Insert data into NotificationRecipients
 INSERT INTO NotificationRecipients (NotificationID, UserID, Status) VALUES

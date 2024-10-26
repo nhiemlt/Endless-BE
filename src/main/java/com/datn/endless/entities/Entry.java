@@ -23,8 +23,8 @@ public class Entry {
     private String entryID;
 
     @NotNull
-    @Column(name = "OrderDate", nullable = false)
-    private LocalDate orderDate;
+    @Column(name = "EntryDate", nullable = false)
+    private LocalDate entryDate;
 
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)

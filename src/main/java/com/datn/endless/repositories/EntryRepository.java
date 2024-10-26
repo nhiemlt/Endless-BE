@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 
 public interface EntryRepository extends JpaRepository<Entry, String> {
-    @Query("SELECT e FROM Entry e WHERE (:startDate IS NULL OR e.orderDate >= :startDate) AND (:endDate IS NULL OR e.orderDate <= :endDate)")
+    @Query("SELECT e FROM Entry e WHERE (:startDate IS NULL OR e.entryDate >= :startDate) AND (:endDate IS NULL OR e.entryDate <= :endDate)")
     Page<Entry> findByPurchaseDateBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate, Pageable pageable);
 
     Page<Entry> findAll(Pageable pageable);
