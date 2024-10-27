@@ -33,11 +33,9 @@ public class PromotionController {
 
         PromotionModel promotionModel = new PromotionModel();
         promotionModel.setName(name);
-        promotionModel.setEnName(enName);
         promotionModel.setStartDate(startDate);
         promotionModel.setEndDate(endDate);
         promotionModel.setPoster(poster);
-        promotionModel.setEnDescription(enDescription);
 
         PromotionDTO createdPromotion = promotionService.createPromotion(promotionModel);
         return ResponseEntity.ok(createdPromotion);
@@ -56,11 +54,9 @@ public class PromotionController {
 
         PromotionModel promotionModel = new PromotionModel();
         promotionModel.setName(name);
-        promotionModel.setEnName(enName);
         promotionModel.setStartDate(startDate);
         promotionModel.setEndDate(endDate);
         promotionModel.setPoster(poster);
-        promotionModel.setEnDescription(enDescription);
 
         PromotionDTO updatedPromotion = promotionService.updatePromotion(id, promotionModel);
         return ResponseEntity.ok(updatedPromotion);

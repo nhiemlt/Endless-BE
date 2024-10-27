@@ -160,7 +160,6 @@ public class ProductVersionService {
         productDTO.setCategoryName(productVersion.getProductID().getCategoryID().getName());
         productDTO.setBrandName(productVersion.getProductID().getBrandID().getName());
         productDTO.setName(productVersion.getProductID().getName());
-        productDTO.setNameEn(productVersion.getProductID().getNameEn());
 
 
 
@@ -216,11 +215,9 @@ public class ProductVersionService {
                     PromotionDTO promotionDTO = new PromotionDTO();
                     promotionDTO.setPromotionID(promotion.getPromotionID());
                     promotionDTO.setName(promotion.getName());
-                    promotionDTO.setEnName(promotion.getEnName());
                     promotionDTO.setStartDate(promotion.getStartDate());
                     promotionDTO.setEndDate(promotion.getEndDate());
                     promotionDTO.setPoster(promotion.getPoster());
-                    promotionDTO.setEnDescription(promotion.getEnDescription());
                     return promotionDTO;
                 })
                 .collect(Collectors.toList());

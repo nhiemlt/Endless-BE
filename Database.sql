@@ -12,23 +12,20 @@ CREATE TABLE Brands (
 -- Tạo bảng Categories
 CREATE TABLE Categories (
     CategoryID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    Name VARCHAR(255) NOT NULL,
-    EN_name VARCHAR(255)
+    Name VARCHAR(255) NOT NULL
 );
 
 -- Tạo bảng Attributes
 CREATE TABLE Attributes (
     AttributeID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    AttributeName VARCHAR(255) NOT NULL,
-    EN_atributeName VARCHAR(255)
-);
+    AttributeName VARCHAR(255) NOT NULL
+   );
 
 -- Tạo bảng AttributeValues
 CREATE TABLE AttributeValues (
     AttributeValueID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     AttributeID CHAR(36) NOT NULL,
     Value VARCHAR(255) NOT NULL,
-    EN_value VARCHAR(255),
     FOREIGN KEY (AttributeID) REFERENCES Attributes(AttributeID)
 );
 
@@ -38,9 +35,7 @@ CREATE TABLE Products (
     CategoryID CHAR(36) NOT NULL,
     BrandID CHAR(36) NOT NULL,
     Name VARCHAR(255) NOT NULL,
-    Name_EN VARCHAR(255),
     Description TEXT,
-    EN_description TEXT,
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID),
     FOREIGN KEY (BrandID) REFERENCES Brands(BrandID)
 );
@@ -57,7 +52,7 @@ CREATE TABLE ProductVersions (
     Length DECIMAL(18, 2) NOT NULL, -- Chiều dài
     Width DECIMAL(18, 2) NOT NULL,  -- Chiều rộng
     Status VARCHAR(50) NOT NULL,
-    Image TEXT,
+    Image LONGTEXT,
     FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
 
@@ -74,12 +69,10 @@ CREATE TABLE VersionAttributes (
 CREATE TABLE Promotions (
     PromotionID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     Name VARCHAR(255) NOT NULL,
-    EN_name VARCHAR(255),
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
-    Poster LONGTEXT,
-    EN_description TEXT
-);
+    Poster LONGTEXT
+   );
 
 -- Tạo bảng PromotionDetails
 CREATE TABLE PromotionDetails (
@@ -201,7 +194,7 @@ CREATE TABLE RatingPictures (
 -- Tạo bảng Entries
 CREATE TABLE Entries (
     EntryID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    EntryDate DATE NOT NULL,
+    OrderDate DATE NOT NULL,
     TotalMoney DECIMAL(18, 2) NOT NULL
 );
 
@@ -330,56 +323,56 @@ INSERT INTO Brands (Name, Logo) VALUES
 ('Huawei',  'https://example.com/logos/huawei.png');
 
 -- Thêm dữ liệu mẫu cho bảng Categories
-INSERT INTO Categories (Name, EN_name) VALUES
-('Điện thoại', 'Smartphones'),
-('Laptop', 'Laptops'),
-('Máy tính bảng', 'Tablets'),
-('Phụ kiện điện thoại', 'Phone Accessories'),
-('Phụ kiện laptop', 'Laptop Accessories'),
-('Máy tính để bàn', 'Desktops'),
-('Thiết bị đeo thông minh', 'Wearable Devices'),
-('Tivi', 'Televisions'),
-('Máy in', 'Printers'),
-('Thiết bị mạng', 'Networking Devices');
+INSERT INTO Categories (Name) VALUES
+('Điện thoại'),
+('Laptop'),
+('Máy tính bảng'),
+('Phụ kiện điện thoại'),
+('Phụ kiện laptop'),
+('Máy tính để bàn'),
+('Thiết bị đeo thông minh'),
+('Tivi'),
+('Máy in'),
+('Thiết bị mạng');
 
 -- Thêm dữ liệu mẫu cho bảng Attributes
-INSERT INTO Attributes (AttributeName, EN_atributeName) VALUES
-('Màu sắc', 'Color'),
-('Kích thước màn hình', 'Screen Size'),
-('Bộ nhớ trong', 'Internal Storage'),
-('RAM', 'RAM'),
-('CPU', 'CPU'),
-('Pin', 'Battery Capacity'),
-('Camera', 'Camera'),
-('Trọng lượng', 'Weight'),
-('Hệ điều hành', 'Operating System'),
-('Độ phân giải màn hình', 'Screen Resolution');
+INSERT INTO Attributes (AttributeName) VALUES
+('Màu sắc'),
+('Kích thước màn hình'),
+('Bộ nhớ trong'),
+('RAM'),
+('CPU'),
+('Pin'),
+('Camera'),
+('Trọng lượng'),
+('Hệ điều hành'),
+('Độ phân giải màn hình');
 
 -- Thêm dữ liệu mẫu cho bảng AttributeValues
-INSERT INTO AttributeValues (AttributeID, Value, EN_value) VALUES
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Màu sắc'), 'Đen', 'Black'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Màu sắc'), 'Trắng', 'White'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Kích thước màn hình'), '6.1 inch', '6.1 inch'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Kích thước màn hình'), '15.6 inch', '15.6 inch'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Bộ nhớ trong'), '128GB', '128GB'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Bộ nhớ trong'), '512GB', '512GB'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'RAM'), '8GB', '8GB'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'RAM'), '16GB', '16GB'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'CPU'), 'Intel Core i7', 'Intel Core i7'),
-((SELECT AttributeID FROM Attributes WHERE AttributeName = 'CPU'), 'Apple M1', 'Apple M1');
+INSERT INTO AttributeValues (AttributeID, Value) VALUES
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Màu sắc'), 'Đen'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Màu sắc'), 'Trắng'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Kích thước màn hình'), '6.1 inch'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Kích thước màn hình'), '15.6 inch'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Bộ nhớ trong'), '128GB'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'Bộ nhớ trong'), '512GB'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'RAM'), '8GB'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'RAM'), '16GB'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'CPU'), 'Intel Core i7'),
+((SELECT AttributeID FROM Attributes WHERE AttributeName = 'CPU'), 'Apple M1');
 
 -- Thêm dữ liệu mẫu cho bảng Products
-INSERT INTO Products (CategoryID, BrandID, Name, Description, EN_description) VALUES
-((SELECT CategoryID FROM Categories WHERE Name = 'Điện thoại'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'iPhone 13', 'Điện thoại thông minh với chip A15 Bionic.', 'Smartphone with A15 Bionic chip.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Điện thoại'), (SELECT BrandID FROM Brands WHERE Name = 'Samsung'), 'Samsung Galaxy S21', 'Điện thoại với màn hình 6.2 inch và camera 64MP.', 'Phone with 6.2-inch display and 64MP camera.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Laptop'), (SELECT BrandID FROM Brands WHERE Name = 'Dell'), 'Dell XPS 13', 'Laptop cao cấp với màn hình 13.3 inch và CPU Intel Core i7.', 'Premium laptop with 13.3-inch display and Intel Core i7 CPU.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Laptop'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'MacBook Pro 14', 'Laptop với chip Apple M1 và màn hình Retina.', 'Laptop with Apple M1 chip and Retina display.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Máy tính bảng'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'iPad Pro 11', 'Máy tính bảng với màn hình 11 inch và chip M1.', 'Tablet with 11-inch display and M1 chip.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Phụ kiện điện thoại'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'AirPods Pro', 'Tai nghe không dây với công nghệ chống ồn chủ động.', 'Wireless earbuds with active noise cancellation.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Phụ kiện laptop'), (SELECT BrandID FROM Brands WHERE Name = 'Microsoft'), 'Surface Pen', 'Bút cảm ứng dành cho Surface.', 'Stylus for Surface devices.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Thiết bị đeo thông minh'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'Apple Watch Series 7', 'Đồng hồ thông minh với nhiều tính năng sức khỏe.', 'Smartwatch with extensive health features.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Tivi'), (SELECT BrandID FROM Brands WHERE Name = 'Samsung'), 'Samsung QLED 55', 'Tivi 55 inch với công nghệ QLED và độ phân giải 4K.', '55-inch TV with QLED technology and 4K resolution.'),
-((SELECT CategoryID FROM Categories WHERE Name = 'Thiết bị mạng'), (SELECT BrandID FROM Brands WHERE Name = 'Asus'), 'Asus RT-AX88U', 'Router Wi-Fi 6 hiệu năng cao.', 'High-performance Wi-Fi 6 router.');
+INSERT INTO Products (CategoryID, BrandID, Name, Description) VALUES
+((SELECT CategoryID FROM Categories WHERE Name = 'Điện thoại'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'iPhone 13', 'Điện thoại thông minh với chip A15 Bionic.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Điện thoại'), (SELECT BrandID FROM Brands WHERE Name = 'Samsung'), 'Samsung Galaxy S21', 'Điện thoại với màn hình 6.2 inch và camera 64MP.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Laptop'), (SELECT BrandID FROM Brands WHERE Name = 'Dell'), 'Dell XPS 13', 'Laptop cao cấp với màn hình 13.3 inch và CPU Intel Core i7.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Laptop'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'MacBook Pro 14', 'Laptop với chip Apple M1 và màn hình Retina.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Máy tính bảng'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'iPad Pro 11', 'Máy tính bảng với màn hình 11 inch và chip M1.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Phụ kiện điện thoại'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'AirPods Pro', 'Tai nghe không dây với công nghệ chống ồn chủ động.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Phụ kiện laptop'), (SELECT BrandID FROM Brands WHERE Name = 'Microsoft'), 'Surface Pen', 'Bút cảm ứng dành cho Surface.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Thiết bị đeo thông minh'), (SELECT BrandID FROM Brands WHERE Name = 'Apple'), 'Apple Watch Series 7', 'Đồng hồ thông minh với nhiều tính năng sức khỏe.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Tivi'), (SELECT BrandID FROM Brands WHERE Name = 'Samsung'), 'Samsung QLED 55', 'Tivi 55 inch với công nghệ QLED và độ phân giải 4K.'),
+((SELECT CategoryID FROM Categories WHERE Name = 'Thiết bị mạng'), (SELECT BrandID FROM Brands WHERE Name = 'Asus'), 'Asus RT-AX88U', 'Router Wi-Fi 6 hiệu năng cao.');
 
 -- Thêm dữ liệu mẫu cho bảng ProductVersions
 INSERT INTO ProductVersions (ProductID, VersionName, CostPrice, Price, Weight, Height, Length, Width, Status, Image) VALUES
@@ -412,17 +405,17 @@ JOIN AttributeValues av ON (av.Value = '128GB' AND pv.VersionName = '128GB - Đe
 
 
 -- Thêm dữ liệu mẫu cho bảng Promotions
-INSERT INTO Promotions (Name, EN_name, StartDate, EndDate, Poster, EN_description) VALUES
-('Giảm giá mùa hè', 'Summer Sale', '2024-06-01', '2024-06-30', 'https://example.com/posters/summer_sale.png', 'Discounts on all electronics during summer!'),
-('Black Friday', 'Black Friday', '2024-11-25', '2024-11-28', 'https://example.com/posters/black_friday.png', 'Huge discounts on Black Friday!'),
-('Tết Nguyên Đán', 'Lunar New Year', '2024-01-15', '2024-02-15', 'https://example.com/posters/lunar_new_year.png', 'Celebrate the Lunar New Year with amazing deals!'),
-('Giảm giá Noel', 'Christmas Sale', '2024-12-20', '2024-12-25', 'https://example.com/posters/christmas_sale.png', 'Merry Christmas with special discounts!'),
-('Ngày của Mẹ', 'Mother\'s Day', '2024-05-10', '2024-05-14', 'https://example.com/posters/mothers_day.png', 'Special offers for Mother\'s Day.'),
-('Ngày Quốc Khánh', 'National Day', '2024-09-01', '2024-09-03', 'https://example.com/posters/national_day.png', 'Celebrate National Day with big discounts.'),
-('Mùa tựu trường', 'Back to School', '2024-08-15', '2024-09-15', 'https://example.com/posters/back_to_school.png', 'Back to School sale for students.'),
-('Cyber Monday', 'Cyber Monday', '2024-11-29', '2024-11-29', 'https://example.com/posters/cyber_monday.png', 'One-day online shopping spree!'),
-('Valentine\'s Day', 'Valentine\'s Day', '2024-02-10', '2024-02-14', 'https://example.com/posters/valentines_day.png', 'Special discounts for your loved one.'),
-('Ngày Quốc tế Phụ nữ', 'International Women\'s Day', '2024-03-07', '2024-03-08', 'https://example.com/posters/womens_day.png', 'Celebrate Women\'s Day with exclusive offers.');
+INSERT INTO Promotions (Name,  StartDate, EndDate, Poster) VALUES
+('Giảm giá mùa hè', '2024-06-01', '2024-06-30', 'https://example.com/posters/summer_sale.png'),
+('Black Friday', '2024-11-25', '2024-11-28', 'https://example.com/posters/black_friday.png'),
+('Tết Nguyên Đán', '2024-01-15', '2024-02-15', 'https://example.com/posters/lunar_new_year.png'),
+('Giảm giá Noel', '2024-12-20', '2024-12-25', 'https://example.com/posters/christmas_sale.png'),
+('Ngày của Mẹ', '2024-05-10', '2024-05-14', 'https://example.com/posters/mothers_day.png'),
+('Ngày Quốc Khánh', 'National Day', '2024-09-01', '2024-09-03', 'https://example.com/posters/national_day.png'),
+('Mùa tựu trường', '2024-08-15', '2024-09-15', 'https://example.com/posters/back_to_school.png'),
+('Cyber Monday', '2024-11-29', '2024-11-29', 'https://example.com/posters/cyber_monday.png'),
+('Valentine\'s Day', '2024-02-10', '2024-02-14', 'https://example.com/posters/valentines_day.png'),
+('Ngày Quốc tế Phụ nữ', '2024-03-07', '2024-03-08', 'https://example.com/posters/womens_day.png');
 
 -- Thêm dữ liệu mẫu cho bảng PromotionDetails
 INSERT INTO PromotionDetails (PromotionID, PercentDiscount) VALUES
@@ -529,7 +522,7 @@ INSERT INTO RatingPictures (RatingID, Picture) VALUES
 ((SELECT RatingID FROM Ratings WHERE Comment = 'Rất thất vọng về sản phẩm.'), 'image_bad2.png');
 
 -- Thêm dữ liệu mẫu cho bảng Entries
-INSERT INTO Entries (EntryDate, TotalMoney)
+INSERT INTO Entries (OrderDate, TotalMoney)
 VALUES
 ('2024-07-01', 10000000),
 ('2024-08-01', 5000000),
@@ -540,15 +533,15 @@ VALUES
 -- Thêm dữ liệu mẫu cho bảng EntryDetails
 INSERT INTO EntryDetails (EntryID, ProductVersionID, Quantity, Price)
 VALUES
-((SELECT EntryID FROM Entries WHERE EntryDate = '2024-07-01'), 
+((SELECT EntryID FROM Entries WHERE OrderDate = '2024-07-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Đen'), 10, 600000),
-((SELECT EntryID FROM Entries WHERE EntryDate = '2024-08-01'), 
+((SELECT EntryID FROM Entries WHERE OrderDate = '2024-08-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '256GB - Trắng'), 5, 1500000),
-((SELECT EntryID FROM Entries WHERE EntryDate = '2024-09-01'), 
+((SELECT EntryID FROM Entries WHERE OrderDate = '2024-09-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 512GB SSD'), 2, 900000),
-((SELECT EntryID FROM Entries WHERE EntryDate = '2024-10-01'), 
+((SELECT EntryID FROM Entries WHERE OrderDate = '2024-10-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 1TB SSD'), 3, 800000),
-((SELECT EntryID FROM Entries WHERE EntryDate = '2024-11-01'), 
+((SELECT EntryID FROM Entries WHERE OrderDate = '2024-11-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 15, 700000);
 
 -- Thêm dữ liệu mẫu cho bảng Carts
@@ -574,11 +567,11 @@ INSERT INTO Favorite (UserID, ProductID) VALUES
 
 -- Insert data into Notifications
 INSERT INTO Notifications (Title, Content, Type, NotificationDate, Status) VALUES
-('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'All', '2024-06-01 08:00:00', 'Sent'),
-('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'All', '2024-11-25 09:00:00', 'Scheduled'),
-('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'All', '2024-01-15 07:00:00', 'Sent'),
-('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'All', '2024-12-20 10:00:00', 'Sent'),
-('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'All', '2024-05-10 08:30:00', 'Scheduled');
+('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'Promotion', '2024-06-01 08:00:00', 'Sent'),
+('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'Promotion', '2024-11-25 09:00:00', 'Scheduled'),
+('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'Promotion', '2024-01-15 07:00:00', 'Sent'),
+('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'Promotion', '2024-12-20 10:00:00', 'Sent'),
+('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'Promotion', '2024-05-10 08:30:00', 'Scheduled');
 
 -- Insert data into NotificationRecipients
 INSERT INTO NotificationRecipients (NotificationID, UserID, Status) VALUES
@@ -607,7 +600,6 @@ INSERT INTO Modules (ModuleName, EN_ModuleName) VALUES
     ('Quản lý thông báo', 'Notification Management'),
     ('Quản lý đơn hàng', 'Order Management'),
     ('Quản lý nhập hàng', 'Entry Management'),
-    ('Quản lý người dùng', 'User Management'),
     ('Quản lý thuộc tính', 'Attribute Management'),
     ('Quản lý thương hiệu', 'Brand Management'),
     ('Quản lý danh mục', 'Category Management'),
@@ -678,12 +670,6 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Thêm danh mục mới', 'Add new category', 'add_new_category'),
 	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Xóa danh mục', 'Remove category', 'delete_category'),
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Cập nhật danh mục', 'Update category', 'update_category'),
-    
-    -- Quản lý người dùng (USER)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'User Management'), 'Xem tất cả người dùng', 'View all users', 'view_all_users'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'User Management'), 'Thêm người dùng mới', 'Add new user', 'add_new_user'),
-	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'User Management'), 'Xóa người dùng', 'Remove user', 'delete_user'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'User Management'), 'Cập nhật người dùngc', 'Update user', 'update_user'),
     
     -- Quản lý sản phẩm (PRODUCT)
     ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Xem tất cả sản phẩm', 'View all products', 'view_all_products'),

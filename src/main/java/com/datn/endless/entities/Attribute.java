@@ -21,8 +21,8 @@ public class Attribute {
     @Column(name = "AttributeName", nullable = false)
     private String attributeName;
 
-    @Size(max = 255)
-    @Column(name = "EN_atributeName") // Chỉnh sửa tên cột
-    private String enAtributename;
+//    @Size(max = 255)
+//    @Column(name = "EN_atributeName") // Chỉnh sửa tên cột
+//    private String enAtributename;
 
 }

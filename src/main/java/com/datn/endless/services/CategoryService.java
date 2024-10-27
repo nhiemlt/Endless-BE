@@ -24,11 +24,10 @@ public class CategoryService {
         Category newCategory = new Category();
         newCategory.setCategoryID(UUID.randomUUID().toString());
         newCategory.setName(categoryModel.getName());
-        newCategory.setEnName(categoryModel.getEnName());
         return convertToDTO(categoryRepository.save(newCategory));
     }
 
-    public List<CategoryDTO> getCategories(String name, String enName, String id, int page, int size) {
+    public List<CategoryDTO> getCategories(String name, String id, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Category> categoryPage;
 
@@ -43,8 +42,6 @@ public class CategoryService {
         // Tìm kiếm theo tên hoặc tên tiếng Anh
         if (name != null && !name.isEmpty()) {
             categoryPage = categoryRepository.findByNameContainingIgnoreCase(name, pageable);
-        } else if (enName != null && !enName.isEmpty()) {
-            categoryPage = categoryRepository.findByEnNameContainingIgnoreCase(enName, pageable);
         } else {
             categoryPage = categoryRepository.findAll(pageable);
         }
@@ -72,7 +69,6 @@ public class CategoryService {
         CategoryDTO categoryDTO = new CategoryDTO();
         categoryDTO.setCategoryID(category.getCategoryID());
         categoryDTO.setName(category.getName());
-        categoryDTO.setEnName(category.getEnName());
         return categoryDTO;
     }
 
@@ -83,7 +79,6 @@ public class CategoryService {
 
         // Cập nhật thông tin của danh mục
         existingCategory.setName(categoryModel.getName());
-        existingCategory.setEnName(categoryModel.getEnName());
 
         // Lưu danh mục đã cập nhật
         return convertToDTO(categoryRepository.save(existingCategory));

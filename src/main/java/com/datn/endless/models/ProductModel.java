@@ -10,11 +10,11 @@ public class ProductModel {
     @Size(max = 255)
     private String name;
 
-    @Size(max = 255)
-    private String nameEn;
+//    @Size(max = 255)
+//    private String nameEn;
 
     private String description;
-    private String enDescription;
+//    private String enDescription;
 
     @NotNull
     private String categoryID;

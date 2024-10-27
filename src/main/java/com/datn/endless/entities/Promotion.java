@@ -27,9 +27,9 @@ public class Promotion {
     @Column(name = "Name", nullable = false)
     private String name;
 
-    @Size(max = 255)
-    @Column(name = "EN_name")
-    private String enName;
+//    @Size(max = 255)
+//    @Column(name = "EN_name")
+//    private String enName;
 
     @NotNull
     @Column(name = "StartDate", nullable = false)
@@ -43,8 +43,8 @@ public class Promotion {
     @Column(name = "Poster")
     private String poster;
 
-    @Lob
-    @Column(name = "EN_description")
-    private String enDescription;
+//    @Lob
+//    @Column(name = "EN_description")
+//    private String enDescription;
 
 }

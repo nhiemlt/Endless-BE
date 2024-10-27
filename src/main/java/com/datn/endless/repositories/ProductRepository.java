@@ -9,9 +9,7 @@ import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, String> {
 
-    List<Product> findByNameContainingIgnoreCase(String name);
 
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
-    Page<Product> findByNameEnContainingIgnoreCase(String nameEn, Pageable pageable);
 }
 

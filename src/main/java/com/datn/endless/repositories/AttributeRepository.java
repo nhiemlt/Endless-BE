@@ -9,10 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AttributeRepository extends JpaRepository<Attribute, String> {
-    List<Attribute> findByAttributeNameContaining(String name);
-    boolean existsByAttributeName(String name);
-    Optional<Attribute> findByAttributeName(String name);
-    Page<Attribute> findByAttributeNameContaining(String name, Pageable pageable);
+
     Page<Attribute> findByAttributeNameContainingIgnoreCase(String name, Pageable pageable);
-    Page<Attribute> findByEnAtributenameContainingIgnoreCase(String enName, Pageable pageable);
 }
