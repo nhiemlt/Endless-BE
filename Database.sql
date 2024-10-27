@@ -740,7 +740,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALU
 INSERT INTO Roles (RoleName, EN_nameRole) VALUES
     ('SuperAdmin', 'SuperAdministrator'),
     ('Admin', 'Administrator'),
-    ('Nhân viên bán hàng', 'Saler'),
+    ('Nhân viên', 'Staff'),
     ('Quản lý', 'Manager'),
     ('Nhân viên hỗ trợ', 'Support');
 

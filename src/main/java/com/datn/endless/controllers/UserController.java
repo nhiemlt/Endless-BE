@@ -143,27 +143,31 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
         }
 
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(userModel.getAvatar())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Định dạng avatar không hợp lệ")));
-        }
-
         try {
+            // Lấy người dùng hiện tại
             UserDTO currentUser = userService.getCurrentUser();
             if (currentUser == null) {
                 return ResponseEntity.notFound().build(); // Người dùng không tìm thấy
             }
+
+            // Giả định avatar là URL từ frontend
+            String avatarUrl = userModel.getAvatar();
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                userModel.setAvatar(avatarUrl); // Lưu URL ảnh từ Firebase vào userModel
+            }
+
             userModel.setUserID(currentUser.getUserID());
             UserDTO updatedUser = userService.updateCurrentUser(userModel);
             return ResponseEntity.ok(updatedUser); // Trả về người dùng đã cập nhật
         } catch (RuntimeException e) {
-            // Phân loại thông báo lỗi dựa trên nội dung
             return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse(List.of("Đã xảy ra lỗi khi cập nhật người dùng")));
         }
     }
+
+
 
     // Xóa người dùng theo ID
     @DeleteMapping("/{id}")
