@@ -20,8 +20,7 @@ public class PermissionService {
         return permissions.stream()
                 .map(permission -> new PermissionDTO(
                         permission.getPermissionID(),
-                        permission.getPermissionName(),
-                        permission.getEnPermissionname()))
+                        permission.getPermissionName()))
                 .collect(Collectors.toList());
     }
 }

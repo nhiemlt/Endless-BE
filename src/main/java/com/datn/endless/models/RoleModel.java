@@ -16,9 +16,6 @@ public class RoleModel {
     @NotEmpty(message = "Role name cannot be empty")
     private String roleName;
 
-    @NotEmpty(message = "Role English name cannot be empty")
-    private String enNamerole;
-
     @NotEmpty(message = "Permissions cannot be empty")
     private List<String> permissionIds;
 

@@ -29,26 +29,6 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    private boolean isValidBase64(String base64) {
-        if (base64 == null || base64.isEmpty()) {
-            return false;
-        }
-
-        // Kiểm tra xem có chứa phần header "data:image" hay không
-        if (base64.startsWith("data:image")) {
-            // Tách phần header và chỉ giữ lại phần base64
-            String[] parts = base64.split(",");
-            if (parts.length == 2) {
-                base64 = parts[1]; // Phần mã base64 không có header
-            } else {
-                return false; // Không hợp lệ nếu không có mã base64 sau dấu phẩy
-            }
-        }
-
-        // Kiểm tra định dạng base64
-        return base64.matches("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
-    }
-
     @GetMapping("/get-infor")
     public ResponseEntity<Page<InforDTO>> getAllUsersInfor(
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -93,11 +73,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
         }
 
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(userModel.getAvatar())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid avatar format")));
-        }
-
         try {
             UserDTO createdUser = userService.saveUser(userModel);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
@@ -115,11 +90,6 @@ public class UserController {
                     .map(error -> error.getDefaultMessage())
                     .collect(Collectors.toList());
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
-        }
-
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(userModel.getAvatar())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid avatar format")));
         }
 
         userModel.setUserID(id);
@@ -141,11 +111,6 @@ public class UserController {
                     .map(error -> error.getDefaultMessage())
                     .collect(Collectors.toList());
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
-        }
-
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(userModel.getAvatar())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Định dạng avatar không hợp lệ")));
         }
 
         try {

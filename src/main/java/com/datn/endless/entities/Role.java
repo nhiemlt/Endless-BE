@@ -25,10 +25,6 @@ public class Role {
     @Column(name = "RoleName", nullable = false)
     private String roleName;
 
-    @Size(max = 255)
-    @Column(name = "EN_nameRole")
-    private String enNamerole;
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "PermissionRole",
