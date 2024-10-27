@@ -46,7 +46,7 @@ public class EntryService {
         List<Entrydetail> orderDetails = entryModel.getDetails().stream()
                 .map(detailModel -> {
                     Productversion productVersion = productversionRepository.findById(detailModel.getProductVersionID())
-                            .orElseThrow(() -> new NoSuchElementException("Product version not found"));
+                            .orElseThrow(() -> new NoSuchElementException("Sản phẩm không tồn tại"));
 
                     BigDecimal price = productVersion.getPurchasePrice();
                     BigDecimal detailTotal = price.multiply(new BigDecimal(detailModel.getQuantity()));

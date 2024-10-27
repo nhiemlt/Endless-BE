@@ -5,7 +5,6 @@ import com.datn.endless.dtos.NotificationRecipientDTO;
 import com.datn.endless.entities.Notification;
 import com.datn.endless.entities.Notificationrecipient;
 import com.datn.endless.entities.User;
-import com.datn.endless.exceptions.ResourceNotFoundException;
 import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.NotificationModel;
 import com.datn.endless.models.NotificationModelForAll;
@@ -138,7 +137,7 @@ public class NotificationService {
         notification.setNotificationID(UUID.randomUUID().toString());
         notification.setTitle(notificationModel.getTitle());
         notification.setContent(notificationModel.getContent());
-        notification.setType(notificationModel.getType());
+        notification.setType("tạo thủ công");
         notification.setNotificationDate(Instant.now());
         notification.setStatus("Đã gửi");// Khởi tạo Set nếu cần
         return notification;
@@ -149,7 +148,7 @@ public class NotificationService {
         notification.setNotificationID(UUID.randomUUID().toString());
         notification.setTitle(notificationModel.getTitle());
         notification.setContent(notificationModel.getContent());
-        notification.setType(notificationModel.getType());
+        notification.setType("Gửi tất cả");
         notification.setNotificationDate(Instant.now());
         notification.setStatus("Đã gửi");
         Set<Notificationrecipient> recipients = new HashSet<>();
@@ -158,7 +157,7 @@ public class NotificationService {
             notificationrecipient.setNotificationRecipientID(UUID.randomUUID().toString());
             notificationrecipient.setNotificationID(notification);
             notificationrecipient.setUserID(user);
-            notificationrecipient.setStatus("UNREAD");
+            notificationrecipient.setStatus("Chưa đọc");
             recipients.add(notificationrecipient);
         }
         notification.setNotificationrecipients(recipients);
@@ -172,16 +171,16 @@ public class NotificationService {
         notification.setNotificationID(UUID.randomUUID().toString());
         notification.setTitle(notificationModel.getTitle());
         notification.setContent(notificationModel.getContent());
-        notification.setType(notificationModel.getType());
+        notification.setType("Tạo tự động");
         notification.setNotificationDate(Instant.now());
         notification.setStatus("Đã gửi");
 
         // Tìm user theo ID
         User user = userRepository.findById(notificationModel.getUserID())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy người dùng"));
 
         // Tạo Notificationrecipient mới
-        Notificationrecipient recipient = createNotificationRecipient(notification, user, "UNREAD");
+        Notificationrecipient recipient = createNotificationRecipient(notification, user, "Chưa đọc");
         notification.getNotificationrecipients().add(recipient); // Thêm recipient vào notification
         return notification;
     }
@@ -201,26 +200,26 @@ public class NotificationService {
         List<Notificationrecipient> recipients = userIds.stream()
                 .map(userId -> {
                     User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new IllegalArgumentException("Invalid User ID: " + userId));
-                    return createNotificationRecipient(notification, user, "UNREAD"); // Sử dụng phương thức tạo
+                            .orElseThrow(() -> new IllegalArgumentException("ID người dùng không tồn tại: " + userId));
+                    return createNotificationRecipient(notification, user, "Chưa đọc"); // Sử dụng phương thức tạo
                 }).collect(Collectors.toList());
         notificationRecipientRepository.saveAll(recipients);
     }
 
     public Map<String, Object> markAsRead(String notificationRecipientId) {
         Notificationrecipient recipient = notificationRecipientRepository.findById(notificationRecipientId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Notification Recipient ID: " + notificationRecipientId));
+                .orElseThrow(() -> new IllegalArgumentException("Id thông báo người nhận không tồn tại: " + notificationRecipientId));
         validateUser(recipient.getUserID().getUsername());
-        recipient.setStatus("READ");
+        recipient.setStatus("Đã đọc");
         notificationRecipientRepository.save(recipient);
-        return buildSuccessResponse("Notification marked as read.");
+        return buildSuccessResponse("Thông báo đã được chuyển sang trạng thái đã đọc.");
     }
 
     @Transactional
     public Map<String, Object> markAllAsRead(Pageable pageable) {
         User user = validateUser(userLoginInfomation.getCurrentUsername());
         if (user == null) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException("Không tìm thấy người dùng");
         }
 
         // Lấy tất cả Notificationrecipient chưa đọc cho người dùng hiện tại
@@ -233,17 +232,17 @@ public class NotificationService {
 
         // Đánh dấu các thông báo trong trang hiện tại là đã đọc
         for (Notificationrecipient recipient : notificationsToMark) {
-            recipient.setStatus("READ");
+            recipient.setStatus("Đã đọc");
         }
         notificationRecipientRepository.saveAll(notificationsToMark);
 
-        return buildSuccessResponse("All notifications in the current page marked as read.");
+        return buildSuccessResponse("Tất cả thông báo đã được đánh dấu là đã đọc");
     }
 
     public List<NotificationRecipientDTO> getNotificationsByUserId() {
         User user = validateUser(userLoginInfomation.getCurrentUsername());
         if (user == null) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException("Không tìm thấy người dùng");
         }
         List<Notificationrecipient> allRecipients = notificationRecipientRepository.findAllByUserID(user.getUserID());
         return convertToDTOList(allRecipients);
@@ -285,10 +284,10 @@ public class NotificationService {
     @Transactional
     public Map<String, Object> deleteNotification(String notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Notification ID: " + notificationId));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy id: " + notificationId));
         notificationRecipientRepository.deleteByNotificationID(notification);
         notificationRepository.delete(notification);
-        return buildSuccessResponse("Notification deleted successfully.");
+        return buildSuccessResponse("Thông báo đã được xóa thành công");
     }
 
     private Map<String, Object> buildSuccessResponse(String message) {
@@ -302,7 +301,7 @@ public class NotificationService {
     public Long getUnreadNotificationCount() {
         User user = validateUser(userLoginInfomation.getCurrentUsername());
         if (user == null) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException("Không tìm thấy người dùng");
         }
         return notificationRecipientRepository.countUnreadNotifications(user.getUsername());
     }
@@ -310,11 +309,11 @@ public class NotificationService {
     @Transactional
     public ResponseEntity<String> deleteNotificationReception(String notificationRecipientID) {
         Notificationrecipient recipient = notificationRecipientRepository.findById(notificationRecipientID)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Notification Recipient ID: " + notificationRecipientID));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy id người nhận thông báo: " + notificationRecipientID));
 
         // Xóa thông báo theo ID
         notificationRecipientRepository.deleteNotificationReceptionByRecipientID(notificationRecipientID);
 
-        return ResponseEntity.ok("Notification recipient deleted successfully.");
+        return ResponseEntity.ok("Gửi thành công");
     }
 }

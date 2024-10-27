@@ -23,7 +23,6 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    // Create Order
     @PostMapping
     public ResponseEntity<Map<String, Object>> createOrder(@RequestBody OrderModel orderModel) {
         Map<String, Object> response = new HashMap<>();
@@ -34,26 +33,26 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (AddressNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Address not found: " + e.getMessage());
+            response.put("error", "Địa chỉ không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (VoucherNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Voucher not found: " + e.getMessage());
+            response.put("error", "Mã giảm giá không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (ProductVersionNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Product version not found: " + e.getMessage());
+            response.put("error", "Phiên bản sản phẩm không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    // Get Order by ID
+    // Lấy đơn hàng theo ID
     @GetMapping("/{id}")
-        public ResponseEntity<Map<String, Object>> getOrderById(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getOrderById(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
         try {
             OrderDTO orderDTO = orderService.getOrderDTOById(id);
@@ -62,16 +61,16 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Đơn hàng không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    // Get All Orders
+    // Lấy tất cả đơn hàng
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllOrders(
             @RequestParam(required = false) String userID,
@@ -83,10 +82,7 @@ public class OrderController {
 
         Map<String, Object> response = new HashMap<>();
         try {
-            // Tạo đối tượng Pageable cho phân trang
             Pageable pageable = PageRequest.of(page, size);
-
-            // Gọi service để lấy dữ liệu đơn hàng với lọc và phân trang
             Page<OrderDTO> orders = orderService.getAllOrderDTOs(userID, orderAddress, orderPhone, orderName, pageable);
 
             response.put("success", true);
@@ -94,11 +90,12 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
+    // Lấy tất cả đơn hàng của người dùng đăng nhập
     @GetMapping("/user")
     public ResponseEntity<Map<String, Object>> getAllOrderByUserLogin(
             @RequestParam(required = false) String orderAddress,
@@ -109,24 +106,20 @@ public class OrderController {
 
         Map<String, Object> response = new HashMap<>();
         try {
-            // Tạo đối tượng Pageable cho phân trang
             Pageable pageable = PageRequest.of(page, size);
-
-            // Gọi service để lấy dữ liệu đơn hàng với lọc và phân trang
-            Page<OrderDTO> orders = orderService.getAllOrderDTOsByUserLogin( orderAddress, orderPhone, orderName, pageable);
+            Page<OrderDTO> orders = orderService.getAllOrderDTOsByUserLogin(orderAddress, orderPhone, orderName, pageable);
 
             response.put("success", true);
             response.put("data", orders);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-
-    // Get Order Details by Order ID
+    // Lấy chi tiết đơn hàng theo ID
     @GetMapping("/{id}/details")
     public ResponseEntity<Map<String, Object>> getOrderDetailsByOrderId(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
@@ -137,16 +130,15 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Đơn hàng không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    // Get Order Status by Order ID
     @GetMapping("/{id}/status")
     public ResponseEntity<Map<String, Object>> getOrderStatusByOrderId(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
@@ -157,16 +149,16 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Không tìm thấy đơn hàng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
-    // Cancel Order
+    // Hủy đơn hàng
     @PostMapping("/{id}/cancel")
     public ResponseEntity<Map<String, Object>> cancelOrder(@PathVariable String id) {
         Map<String, Object> response = new HashMap<>();
@@ -177,18 +169,19 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Không tìm thấy đơn hàng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (OrderCannotBeCancelledException e) {
             response.put("success", false);
-            response.put("error", "Order cannot be cancelled: " + e.getMessage());
+            response.put("error", "Không thể hủy đơn hàng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 
     @PostMapping("/cancel")
     public ResponseEntity<Map<String, Object>> cancelOrder(@RequestBody Map<String, String> requestBody) {
@@ -202,15 +195,15 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Đơn hàng không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (OrderCancellationNotAllowedException e) {
             response.put("success", false);
-            response.put("error", "Order cannot be cancelled: " + e.getMessage());
+            response.put("error", "Không thể hủy đơn hàng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -227,15 +220,15 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Đơn hàng không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (InvalidOrderStatusException e) {
             response.put("success", false);
-            response.put("error", "Order cannot be marked as paid: " + e.getMessage());
+            response.put("error", "Không thể đánh dấu đơn hàng là đã thanh toán: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -252,15 +245,15 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Đơn hàng không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (InvalidOrderStatusException e) {
             response.put("success", false);
-            response.put("error", "Order cannot be marked as shipping: " + e.getMessage());
+            response.put("error", "Không thể đánh dấu đơn hàng là đang vận chuyển: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -277,15 +270,15 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Đơn hàng không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (InvalidOrderStatusException e) {
             response.put("success", false);
-            response.put("error", "Order cannot be marked as delivered: " + e.getMessage());
+            response.put("error", "Không thể đánh dấu đơn hàng là đã giao: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -302,15 +295,15 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Đơn hàng không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (InvalidOrderStatusException e) {
             response.put("success", false);
-            response.put("error", "Order cannot be marked as confirmed: " + e.getMessage());
+            response.put("error", "Không thể xác nhận đơn hàng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -327,17 +320,16 @@ public class OrderController {
             return ResponseEntity.ok(response);
         } catch (OrderNotFoundException e) {
             response.put("success", false);
-            response.put("error", "Order not found: " + e.getMessage());
+            response.put("error", "Đơn hàng không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (InvalidOrderStatusException e) {
             response.put("success", false);
-            response.put("error", "Order cannot be set to pending: " + e.getMessage());
+            response.put("error", "Không thể đánh dấu đơn hàng là đang chờ xử lý: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
 }
