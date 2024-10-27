@@ -61,69 +61,114 @@ public class OrderService {
     @Autowired
     private NotificationService notificationService;
 
+    // Tính tổng tiền
+    private BigDecimal calculateTotalMoney(List<OrderDetailModel> orderDetails, Voucher voucher) {
+        BigDecimal totalMoney = orderDetails.stream()
+                .map(detail -> calculateDiscountPrice(detail.getProductVersionID()).multiply(BigDecimal.valueOf(detail.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Áp dụng giảm giá từ voucher nếu có
+        if (voucher != null) {
+            validateVoucherUsage(voucher, totalMoney);
+
+            BigDecimal discount = calculateVoucherDiscount(voucher);
+            totalMoney = totalMoney.subtract(discount);
+        }
+
+        return totalMoney;
+    }
+
+    // Phương thức tính giá giảm cho từng sản phẩm
+    private BigDecimal calculateDiscountPrice(String productVersionID) {
+        BigDecimal price = productversionRepository.findById(productVersionID)
+                .orElseThrow(() -> new ProductVersionNotFoundException("Biến thể sản phẩm không tồn tại"))
+                .getPrice();
+
+        LocalDate now = LocalDate.now();
+        return promotionproductRepository.findByProductVersionID(productVersionID).stream()
+                .filter(promo -> !now.isBefore(promo.getPromotionDetailID().getPromotionID().getStartDate())
+                        && !now.isAfter(promo.getPromotionDetailID().getPromotionID().getEndDate()))
+                .map(promo -> price.subtract(price.multiply(BigDecimal.valueOf(promo.getPromotionDetailID().getPercentDiscount()).divide(BigDecimal.valueOf(100)))))
+                .min(BigDecimal::compareTo)
+                .orElse(price).max(BigDecimal.ZERO);
+    }
+
+    // Phương thức kiểm tra điều kiện áp dụng voucher
+    private void validateVoucherUsage(Voucher voucher, BigDecimal totalMoney) {
+        if (voucher.getLeastBill().compareTo(totalMoney) > 0) {
+            throw new VoucherCannotBeUsedException("Tổng tiền hóa đơn chưa đủ để sử dụng voucher!");
+        }
+        if (voucher.getStartDate().isAfter(LocalDate.now()) || voucher.getEndDate().isBefore(LocalDate.now())) {
+            throw new VoucherCannotBeUsedException("Voucher này đã hết hạn");
+        }
+    }
+
+    // Phương thức tính toán voucher discount
+    private BigDecimal calculateVoucherDiscount(Voucher voucher) {
+        BigDecimal discount = BigDecimal.valueOf(voucher.getDiscountLevel());
+        return discount.max(voucher.getLeastDiscount()).min(voucher.getBiggestDiscount());
+    }
 
     public OrderDTO createOrder(OrderModel orderModel) {
-        // Lấy thông tin người dùng hiện tại từ hệ thống đăng nhập
         User currentUser = userRepository.findByUsername(userLoginInformation.getCurrentUser().getUsername());
 
-        // Validate that orderAddress is not null or empty
         if (orderModel.getOrderAddress() == null || orderModel.getOrderAddress().isEmpty()) {
             throw new IllegalArgumentException("Địa chỉ không được bỏ trống");
         }
 
         Useraddress userAddress = userAddressRepository.findByUserIDAndAddressID(currentUser, orderModel.getOrderAddress());
-        if(userAddress == null) {
+        if (userAddress == null) {
             throw new AddressNotFoundException("Địa chỉ với mã " + orderModel.getOrderAddress() + " không tìm thấy");
         }
 
-        Voucher voucher = null;
-        if (orderModel.getVoucherID() != null && !orderModel.getVoucherID().isEmpty()) {
-            voucher = voucherRepository.findById(orderModel.getVoucherID())
-                    .orElseThrow(() -> new VoucherNotFoundException("Voucher với mã " + orderModel.getVoucherID() + " không tìm thấy"));
-        }
+        Voucher voucher = orderModel.getVoucherID() != null && !orderModel.getVoucherID().isEmpty()
+                ? voucherRepository.findById(orderModel.getVoucherID()).orElse(null) : null;
 
-        // Tạo đối tượng Order
+        BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), voucher);
+
         Order order = new Order();
-        order.setOrderID(UUID.randomUUID().toString()); // Generate ID
-        order.setUserID(currentUser); // Gán người dùng hiện tại vào UserID
+        order.setOrderID(UUID.randomUUID().toString());
+        order.setUserID(currentUser);
         order.setVoucherID(voucher);
-        order.setOrderDate(LocalDate.now()); // Ngày hiện tại
+        order.setOrderDate(LocalDate.now());
         order.setOrderAddress(orderModel.getOrderAddress());
         order.setOrderPhone(orderModel.getOrderPhone());
         order.setOrderName(orderModel.getOrderName());
-        order.setOrderdetails(new LinkedHashSet<>()); // Khởi tạo danh sách orderDetails
+        order.setOrderdetails(new LinkedHashSet<>());
         order.setShipFee(orderModel.getShipFee());
         order.setCodValue(orderModel.getCodValue());
         order.setInsuranceValue(orderModel.getInsuranceValue());
         order.setServiceTypeID(orderModel.getServiceTypeID());
-        BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), orderModel.getVoucherID());
+        order.setVoucherDiscount(voucher != null ? calculateVoucherDiscount(voucher) : BigDecimal.ZERO);
         order.setTotalMoney(totalMoney);
 
-        // Tạo và lưu thông tin chi tiết đơn hàng
         for (OrderDetailModel detailModel : orderModel.getOrderDetails()) {
-            if (detailModel.getQuantity()>purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())){
+            if (detailModel.getQuantity() > purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())) {
                 throw new ProductVersionQuantityException("Số lượng sản phẩm đã chọn vượt quá số lượng trong kho");
-            }
-            else{
+            } else {
                 Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
                 order.getOrderdetails().add(orderDetail);
             }
         }
 
-        // Lưu đơn hàng và thông tin chi tiết
         Order savedOrder = orderRepository.save(order);
+        saveOrderStatus(savedOrder);
 
-        // Tạo trạng thái đơn hàng
-        OrderstatusId orderStatusId = new OrderstatusId(savedOrder.getOrderID(), 1); // 1 là ID trạng thái ban đầu
+        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã " + order.getOrderID() + " đã được tạo thành công!");
+
+        return convertToOrderDTO(savedOrder);
+    }
+
+    // Phương thức lưu trạng thái của hóa đơn
+    private void saveOrderStatus(Order order) {
+        OrderstatusId orderStatusId = new OrderstatusId(order.getOrderID(), 1);
         Orderstatus initialStatus = new Orderstatus();
         initialStatus.setId(orderStatusId);
-        initialStatus.setOrder(savedOrder);
+        initialStatus.setOrder(order);
         initialStatus.setStatusType(orderstatustypeRepository.findById(1)
                 .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy hóa đơn")));
         initialStatus.setTime(Instant.now());
         orderstatusRepository.save(initialStatus);
-        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã "+order.getOrderID()+"đã được tạo thành công!");
-        return convertToOrderDTO(savedOrder);
     }
 
 
@@ -305,118 +350,6 @@ public class OrderService {
 
 
 
-    // Tính tổng tiền
-    private BigDecimal calculateTotalMoney(List<OrderDetailModel> orderDetails, String voucherID) {
-        BigDecimal totalMoney = BigDecimal.ZERO;
-
-        try {
-            // Tính tổng tiền của tất cả các chi tiết đơn hàng dựa trên giá khuyến mãi
-            for (OrderDetailModel detailModel : orderDetails) {
-                // Giá sau khuyến mãi cho từng sản phẩm
-                BigDecimal price = calculateDiscountPrice(detailModel.getProductVersionID());
-                totalMoney = totalMoney.add(price.multiply(BigDecimal.valueOf(detailModel.getQuantity())));
-            }
-
-            // Kiểm tra voucher nếu có
-            if (voucherID != null && !voucherID.isEmpty()) {
-                Voucher voucher = voucherRepository.findById(voucherID)
-                        .orElseThrow(() -> new VoucherNotFoundException("Voucher với mã " + voucherID + " không tồn tại"));
-
-                // Kiểm tra tính hợp lệ của voucher
-                if (voucher.getLeastBill().compareTo(totalMoney) > 0) {
-                    throw new VoucherCannotBeUsedException("Tổng tiền hóa đơn chưa đủ để sử dụng voucher!");
-                } else if (voucher.getStartDate().isAfter(LocalDate.now()) || voucher.getEndDate().isBefore(LocalDate.now())) {
-                    throw new VoucherCannotBeUsedException("Voucher này đã hết hàn");
-                }
-
-                // Tính toán mức giảm giá từ voucher
-                BigDecimal discount = BigDecimal.ZERO;
-                int level = voucher.getDiscountLevel();
-
-                if (voucher.getDiscountForm().equals("Percent")) {
-                    discount = totalMoney.multiply(BigDecimal.valueOf(level)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
-                } else {
-                    discount = BigDecimal.valueOf(level);
-                }
-
-                // Điều chỉnh mức giảm giá dựa trên giới hạn của voucher
-                if (discount.compareTo(voucher.getLeastDiscount()) < 0) {
-                    discount = voucher.getLeastDiscount();
-                } else if (discount.compareTo(voucher.getBiggestDiscount()) > 0) {
-                    discount = voucher.getBiggestDiscount();
-                }
-
-                // Tính tổng tiền cuối cùng sau khi áp dụng voucher
-                totalMoney = totalMoney.subtract(discount);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Lỗi khi tính tổng tiền: " + e.getMessage(), e);
-        }
-
-        return totalMoney;
-    }
-
-    // Tính giá giảm cho từng sản phẩm
-    private BigDecimal calculateDiscountPrice(String productVersionID) {
-        // Lấy giá gốc của sản phẩm
-        BigDecimal price = productversionRepository.findById(productVersionID)
-                .orElseThrow(() -> new ProductVersionNotFoundException("Biến thể sản phẩm không tồn tại"))
-                .getPrice();
-
-        // Khởi tạo giá giảm
-        BigDecimal discountPricePerUnit = price; // Giá gốc là giá khuyến mãi nếu không có khuyến mãi nào áp dụng
-        LocalDate now = LocalDate.now();
-
-        try {
-            // Lấy danh sách khuyến mãi áp dụng cho sản phẩm
-            List<Promotionproduct> promotionProducts = promotionproductRepository.findByProductVersionID(productVersionID);
-
-            boolean hasValidPromotion = false; // Biến đánh dấu xem có khuyến mãi hợp lệ không
-
-            for (Promotionproduct promotionProduct : promotionProducts) {
-                Promotiondetail promotionDetail = promotionProduct.getPromotionDetailID();
-                Promotion promotion = promotionDetail.getPromotionID();
-
-                // Kiểm tra thời gian khuyến mãi
-                LocalDate startDate = promotion.getStartDate();
-                LocalDate endDate = promotion.getEndDate();
-                if (!now.isBefore(startDate) && !now.isAfter(endDate)) {
-                    // Áp dụng khuyến mãi chỉ khi thời gian hiện tại nằm trong khoảng thời gian khuyến mãi
-                    BigDecimal percentDiscount = BigDecimal.valueOf(promotionDetail.getPercentDiscount()).divide(BigDecimal.valueOf(100)); // e.g., 10 for 10%
-
-                    // Tính toán giảm giá cho một đơn vị sản phẩm
-                    BigDecimal discountAmountPerUnit = percentDiscount.multiply(price);
-                    if (discountAmountPerUnit.compareTo(BigDecimal.ZERO) < 0) {
-                        discountAmountPerUnit = BigDecimal.ZERO;
-                    }
-                    discountPricePerUnit = discountPricePerUnit.subtract(discountAmountPerUnit);
-
-                    hasValidPromotion = true; // Đánh dấu đã có khuyến mãi hợp lệ
-                }
-            }
-
-            // Nếu không có khuyến mãi hợp lệ, giá khuyến mãi bằng giá gốc
-            if (!hasValidPromotion) {
-                discountPricePerUnit = price;
-            }
-
-        } catch (Exception e) {
-            // Log lỗi và trả về thông điệp lỗi chi tiết
-            e.printStackTrace();
-            throw new RuntimeException("Lỗi khi tính tổng tiền: " + e.getMessage(), e);
-        }
-
-        // Đảm bảo giá không âm
-        if (discountPricePerUnit.compareTo(BigDecimal.ZERO) < 0) {
-            discountPricePerUnit = BigDecimal.ZERO;
-        }
-
-        return discountPricePerUnit;
-    }
-
-
     // Chuyển đổi Order thành OrderDTO
     private OrderDTO convertToOrderDTO(Order order) {
         OrderDTO dto = new OrderDTO();
@@ -427,6 +360,7 @@ public class OrderService {
         dto.setVoucher(order.getVoucherID() != null ? convertVoucherToDTO(order.getVoucherID()) : null);
         dto.setOrderDate(order.getOrderDate());
         dto.setShipFee(order.getShipFee());
+        dto.setVoucherDiscount(order.getVoucherDiscount());
         dto.setTotalMoney(order.getTotalMoney());
         dto.setOrderAddress(formatAddress(order.getOrderAddress()));
         dto.setOrderPhone(order.getOrderPhone());

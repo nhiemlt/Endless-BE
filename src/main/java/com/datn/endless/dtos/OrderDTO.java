@@ -15,6 +15,7 @@ public class OrderDTO {
     private UserOderDTO customer;
     private VoucherOrderDTO voucher;
     private LocalDate orderDate;
+    private BigDecimal voucherDiscount;
     private BigDecimal shipFee;
     private BigDecimal codValue;
     private BigDecimal insuranceValue;

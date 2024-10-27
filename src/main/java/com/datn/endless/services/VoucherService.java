@@ -109,7 +109,6 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
         notification.setContent("Bạn vừa nhận được voucher với mã " + voucher.getVoucherCode() +
                 " giảm đến " + voucher.getBiggestDiscount() +
                 " VNĐ cho đơn từ " + voucher.getLeastBill() + " VNĐ");
-        notification.setType("AUTO");
         notification.setTitle("Thông báo nhận voucher");
         notificationService.sendNotificationForAll(notification);
     }
@@ -167,7 +166,6 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
             notification.setContent("Bạn vừa nhận được voucher với mã " + saveVoucher.getVoucherCode() +
                     " giảm đến " + saveVoucher.getBiggestDiscount() +
                     " VNĐ cho đơn từ " + saveVoucher.getLeastBill() + " VNĐ");
-            notification.setType("AUTO");
             notification.setTitle("Thông báo nhận voucher");
             notification.setUserID(user.getUserID());
 
