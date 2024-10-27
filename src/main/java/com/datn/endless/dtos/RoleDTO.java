@@ -12,7 +12,6 @@ import java.util.List;
 public class RoleDTO {
     private String roleId;
     private String roleName;
-    private String enNamerole;
     private List<PermissionDTO> permissions;
 
     public RoleDTO(String roleId, String roleName, int userCount) {

@@ -1,7 +1,6 @@
 package com.datn.endless.entities;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +19,6 @@ public class User {
     private String userID;
 
     @Size(max = 255)
-    @NotNull
     @Column(name = "Username", nullable = false)
     private String username;
 
@@ -44,10 +42,6 @@ public class User {
     @Column(name = "Avatar")
     private String avatar;
 
-    @Size(max = 50)
-    @Column(name = "Language", length = 50)
-    private String language;
-
     @ColumnDefault("1")
     @Column(name = "active")
     private Boolean active;
@@ -55,6 +49,10 @@ public class User {
     @ColumnDefault("0")
     @Column(name = "forgetPassword")
     private Boolean forgetPassword;
+
+    @Lob
+    @Column(name = "Token")
+    private String token;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

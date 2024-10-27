@@ -76,13 +76,11 @@ public class UserRoleService {
         RoleDTO dto = new RoleDTO();
         dto.setRoleId(role.getRoleId());
         dto.setRoleName(role.getRoleName());
-        dto.setEnNamerole(role.getEnNamerole());
 
         List<PermissionDTO> permissionDTOS = role.getPermissions().stream().map(permission -> {
             PermissionDTO permissionDTO = new PermissionDTO();
             permissionDTO.setPermissionId(permission.getPermissionID());
             permissionDTO.setPermissionName(permission.getPermissionName());
-            permissionDTO.setEnPermissionName(permission.getEnPermissionname());
             return permissionDTO;
         }).collect(Collectors.toList());
 

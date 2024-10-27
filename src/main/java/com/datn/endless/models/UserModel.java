@@ -29,7 +29,4 @@ public class UserModel {
     private String email;
 
     private String avatar;
-
-
-    private String language = "vie";
 }
