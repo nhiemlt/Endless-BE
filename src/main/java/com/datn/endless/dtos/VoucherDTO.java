@@ -13,7 +13,6 @@ public class VoucherDTO {
     private BigDecimal leastDiscount;
     private BigDecimal biggestDiscount;
     private Integer discountLevel;
-    private String discountForm;
     private LocalDate startDate;
     private LocalDate endDate;
 }

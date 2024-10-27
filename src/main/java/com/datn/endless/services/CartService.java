@@ -48,7 +48,7 @@ public class CartService {
     public void addToCart(CartModel cartModel) {
         User currentUser = getCurrentUser();
         Productversion productVersion = productversionRepository.findById(cartModel.getProductVersionID())
-                .orElseThrow(() -> new ProductVersionNotFoundException("Product version not found"));
+                .orElseThrow(() -> new ProductVersionNotFoundException("Phiên bản sản phẩm không tìm thấy"));
 
         Cart cart = cartRepository.findByUserIDAndProductVersionID(currentUser, productVersion)
                 .orElse(new Cart());
@@ -69,10 +69,10 @@ public class CartService {
     public void updateCartQuantity(CartModel cartModel) {
         User currentUser = getCurrentUser();
         Productversion productVersion = productversionRepository.findById(cartModel.getProductVersionID())
-                .orElseThrow(() -> new ProductVersionNotFoundException("Product version not found"));
+                .orElseThrow(() -> new ProductVersionNotFoundException("Phiên bản sản phẩm không tìm thấy"));
 
         Cart cart = cartRepository.findByUserIDAndProductVersionID(currentUser, productVersion)
-                .orElseThrow(() -> new CartItemNotFoundException("Cart item not found"));
+                .orElseThrow(() -> new CartItemNotFoundException("Mặt hàng trong giỏ không tìm thấy"));
 
         cart.setQuantity(cartModel.getQuantity());
         cartRepository.save(cart);
@@ -83,10 +83,10 @@ public class CartService {
     public void deleteCartItem(String productVersionID) {
         User currentUser = getCurrentUser();
         Productversion productVersion = productversionRepository.findById(productVersionID)
-                .orElseThrow(() -> new ProductVersionNotFoundException("Product version not found"));
+                .orElseThrow(() -> new ProductVersionNotFoundException("Phiên bản sản phẩm không tìm thấy"));
 
         Cart cart = cartRepository.findByUserIDAndProductVersionID(currentUser, productVersion)
-                .orElseThrow(() -> new CartItemNotFoundException("Cart item not found"));
+                .orElseThrow(() -> new CartItemNotFoundException("Mặt hàng trong giỏ không tìm thấy"));
 
         cartRepository.delete(cart);
     }
@@ -95,12 +95,12 @@ public class CartService {
     private User getCurrentUser() {
         String username = userLoginInformation.getCurrentUsername();
         if (username == null || username.isEmpty()) {
-            throw new UserNotFoundException("User not found");
+            throw new UserNotFoundException("Người dùng không tìm thấy");
         }
 
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new UserNotFoundException("User not found with username: " + username);
+            throw new UserNotFoundException("Người dùng không tìm thấy với tên đăng nhập: " + username);
         }
         return user;
     }

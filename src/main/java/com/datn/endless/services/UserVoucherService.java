@@ -42,7 +42,6 @@ public class UserVoucherService {
                         voucherDTO.setLeastDiscount(voucher.getLeastDiscount());
                         voucherDTO.setBiggestDiscount(voucher.getBiggestDiscount());
                         voucherDTO.setDiscountLevel(voucher.getDiscountLevel());
-                        voucherDTO.setDiscountForm(voucher.getDiscountForm());
                         voucherDTO.setStartDate(voucher.getStartDate());
                         voucherDTO.setEndDate(voucher.getEndDate());
                         return voucherDTO;
