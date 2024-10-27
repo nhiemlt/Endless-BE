@@ -207,4 +207,20 @@ public class UserService {
         User user = userRepository.findByUsername(username);
         return convertToDTO(user);
     }
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> {
+                    UserDTO userDTO = new UserDTO();
+                    userDTO.setUserID(user.getUserID());
+                    userDTO.setUsername(user.getUsername());
+                    userDTO.setFullname(user.getFullname());
+                    userDTO.setEmail(user.getEmail());
+                    userDTO.setPhone(user.getPhone());
+                    userDTO.setAvatar(user.getAvatar());
+                    return userDTO;
+                })
+                .collect(Collectors.toList());
+    }
+
 }
