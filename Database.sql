@@ -99,7 +99,6 @@ CREATE TABLE Users (
     Phone VARCHAR(11),
     Email VARCHAR(255),
     Avatar TEXT,
-    Language VARCHAR(50),
     Active BOOLEAN DEFAULT TRUE,
     ForgetPassword BOOLEAN DEFAULT FALSE,
     Token TEXT
@@ -433,17 +432,17 @@ JOIN ProductVersions pv ON (pv.VersionName = '128GB - Đen' AND pd.PercentDiscou
                            (pv.VersionName = 'Asus RT-AX88U' AND pd.PercentDiscount = 15);
 
 -- Thêm dữ liệu mẫu cho bảng Users
-INSERT INTO Users (Username, Fullname, Password, Phone, Email, Avatar, Language, active, forgetPassword) VALUES
-('user01', 'Nguyen Van A', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654321', 'user01@example.com', 'https://example.com/avatars/user01.png', 'vi', TRUE, FALSE),
-('user02', 'Le Thi B', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654322', 'user02@example.com', 'https://example.com/avatars/user02.png', 'vi', TRUE, FALSE),
-('user03', 'Tran Van C', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654323', 'user03@example.com', 'https://example.com/avatars/user03.png', 'vi', TRUE, FALSE),
-('user04', 'Pham Thi D', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654324', 'user04@example.com', 'https://example.com/avatars/user04.png', 'vi', TRUE, FALSE),
-('user05', 'Hoang Van E', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654325', 'user05@example.com', 'https://example.com/avatars/user05.png', 'vi', TRUE, FALSE),
-('user06', 'Vu Thi F', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654326', 'user06@example.com', 'https://example.com/avatars/user06.png', 'vi', TRUE, FALSE),
-('user07', 'Nguyen Van G', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654327', 'user07@example.com', 'https://example.com/avatars/user07.png', 'vi', TRUE, FALSE),
-('user08', 'Le Thi H', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654328', 'user08@example.com', 'https://example.com/avatars/user08.png', 'vi', TRUE, FALSE),
-('user09', 'Tran Van I', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654329', 'user09@example.com', 'https://example.com/avatars/user09.png', 'vi', TRUE, FALSE),
-('user10', 'Pham Thi J', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654330', 'user10@example.com', 'https://example.com/avatars/user10.png', 'vi', TRUE, FALSE);
+INSERT INTO Users (Username, Fullname, Password, Phone, Email, Avatar, active, forgetPassword) VALUES
+('user01', 'Nguyen Van A', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654321', 'user01@example.com', 'https://example.com/avatars/user01.png', TRUE, FALSE),
+('user02', 'Le Thi B', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654322', 'user02@example.com', 'https://example.com/avatars/user02.png', TRUE, FALSE),
+('user03', 'Tran Van C', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654323', 'user03@example.com', 'https://example.com/avatars/user03.png', TRUE, FALSE),
+('user04', 'Pham Thi D', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654324', 'user04@example.com', 'https://example.com/avatars/user04.png', TRUE, FALSE),
+('user05', 'Hoang Van E', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654325', 'user05@example.com', 'https://example.com/avatars/user05.png', TRUE, FALSE),
+('user06', 'Vu Thi F', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654326', 'user06@example.com', 'https://example.com/avatars/user06.png', TRUE, FALSE),
+('user07', 'Nguyen Van G', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654327', 'user07@example.com', 'https://example.com/avatars/user07.png', TRUE, FALSE),
+('user08', 'Le Thi H', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654328', 'user08@example.com', 'https://example.com/avatars/user08.png', TRUE, FALSE),
+('user09', 'Tran Van I', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654329', 'user09@example.com', 'https://example.com/avatars/user09.png', TRUE, FALSE),
+('user10', 'Pham Thi J', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654330', 'user10@example.com', 'https://example.com/avatars/user10.png', TRUE, FALSE);
 
 -- Thêm dữ liệu mẫu cho bảng Vouchers
 INSERT INTO Vouchers (VoucherCode, LeastBill, LeastDiscount, BiggestDiscount, DiscountLevel, StartDate, EndDate) VALUES
