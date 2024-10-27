@@ -37,9 +37,7 @@ public class ProductService {
         Product newProduct = new Product();
         newProduct.setProductID(UUID.randomUUID().toString());
         newProduct.setName(productModel.getName());
-        newProduct.setNameEn(productModel.getNameEn());
         newProduct.setDescription(productModel.getDescription());
-        newProduct.setEnDescription(productModel.getEnDescription());
 
         // Thiết lập CategoryID và BrandID từ ProductModel
         Category category = categoryRepository.findById(productModel.getCategoryID())
@@ -53,15 +51,13 @@ public class ProductService {
         return convertToDTO(productRepository.save(newProduct));
     }
 
-    public List<ProductDTO> getProducts(String name, String nameEn, int page, int size) {
+    public List<ProductDTO> getProducts(String name, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productPage;
 
         if (name != null && !name.isEmpty()) {
             productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
-        } else if (nameEn != null && !nameEn.isEmpty()) {
-            productPage = productRepository.findByNameEnContainingIgnoreCase(nameEn, pageable);
-        } else {
+        }else {
             productPage = productRepository.findAll(pageable);
         }
 
@@ -86,9 +82,7 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
 
         existingProduct.setName(productModel.getName());
-        existingProduct.setNameEn(productModel.getNameEn());
         existingProduct.setDescription(productModel.getDescription());
-        existingProduct.setEnDescription(productModel.getEnDescription());
 
         Category category = categoryRepository.findById(productModel.getCategoryID())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -105,16 +99,13 @@ public class ProductService {
         ProductDTO productDTO = new ProductDTO();
         productDTO.setProductID(product.getProductID());
         productDTO.setName(product.getName());
-        productDTO.setNameEn(product.getNameEn());
         productDTO.setDescription(product.getDescription());
-        productDTO.setEnDescription(product.getEnDescription());
 
         // Chuyển đổi Category và Brand thành DTO
         if (product.getCategoryID() != null) {
             CategoryDTO categoryDTO = new CategoryDTO();
             categoryDTO.setCategoryID(product.getCategoryID().getCategoryID());
             categoryDTO.setName(product.getCategoryID().getName());
-            categoryDTO.setEnName(product.getCategoryID().getEnName());
             productDTO.setCategoryID(categoryDTO);
         }
 

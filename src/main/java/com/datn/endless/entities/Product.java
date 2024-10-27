@@ -40,17 +40,17 @@ public class Product {
     @Column(name = "Name", nullable = false)
     private String name;
 
-    @Size(max = 255)
-    @Column(name = "Name_EN")
-    private String nameEn;
+//    @Size(max = 255)
+//    @Column(name = "Name_EN")
+//    private String nameEn;
 
     @Lob
     @Column(name = "Description")
     private String description;
 
-    @Lob
-    @Column(name = "EN_description")
-    private String enDescription;
+//    @Lob
+//    @Column(name = "EN_description")
+//    private String enDescription;
 
 
 

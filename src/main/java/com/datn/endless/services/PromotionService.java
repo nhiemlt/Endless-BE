@@ -27,10 +27,8 @@ public class PromotionService {
         Promotion newPromotion = new Promotion();
         newPromotion.setPromotionID(UUID.randomUUID().toString());
         newPromotion.setName(promotionModel.getName());
-        newPromotion.setEnName(promotionModel.getEnName());
         newPromotion.setStartDate(promotionModel.getStartDate());
         newPromotion.setEndDate(promotionModel.getEndDate());
-        newPromotion.setEnDescription(promotionModel.getEnDescription());
 
         if (promotionModel.getPoster() != null && !promotionModel.getPoster().isEmpty()) {
             try {
@@ -48,10 +46,8 @@ public class PromotionService {
                 .orElseThrow(() -> new RuntimeException("Promotion not found with ID: " + id));
 
         existingPromotion.setName(promotionModel.getName());
-        existingPromotion.setEnName(promotionModel.getEnName());
         existingPromotion.setStartDate(promotionModel.getStartDate());
         existingPromotion.setEndDate(promotionModel.getEndDate());
-        existingPromotion.setEnDescription(promotionModel.getEnDescription());
 
         if (promotionModel.getPoster() != null && !promotionModel.getPoster().isEmpty()) {
             try {
@@ -85,11 +81,9 @@ public class PromotionService {
         PromotionDTO promotionDTO = new PromotionDTO();
         promotionDTO.setPromotionID(promotion.getPromotionID());
         promotionDTO.setName(promotion.getName());
-        promotionDTO.setEnName(promotion.getEnName());
         promotionDTO.setStartDate(promotion.getStartDate());
         promotionDTO.setEndDate(promotion.getEndDate());
         promotionDTO.setPoster(promotion.getPoster());
-        promotionDTO.setEnDescription(promotion.getEnDescription());
         return promotionDTO;
     }
 

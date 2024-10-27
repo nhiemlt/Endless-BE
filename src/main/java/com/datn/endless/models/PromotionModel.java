@@ -12,9 +12,9 @@ import java.time.LocalDate;
 public class PromotionModel {
     private String promotionID;
     private String name;
-    private String enName;
+//    private String enName;
     private LocalDate startDate;
     private LocalDate endDate;
     private MultipartFile poster;
-    private String enDescription;
+//    private String enDescription;
 }

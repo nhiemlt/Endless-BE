@@ -10,6 +10,6 @@ public class CategoryModel {
     @Size(max = 255)
     private String name;
 
-    @Size(max = 255)
-    private String enName;
+//    @Size(max = 255)
+//    private String enName;
 }

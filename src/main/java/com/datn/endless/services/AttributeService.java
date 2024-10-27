@@ -25,7 +25,7 @@ public class AttributeService {
     @Autowired
     private AttributevalueRepository attributeValueRepository;
 
-    public List<AttributeDTO> getAllAttributes(String id, String name, String enName, int page, int size) {
+    public List<AttributeDTO> getAllAttributes(String id, String name, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Attribute> attributePage;
 
@@ -39,9 +39,7 @@ public class AttributeService {
         // Tìm kiếm theo tên hoặc tên tiếng Anh
         if (name != null && !name.isEmpty()) {
             attributePage = attributeRepository.findByAttributeNameContainingIgnoreCase(name, pageable);
-        } else if (enName != null && !enName.isEmpty()) {
-            attributePage = attributeRepository.findByEnAtributenameContainingIgnoreCase(enName, pageable);
-        } else {
+        }  else {
             attributePage = attributeRepository.findAll(pageable);
         }
 
@@ -56,7 +54,7 @@ public class AttributeService {
         AttributeDTO attributeDTO = new AttributeDTO();
         attributeDTO.setAttributeID(attribute.getAttributeID());
         attributeDTO.setAttributeName(attribute.getAttributeName());
-        attributeDTO.setEN_attributeName(attribute.getEnAtributename());
+
 
         // Lấy giá trị cho thuộc tính này
         List<Attributevalue> values = attributeValueRepository.findByAttribute(attribute);
@@ -71,7 +69,7 @@ public class AttributeService {
         AttributeValueDTO dto = new AttributeValueDTO();
         dto.setAttributeValueID(attributeValue.getAttributeValueID());
         dto.setAttributeValue(attributeValue.getValue());
-        dto.setAttributeEnValue(attributeValue.getEnValue());
+
         return dto;
     }
 
@@ -79,7 +77,7 @@ public class AttributeService {
         Attribute attribute = new Attribute();
         attribute.setAttributeID(UUID.randomUUID().toString());
         attribute.setAttributeName(attributeDTO.getAttributeName());
-        attribute.setEnAtributename(attributeDTO.getEN_attributeName());
+
 
         Attribute savedAttribute = attributeRepository.save(attribute);
         return convertToDTO(savedAttribute);
@@ -90,7 +88,7 @@ public class AttributeService {
                 .orElseThrow(() -> new RuntimeException("Attribute not found"));
 
         attribute.setAttributeName(attributeDTO.getAttributeName());
-        attribute.setEnAtributename(attributeDTO.getEN_attributeName());
+
         attributeRepository.save(attribute);
 
         return convertToDTO(attribute);
@@ -110,7 +108,6 @@ public class AttributeService {
         Attributevalue attributeValue = new Attributevalue();
         attributeValue.setAttributeValueID(UUID.randomUUID().toString());
         attributeValue.setValue(attributeValueDTO.getAttributeValue());
-        attributeValue.setEnValue(attributeValueDTO.getAttributeEnValue());
         attributeValue.setAttribute(attribute); // Thiết lập thuộc tính
 
         attributeValueRepository.save(attributeValue);
@@ -122,7 +119,6 @@ public class AttributeService {
                 .orElseThrow(() -> new RuntimeException("Attribute Value not found"));
 
         attributeValue.setValue(attributeValueDTO.getAttributeValue());
-        attributeValue.setEnValue(attributeValueDTO.getAttributeEnValue());
 
         attributeValueRepository.save(attributeValue);
         return convertToValueDTO(attributeValue);

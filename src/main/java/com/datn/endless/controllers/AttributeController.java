@@ -25,10 +25,9 @@ public class AttributeController {
     public ResponseEntity<List<AttributeDTO>> getAllAttributes(
             @RequestParam(required = false) String id,
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String enName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        List<AttributeDTO> attributes = attributeService.getAllAttributes(id, name, enName, page, size);
+        List<AttributeDTO> attributes = attributeService.getAllAttributes(id, name, page, size);
         return ResponseEntity.ok(attributes);
     }
 

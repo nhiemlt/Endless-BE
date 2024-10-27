@@ -28,12 +28,11 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<List<CategoryDTO>> getCategories(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String enName,
             @RequestParam(required = false) String id,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        List<CategoryDTO> categories = categoryService.getCategories(name, enName, id, page, size);
+        List<CategoryDTO> categories = categoryService.getCategories(name, id, page, size);
         return ResponseEntity.ok(categories);
     }
 

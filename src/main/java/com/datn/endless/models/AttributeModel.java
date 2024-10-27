@@ -10,6 +10,6 @@ public class AttributeModel {
     @Size(max = 255)
     private String attributeName;
 
-    @Size(max = 255)
-    private String enAttributeName;
+//    @Size(max = 255)
+//    private String enAttributeName;
 }
