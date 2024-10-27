@@ -12,14 +12,14 @@ import java.util.List;
 
 @Data
 public class RatingModel {
-    @NotNull(message = "Order Detail ID cannot be null")
+    @NotNull(message = "Id chi tiết hóa đơn không được trống")
     private String orderDetailId;
 
-    @Min(value = 1, message = "Rating value must be at least 1")
-    @Max(value = 5, message = "Rating value must be at most 5")
+    @Min(value = 1, message = "Đánh giá phải lớn hơn 1")
+    @Max(value = 5, message = "Đánh giá không vượt quá 5")
     private Integer ratingValue;
 
-    @Size(max = 500, message = "Comment cannot exceed 500 characters")
+    @Size(max = 500, message = "Bình luận không vượt quá 500 kí tự")
     private String comment;
 
     private List<String> pictures;

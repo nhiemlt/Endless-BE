@@ -42,7 +42,7 @@ public class UserService {
                     roleDTO.setRoleName(role.getRoleName());
                     roleDTO.setPermissions(
                             role.getPermissions().stream()
-                                    .map(permission -> new PermissionDTO(permission.getPermissionID(), permission.getPermissionName(), permission.getEnPermissionname()))
+                                    .map(permission -> new PermissionDTO(permission.getPermissionID(), permission.getPermissionName()))
                                     .collect(Collectors.toList())
                     );
                     return roleDTO;
@@ -72,7 +72,6 @@ public class UserService {
                 .phone(user.getPhone())
                 .email(user.getEmail())
                 .avatar(user.getAvatar())
-                .language(user.getLanguage())
                 .roles(roles)
                 .addresses(addressDTOs)
                 .build();
@@ -120,9 +119,6 @@ public class UserService {
         user.setFullname(userModel.getFullname());
         user.setPhone(userModel.getPhone());
         user.setEmail(userModel.getEmail());
-        user.setLanguage(userModel.getLanguage());
-
-        // Lưu chuỗi base64 của avatar từ frontend
         user.setAvatar(userModel.getAvatar());
 
         User savedUser = userRepository.save(user);
@@ -154,7 +150,6 @@ public class UserService {
         user.setFullname(userModel.getFullname());
         user.setPhone(userModel.getPhone());
         user.setEmail(userModel.getEmail());
-        user.setLanguage(userModel.getLanguage());
 
         // Cập nhật chuỗi base64 của avatar từ frontend
         if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
@@ -174,7 +169,6 @@ public class UserService {
             user.setFullname(userModel.getFullname());
             user.setPhone(userModel.getPhone());
             user.setEmail(userModel.getEmail());
-            user.setLanguage(userModel.getLanguage());
 
             if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
                 user.setAvatar(userModel.getAvatar());
@@ -207,4 +201,20 @@ public class UserService {
         User user = userRepository.findByUsername(username);
         return convertToDTO(user);
     }
+    public List<UserDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> {
+                    UserDTO userDTO = new UserDTO();
+                    userDTO.setUserID(user.getUserID());
+                    userDTO.setUsername(user.getUsername());
+                    userDTO.setFullname(user.getFullname());
+                    userDTO.setEmail(user.getEmail());
+                    userDTO.setPhone(user.getPhone());
+                    userDTO.setAvatar(user.getAvatar());
+                    return userDTO;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

@@ -45,11 +45,11 @@ public class RatingService {
 
         // Kiểm tra chi tiết đơn hàng
         Orderdetail orderDetail = orderDetailRepository.findById(ratingModel.getOrderDetailId())
-                .orElseThrow(() -> new OrderNotFoundException("Order detail not found"));
+                .orElseThrow(() -> new OrderNotFoundException("Chi tiết đơn hàng không tìm thấy"));
 
         // Kiểm tra quyền của user đối với chi tiết đơn hàng
         if (!orderDetail.getOrderID().getUserID().getUserID().equals(user.getUserID())) {
-            throw new RuntimeException("User does not have permission to rate this order detail");
+            throw new RuntimeException("Người dùng không có quyền đánh giá chi tiết đơn hàng này");
         }
 
         // Tạo mới đối tượng Rating
@@ -61,7 +61,7 @@ public class RatingService {
         rating.setComment(ratingModel.getComment());
         rating.setRatingDate(Instant.now());
         Set<Ratingpicture> ratingpictureSet = new HashSet<>();
-        for (String picture: ratingModel.getPictures()){
+        for (String picture : ratingModel.getPictures()) {
             Ratingpicture ratingPicture = new Ratingpicture();
             ratingPicture.setPictureID(picture);
             ratingPicture.setRatingID(rating);
@@ -103,7 +103,6 @@ public class RatingService {
         return ratingDTO2;
     }
 
-
     // Chuyển đổi đối tượng Rating sang RatingDTO
     private RatingDTO convertToDTO(Rating rating) {
         RatingDTO ratingDTO = new RatingDTO();
@@ -133,7 +132,6 @@ public class RatingService {
         return ratings.map(this::convertToDTO2);
     }
 
-
     // Chuyển đổi đối tượng RatingPicture sang RatingPictureDTO
     private RatingPictureDTO convertToPictureDTO(Ratingpicture ratingPicture) {
         RatingPictureDTO dto = new RatingPictureDTO();
@@ -146,14 +144,14 @@ public class RatingService {
     // Lấy đánh giá theo ID
     public RatingDTO2 getRatingById2(String id) {
         Rating rating = ratingRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Rating not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Đánh giá không tìm thấy"));
 
         return convertToDTO2(rating);
     }
 
     public RatingDTO getRatingById(String id) {
         Rating rating = ratingRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Rating not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Đánh giá không tìm thấy"));
 
         return convertToDTO(rating);
     }
@@ -183,4 +181,5 @@ public class RatingService {
     public long getRatingCountByProductVersionId(String productVersionID) {
         return ratingRepository.countByOrderDetailID_ProductVersionID_ProductVersionID(productVersionID);
     }
+
 }

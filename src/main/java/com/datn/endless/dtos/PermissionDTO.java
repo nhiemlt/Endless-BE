@@ -10,5 +10,4 @@ import lombok.AllArgsConstructor;
 public class PermissionDTO {
     private String permissionId;
     private String permissionName;
-    private String enPermissionName;
 }

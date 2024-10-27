@@ -17,10 +17,6 @@ public class NotificationModelForUser {
     @NotEmpty(message = "Nội dung là bắt buộc")
     private String content;
 
-    @Size(max = 50, message = "Loại không được vượt quá 50 ký tự")
-    @NotEmpty(message = "Loại là bắt buộc")
-    private String type = "Tự động";
-
     @NotNull(message = "ID người dùng là bắt buộc")
     private String userID;
 }

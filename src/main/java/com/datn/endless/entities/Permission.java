@@ -33,8 +33,4 @@ public class Permission {
     @Column(name = "PermissionName", nullable = false)
     private String permissionName;
 
-    @Size(max = 255)
-    @Column(name = "EN_PermissionName")
-    private String enPermissionname;
-
 }

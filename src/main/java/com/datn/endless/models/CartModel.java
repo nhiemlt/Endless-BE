@@ -7,9 +7,9 @@ import lombok.Data;
 
 @Data
 public class CartModel {
-    @NotBlank(message = "Product Version ID cannot be empty")
+    @NotBlank(message = "Id của phiên bản sản phẩm không được trống")
     private String productVersionID;
 
-    @Min(value = 1, message = "Quantity must be at least 1")
+    @Min(value = 1, message = "Số lượng phải lớn hơn 1")
     private Integer quantity;
 }

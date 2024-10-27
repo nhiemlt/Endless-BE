@@ -40,6 +40,9 @@ public class Order {
     @Column(name = "ShipFee", nullable = false, precision = 18, scale = 2)
     private BigDecimal shipFee;
 
+    @Column(name = "VoucherDiscount", nullable = false, precision = 18, scale = 2)
+    private BigDecimal voucherDiscount;
+
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalMoney;

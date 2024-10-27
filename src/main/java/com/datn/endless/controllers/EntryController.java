@@ -30,13 +30,13 @@ public class EntryController {
             return ResponseEntity.status(HttpStatus.CREATED).body(createdOrder);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Product version not found", e.getMessage()));
+                    .body(new ErrorResponse("Phiên bản sản phẩm không được tìm thấy", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Invalid input data", e.getMessage()));
+                    .body(new ErrorResponse("Dữ liệu đầu vào không hợp lệ", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
+                    .body(new ErrorResponse("Đã xảy ra lỗi bất ngờ", e.getMessage()));
         }
     }
 
@@ -47,7 +47,7 @@ public class EntryController {
             return ResponseEntity.ok(purchaseOrder);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Purchase order not found", "Purchase order not found with id: " + id));
+                    .body(new ErrorResponse("Đơn hàng không được tìm thấy", "Không tìm thấy đơn hàng với id: " + id));
         }
     }
 
@@ -61,7 +61,7 @@ public class EntryController {
             return ResponseEntity.ok(purchaseOrders);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
+                    .body(new ErrorResponse("Đã xảy ra lỗi bất ngờ", e.getMessage()));
         }
     }
 
@@ -72,7 +72,7 @@ public class EntryController {
             return ResponseEntity.ok(details);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Purchase order not found", "Purchase order not found with id: " + id));
+                    .body(new ErrorResponse("Đơn hàng không được tìm thấy", "Không tìm thấy đơn hàng với id: " + id));
         }
     }
 }

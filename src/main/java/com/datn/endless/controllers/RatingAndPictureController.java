@@ -46,11 +46,10 @@ public class RatingAndPictureController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
 
     // Lấy đánh giá theo ID
     @GetMapping("/{id}")
@@ -67,11 +66,12 @@ public class RatingAndPictureController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
+    // Lấy đánh giá theo ID (phiên bản 2)
     @GetMapping("/id/{id}")
     public ResponseEntity<Map<String, Object>> getRatingById2(@PathVariable("id") String id) {
         Map<String, Object> response = new HashMap<>();
@@ -86,17 +86,16 @@ public class RatingAndPictureController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
-
 
     // Lấy danh sách đánh giá theo productVersionID
     @GetMapping("/productVersion/{productVersionID}")
     public List<RatingDTO> getRatingsByProductVersionId(@PathVariable String productVersionID) {
         return ratingService.getRatingsByProductVersionId(productVersionID);
-    } 
+    }
 
     // Thêm đánh giá mới
     @PostMapping("/add")
@@ -122,7 +121,7 @@ public class RatingAndPictureController {
 
             // Trả về phản hồi thành công
             response.put("success", "true");
-            response.put("message", "Rating added successfully");
+            response.put("message", "Đánh giá đã được thêm thành công");
             response.put("ratingID", newRating.getRatingID());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (UserNotFoundException e) {
@@ -131,8 +130,9 @@ public class RatingAndPictureController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             response.put("success", "false");
-            response.put("message", "An unexpected error occurred: " + e.getMessage());
+            response.put("message", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 }

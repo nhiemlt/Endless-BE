@@ -46,7 +46,7 @@ public class EntryService {
         List<Entrydetail> orderDetails = entryModel.getDetails().stream()
                 .map(detailModel -> {
                     Productversion productVersion = productversionRepository.findById(detailModel.getProductVersionID())
-                            .orElseThrow(() -> new NoSuchElementException("Product version not found"));
+                            .orElseThrow(() -> new NoSuchElementException("Sản phẩm không tồn tại"));
 
                     BigDecimal price = productVersion.getPurchasePrice();
                     BigDecimal detailTotal = price.multiply(new BigDecimal(detailModel.getQuantity()));
@@ -91,6 +91,7 @@ public class EntryService {
                 .map(detail -> {
                     EntryDetailDTO detailDTO = new EntryDetailDTO();
                     detailDTO.setPurchaseOrderDetailID(detail.getEntryDetailID());
+                    detailDTO.setProductName(detail.getProductVersionID().getProductID().getName());
                     detailDTO.setProductVersionID(detail.getProductVersionID().getProductVersionID());
                     detailDTO.setProductVersionName(detail.getProductVersionID().getVersionName());
                     detailDTO.setQuantity(detail.getQuantity());
@@ -110,6 +111,7 @@ public class EntryService {
                 .map(detail -> {
                     EntryDetailDTO detailDTO = new EntryDetailDTO();
                     detailDTO.setPurchaseOrderDetailID(detail.getEntryDetailID());
+                    detailDTO.setProductName(detail.getProductVersionID().getProductID().getName());
                     detailDTO.setProductVersionID(detail.getProductVersionID().getProductVersionID());
                     detailDTO.setProductVersionName(detail.getProductVersionID().getVersionName());
                     detailDTO.setQuantity(detail.getQuantity());

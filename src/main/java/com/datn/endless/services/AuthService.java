@@ -260,7 +260,6 @@ public class AuthService {
             newUser.setEmail(email);
             newUser.setFullname(fullName);
             newUser.setAvatar(avatar);
-            newUser.setLanguage("vietnam");
             newUser.setActive(true);
             newUser.setForgetPassword(false);
 

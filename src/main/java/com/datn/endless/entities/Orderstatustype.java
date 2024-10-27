@@ -22,9 +22,4 @@ public class Orderstatustype {
     @NotNull
     @Column(name = "Name", nullable = false)
     private String name;
-
-    @Size(max = 255)
-    @Column(name = "EN_Name")
-    private String enName;
-
 }

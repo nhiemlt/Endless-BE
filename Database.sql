@@ -19,7 +19,7 @@ CREATE TABLE Categories (
 CREATE TABLE Attributes (
     AttributeID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     AttributeName VARCHAR(255) NOT NULL
-   );
+);
 
 -- Tạo bảng AttributeValues
 CREATE TABLE AttributeValues (
@@ -52,7 +52,7 @@ CREATE TABLE ProductVersions (
     Length DECIMAL(18, 2) NOT NULL, -- Chiều dài
     Width DECIMAL(18, 2) NOT NULL,  -- Chiều rộng
     Status VARCHAR(50) NOT NULL,
-    Image LONGTEXT,
+    Image TEXT,
     FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
 
@@ -72,7 +72,7 @@ CREATE TABLE Promotions (
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
     Poster LONGTEXT
-   );
+);
 
 -- Tạo bảng PromotionDetails
 CREATE TABLE PromotionDetails (
@@ -93,15 +93,15 @@ CREATE TABLE PromotionProducts (
 
 CREATE TABLE Users (
     UserID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    Username VARCHAR(255) NOT NULL,
+    Username VARCHAR(255),
     Fullname VARCHAR(255),
     Password VARCHAR(255),
     Phone VARCHAR(11),
     Email VARCHAR(255),
-    Avatar LONGTEXT,
-    Language VARCHAR(50),
-    active BOOLEAN DEFAULT TRUE,
-    forgetPassword BOOLEAN DEFAULT FALSE
+    Avatar TEXT,
+    Active BOOLEAN DEFAULT TRUE,
+    ForgetPassword BOOLEAN DEFAULT FALSE,
+    Token TEXT
 );
 
 -- Tạo bảng UserAddresses
@@ -126,7 +126,6 @@ CREATE TABLE Vouchers (
     LeastDiscount DECIMAL(18, 2) NOT NULL,
     BiggestDiscount DECIMAL(18, 2) NOT NULL,
     DiscountLevel INT NOT NULL,
-    DiscountForm VARCHAR(50) NOT NULL,
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL
 );
@@ -148,6 +147,7 @@ CREATE TABLE Orders (
     VoucherID CHAR(36),
     OrderDate DATE NOT NULL,
     ShipFee DECIMAL(18, 2) NOT NULL,
+    VoucherDiscount DECIMAL(18, 2) DEFAULT 0,
     TotalMoney DECIMAL(18, 2) NOT NULL,
     CodValue DECIMAL(18, 2) DEFAULT 0, -- Giá trị thu hộ
     InsuranceValue DECIMAL(18, 2) DEFAULT 0, -- Giá trị bảo hiểm
@@ -194,7 +194,7 @@ CREATE TABLE RatingPictures (
 -- Tạo bảng Entries
 CREATE TABLE Entries (
     EntryID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    OrderDate DATE NOT NULL,
+    EntryDate DATE NOT NULL,
     TotalMoney DECIMAL(18, 2) NOT NULL
 );
 
@@ -217,15 +217,6 @@ CREATE TABLE Carts (
     Quantity INT NOT NULL,
     FOREIGN KEY (UserID) REFERENCES Users(UserID),
     FOREIGN KEY (ProductVersionID) REFERENCES ProductVersions(ProductVersionID)
-);
-
--- Tạo bảng Favorite
-CREATE TABLE Favorite (
-    FavoriteID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    UserID CHAR(36) NOT NULL,
-    ProductID CHAR(36) NOT NULL,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
 
 -- Tạo bảng Notifications
@@ -251,8 +242,7 @@ CREATE TABLE NotificationRecipients (
 -- Tạo bảng Roles
 CREATE TABLE Roles (
     Role_ID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    RoleName VARCHAR(255) NOT NULL,
-    EN_nameRole VARCHAR(255)
+    RoleName VARCHAR(255) NOT NULL
 );
 
 -- Tạo bảng UserRoles
@@ -268,9 +258,7 @@ CREATE TABLE UserRoles (
 CREATE TABLE Modules (
     ModuleID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     ModuleName VARCHAR(255) NOT NULL,
-    description VARCHAR(255),
-    EN_ModuleName VARCHAR(255),
-    EN_description VARCHAR(255)
+    description VARCHAR(255)
 );
 
 -- Tạo bảng Permissions
@@ -279,7 +267,6 @@ CREATE TABLE Permissions (
     ModuleID CHAR(36) NOT NULL,
     Code VARCHAR(255) NOT NULL,
     PermissionName VARCHAR(255) NOT NULL,
-    EN_PermissionName VARCHAR(255),
     FOREIGN KEY (ModuleID) REFERENCES Modules(ModuleID)
 );
 
@@ -295,8 +282,7 @@ CREATE TABLE PermissionRole (
 -- Tạo bảng OrderStatusType 
 CREATE TABLE OrderStatusType  (
     StatusID INT PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL,
-    EN_Name VARCHAR(255)
+    Name VARCHAR(255) NOT NULL
 );
 
 -- Tạo bảng OrderStatus
@@ -382,7 +368,7 @@ INSERT INTO ProductVersions (ProductID, VersionName, CostPrice, Price, Weight, H
 ((SELECT ProductID FROM Products WHERE Name = 'MacBook Pro 14'), '16GB RAM - 1TB SSD', 50000000, 55000000, 1600, 1.6, 31.3, 22.2, 'Active', 'https://example.com/images/macbook_pro_14.png'),
 ((SELECT ProductID FROM Products WHERE Name = 'iPad Pro 11'), '128GB - Xám', 20000000, 23000000, 468, 0.61, 24.81, 17.95, 'Active', 'https://example.com/images/ipad_pro_11_gray.png'),
 ((SELECT ProductID FROM Products WHERE Name = 'AirPods Pro'), 'AirPods Pro', 5000000, 6000000, 56, 5.4, 4.5, 2.5, 'Active', 'https://example.com/images/airpods_pro.png'),
-((SELECT ProductID FROM Products WHERE Name = 'Surface Pen'), 'Bút cảm ứng - Đen', 2000000, 2500000, 20, 0.6, 14, 1.5, 'Active', 'https://example.com/images/surface_pen_black.png'),
+((SELECT ProductID FROM Products WHERE Name = 'Surface Pen'), 'Bút cảm ứng - Đen', 2000000, 2500000, 20, 0.6, 14, 1.5, 'Active', 'https://example.com/images/surface_pblack.png'),
 ((SELECT ProductID FROM Products WHERE Name = 'Apple Watch Series 7'), '44mm - Xanh', 12000000, 14000000, 100, 1.1, 4.5, 3.3, 'Active', 'https://example.com/images/apple_watch_7_blue.png'),
 ((SELECT ProductID FROM Products WHERE Name = 'Samsung QLED 55'), 'QLED 55 inch', 15000000, 18000000, 21000, 7.9, 123.2, 72.6, 'Active', 'https://example.com/images/samsung_qled_55.png'),
 ((SELECT ProductID FROM Products WHERE Name = 'Asus RT-AX88U'), 'Router Wi-Fi 6', 4000000, 4500000, 960, 3.1, 25, 15, 'Active', 'https://example.com/images/asus_rt_ax88u.png');
@@ -405,13 +391,13 @@ JOIN AttributeValues av ON (av.Value = '128GB' AND pv.VersionName = '128GB - Đe
 
 
 -- Thêm dữ liệu mẫu cho bảng Promotions
-INSERT INTO Promotions (Name,  StartDate, EndDate, Poster) VALUES
+INSERT INTO Promotions (Name,StartDate, EndDate, Poster) VALUES
 ('Giảm giá mùa hè', '2024-06-01', '2024-06-30', 'https://example.com/posters/summer_sale.png'),
 ('Black Friday', '2024-11-25', '2024-11-28', 'https://example.com/posters/black_friday.png'),
 ('Tết Nguyên Đán', '2024-01-15', '2024-02-15', 'https://example.com/posters/lunar_new_year.png'),
 ('Giảm giá Noel', '2024-12-20', '2024-12-25', 'https://example.com/posters/christmas_sale.png'),
 ('Ngày của Mẹ', '2024-05-10', '2024-05-14', 'https://example.com/posters/mothers_day.png'),
-('Ngày Quốc Khánh', 'National Day', '2024-09-01', '2024-09-03', 'https://example.com/posters/national_day.png'),
+('Ngày Quốc Khánh', '2024-09-01', '2024-09-03', 'https://example.com/posters/national_day.png'),
 ('Mùa tựu trường', '2024-08-15', '2024-09-15', 'https://example.com/posters/back_to_school.png'),
 ('Cyber Monday', '2024-11-29', '2024-11-29', 'https://example.com/posters/cyber_monday.png'),
 ('Valentine\'s Day', '2024-02-10', '2024-02-14', 'https://example.com/posters/valentines_day.png'),
@@ -446,25 +432,25 @@ JOIN ProductVersions pv ON (pv.VersionName = '128GB - Đen' AND pd.PercentDiscou
                            (pv.VersionName = 'Asus RT-AX88U' AND pd.PercentDiscount = 15);
 
 -- Thêm dữ liệu mẫu cho bảng Users
-INSERT INTO Users (Username, Fullname, Password, Phone, Email, Avatar, Language, active, forgetPassword) VALUES
-('user01', 'Nguyen Van A', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654321', 'user01@example.com', 'https://example.com/avatars/user01.png', 'vi', TRUE, FALSE),
-('user02', 'Le Thi B', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654322', 'user02@example.com', 'https://example.com/avatars/user02.png', 'vi', TRUE, FALSE),
-('user03', 'Tran Van C', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654323', 'user03@example.com', 'https://example.com/avatars/user03.png', 'vi', TRUE, FALSE),
-('user04', 'Pham Thi D', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654324', 'user04@example.com', 'https://example.com/avatars/user04.png', 'vi', TRUE, FALSE),
-('user05', 'Hoang Van E', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654325', 'user05@example.com', 'https://example.com/avatars/user05.png', 'vi', TRUE, FALSE),
-('user06', 'Vu Thi F', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654326', 'user06@example.com', 'https://example.com/avatars/user06.png', 'vi', TRUE, FALSE),
-('user07', 'Nguyen Van G', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654327', 'user07@example.com', 'https://example.com/avatars/user07.png', 'vi', TRUE, FALSE),
-('user08', 'Le Thi H', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654328', 'user08@example.com', 'https://example.com/avatars/user08.png', 'vi', TRUE, FALSE),
-('user09', 'Tran Van I', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654329', 'user09@example.com', 'https://example.com/avatars/user09.png', 'vi', TRUE, FALSE),
-('user10', 'Pham Thi J', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654330', 'user10@example.com', 'https://example.com/avatars/user10.png', 'vi', TRUE, FALSE);
+INSERT INTO Users (Username, Fullname, Password, Phone, Email, Avatar, active, forgetPassword) VALUES
+('user01', 'Nguyen Van A', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654321', 'user01@example.com', 'https://example.com/avatars/user01.png', TRUE, FALSE),
+('user02', 'Le Thi B', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654322', 'user02@example.com', 'https://example.com/avatars/user02.png', TRUE, FALSE),
+('user03', 'Tran Van C', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654323', 'user03@example.com', 'https://example.com/avatars/user03.png', TRUE, FALSE),
+('user04', 'Pham Thi D', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654324', 'user04@example.com', 'https://example.com/avatars/user04.png', TRUE, FALSE),
+('user05', 'Hoang Van E', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654325', 'user05@example.com', 'https://example.com/avatars/user05.png', TRUE, FALSE),
+('user06', 'Vu Thi F', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654326', 'user06@example.com', 'https://example.com/avatars/user06.png', TRUE, FALSE),
+('user07', 'Nguyen Van G', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654327', 'user07@example.com', 'https://example.com/avatars/user07.png', TRUE, FALSE),
+('user08', 'Le Thi H', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654328', 'user08@example.com', 'https://example.com/avatars/user08.png', TRUE, FALSE),
+('user09', 'Tran Van I', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654329', 'user09@example.com', 'https://example.com/avatars/user09.png', TRUE, FALSE),
+('user10', 'Pham Thi J', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654330', 'user10@example.com', 'https://example.com/avatars/user10.png', TRUE, FALSE);
 
 -- Thêm dữ liệu mẫu cho bảng Vouchers
-INSERT INTO Vouchers (VoucherCode, LeastBill, LeastDiscount, BiggestDiscount, DiscountLevel, DiscountForm, StartDate, EndDate) VALUES
-('SUMMER2024', 500000, 50000, 100000, 10, 'Percent', '2024-06-01', '2024-06-30'),
-('BLACKFRIDAY', 1000000, 100000, 200000, 20, 'Percent', '2024-11-25', '2024-11-28'),
-('TET2024', 800000, 80000, 150000, 15, 'Percent', '2024-01-15', '2024-02-15'),
-('XMAS2024', 700000, 70000, 140000, 25, 'Percent', '2024-12-20', '2024-12-25'),
-('MOTHERDAY', 600000, 60000, 120000, 5, 'Percent', '2024-05-10', '2024-05-14');
+INSERT INTO Vouchers (VoucherCode, LeastBill, LeastDiscount, BiggestDiscount, DiscountLevel, StartDate, EndDate) VALUES
+('SUMMER2024', 500000, 50000, 100000, 10, '2024-06-01', '2024-06-30'),
+('BLACKFRIDAY', 1000000, 100000, 200000, 20, '2024-11-25', '2024-11-28'),
+('TET2024', 800000, 80000, 150000, 15, '2024-01-15', '2024-02-15'),
+('XMAS2024', 700000, 70000, 140000, 25, '2024-12-20', '2024-12-25'),
+('MOTHERDAY', 600000, 60000, 120000, 5, '2024-05-10', '2024-05-14');
 
 -- Thêm dữ liệu mẫu cho bảng UserVouchers
 INSERT INTO UserVouchers (UserID, VoucherID) VALUES
@@ -522,7 +508,7 @@ INSERT INTO RatingPictures (RatingID, Picture) VALUES
 ((SELECT RatingID FROM Ratings WHERE Comment = 'Rất thất vọng về sản phẩm.'), 'image_bad2.png');
 
 -- Thêm dữ liệu mẫu cho bảng Entries
-INSERT INTO Entries (OrderDate, TotalMoney)
+INSERT INTO Entries (EntryDate, TotalMoney)
 VALUES
 ('2024-07-01', 10000000),
 ('2024-08-01', 5000000),
@@ -533,15 +519,15 @@ VALUES
 -- Thêm dữ liệu mẫu cho bảng EntryDetails
 INSERT INTO EntryDetails (EntryID, ProductVersionID, Quantity, Price)
 VALUES
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-07-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-07-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Đen'), 10, 600000),
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-08-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-08-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '256GB - Trắng'), 5, 1500000),
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-09-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-09-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 512GB SSD'), 2, 900000),
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-10-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-10-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 1TB SSD'), 3, 800000),
-((SELECT EntryID FROM Entries WHERE OrderDate = '2024-11-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-11-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 15, 700000);
 
 -- Thêm dữ liệu mẫu cho bảng Carts
@@ -557,21 +543,13 @@ INSERT INTO Carts (UserID, ProductVersionID, Quantity) VALUES
 ((SELECT UserID FROM Users WHERE Username = 'user05'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 1);
 
--- Thêm dữ liệu mẫu cho bảng Favorite
-INSERT INTO Favorite (UserID, ProductID) VALUES
-((SELECT UserID FROM Users WHERE Username = 'user01'), (SELECT ProductID FROM Products WHERE Name = 'iPhone 13')),
-((SELECT UserID FROM Users WHERE Username = 'user02'), (SELECT ProductID FROM Products WHERE Name = 'Samsung Galaxy S21')),
-((SELECT UserID FROM Users WHERE Username = 'user03'), (SELECT ProductID FROM Products WHERE Name = 'Dell XPS 13')),
-((SELECT UserID FROM Users WHERE Username = 'user04'), (SELECT ProductID FROM Products WHERE Name = 'MacBook Pro 14')),
-((SELECT UserID FROM Users WHERE Username = 'user05'), (SELECT ProductID FROM Products WHERE Name = 'iPad Pro 11'));
-
 -- Insert data into Notifications
 INSERT INTO Notifications (Title, Content, Type, NotificationDate, Status) VALUES
-('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'Promotion', '2024-06-01 08:00:00', 'Sent'),
-('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'Promotion', '2024-11-25 09:00:00', 'Scheduled'),
-('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'Promotion', '2024-01-15 07:00:00', 'Sent'),
-('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'Promotion', '2024-12-20 10:00:00', 'Sent'),
-('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'Promotion', '2024-05-10 08:30:00', 'Scheduled');
+('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'All', '2024-06-01 08:00:00', 'Sent'),
+('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'All', '2024-11-25 09:00:00', 'Scheduled'),
+('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'All', '2024-01-15 07:00:00', 'Sent'),
+('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'All', '2024-12-20 10:00:00', 'Sent'),
+('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'All', '2024-05-10 08:30:00', 'Scheduled');
 
 -- Insert data into NotificationRecipients
 INSERT INTO NotificationRecipients (NotificationID, UserID, Status) VALUES
@@ -595,168 +573,170 @@ INSERT INTO UserAddresses (UserID, ProvinceID, ProvinceName, DistrictID, Distric
 ((SELECT UserID FROM Users WHERE Username = 'user05'), 1, 'ProvinceName1', 105, 'DistrictName5', '005', 'WardName5', '202 Maple St');
 
 -- Cập nhật bảng Modules (không cần trường Code)
-INSERT INTO Modules (ModuleName, EN_ModuleName) VALUES 
-    ('Quản lý xác thực', 'Auth Management'),
-    ('Quản lý thông báo', 'Notification Management'),
-    ('Quản lý đơn hàng', 'Order Management'),
-    ('Quản lý nhập hàng', 'Entry Management'),
-    ('Quản lý thuộc tính', 'Attribute Management'),
-    ('Quản lý thương hiệu', 'Brand Management'),
-    ('Quản lý danh mục', 'Category Management'),
-    ('Quản lý sản phẩm', 'Product Management'),
-    ('Quản lý phiên bản sản phẩm', 'Product Version Management'),
-    ('Quản lý khuyến mãi', 'Promotion Management'),
-    ('Quản lý chi tiết khuyến mãi', 'Promotion Details Management'),
-    ('Quản lý sản phẩm trong khuyến mãi', 'Promotion Product Management'),
-    ('Quản lý đánh giá', 'Rating Management'),
-    ('Quản lý sản phẩm yêu thích', 'Favorite Management'),
-    ('Quản lý giỏ hàng', 'Cart Management'),
-    ('Quản lý voucher', 'Voucher Management'),
-    ('Quản lý quyền', 'Role Management'),
-    ('Thống kê báo cáo', 'Reporting Management');
+INSERT INTO Modules (ModuleName) VALUES 
+    ('Quản lý xác thực'),
+    ('Quản lý thông báo'),
+    ('Quản lý đơn hàng'),
+    ('Quản lý nhập hàng'),
+    ('Quản lý người dùng'),
+    ('Quản lý thuộc tính'),
+    ('Quản lý thương hiệu'),
+    ('Quản lý danh mục'),
+    ('Quản lý sản phẩm'),
+    ('Quản lý phiên bản sản phẩm'),
+    ('Quản lý khuyến mãi'),
+    ('Quản lý chi tiết khuyến mãi'),
+    ('Quản lý sản phẩm trong khuyến mãi'),
+    ('Quản lý đánh giá'),
+    ('Quản lý giỏ hàng'),
+    ('Quản lý voucher'),
+    ('Quản lý quyền'),
+    ('Thống kê báo cáo');
 
 -- Chèn dữ liệu vào bảng Permissions với trường Code
-INSERT INTO Permissions (ModuleID, PermissionName, EN_PermissionName, Code) VALUES 
+INSERT INTO Permissions (ModuleID, PermissionName, Code) VALUES 
     -- Quản lý xác thực (AUTH)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Đăng nhập', 'Login', 'login'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Đăng xuất', 'Logout', 'logout'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Đăng ký', 'Register', 'register'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Xác thực', 'Verify', 'verify'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Đăng nhập bằng Google', 'Login with Google', 'login/google'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Đổi mật khẩu', 'Change Password', 'change-password'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Quên mật khẩu', 'Forgot Password', 'forgot-password'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Đặt lại mật khẩu', 'Reset Password', 'reset-password'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Auth Management'), 'Xác thực token', 'Token Validate', 'token/validate'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Đăng nhập', 'login'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Đăng xuất', 'logout'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Đăng ký', 'register'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Xác thực', 'verify'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Đăng nhập bằng Google', 'login/google'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Đổi mật khẩu', 'change-password'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Quên mật khẩu', 'forgot-password'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Đặt lại mật khẩu', 'reset-password'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý xác thực'), 'Xác thực token', 'token/validate'),
 
     -- Quản lý thông báo (NOTIFICATION)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Notification Management'), 'Xem tất cả thông báo', 'View all notifications', 'view_all_notifications'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Notification Management'), 'Gửi thông báo', 'Send notifications', 'send_notifications'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Notification Management'), 'Đánh dấu thông báo đã đọc', 'Mark notification as read', 'notifications/markAsRead'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Notification Management'), 'Đánh dấu tất cả thông báo đã đọc', 'Mark all notifications as read', 'notifications/markAllAsRead'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Notification Management'), 'Xóa thông báo', 'Delete notification', 'notifications/delete'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thông báo'), 'Xem tất cả thông báo', 'view_all_notifications'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thông báo'), 'Gửi thông báo', 'send_notifications'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thông báo'), 'Đánh dấu thông báo đã đọc', 'notifications/markAsRead'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thông báo'), 'Đánh dấu tất cả thông báo đã đọc', 'notifications/markAllAsRead'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thông báo'), 'Xóa thông báo', 'notifications/delete'),
 
     -- Quản lý đơn hàng (ORDER)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Xem tất cả đơn hàng', 'View all orders', 'view_all_orders'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Thêm đơn hàng mới', 'Add new order', 'orders/create'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Xem chi tiết đơn hàng', 'View order details', 'orders/{id}/details'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Hủy đơn hàng', 'Cancel order', 'orders/cancel'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Xác nhận thanh toán', 'Confirm payment', 'orders/mark-as-paid'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Đang giao hàng', 'Mark as shipping', 'orders/mark-as-shipping'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Đã giao hàng', 'Mark as delivered', 'orders/mark-as-delivered'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Xác nhận đơn hàng', 'Confirm order', 'orders/mark-as-confirmed'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Order Management'), 'Đang chờ xử lý', 'Mark as pending', 'orders/mark-as-pending'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem tất cả đơn hàng', 'view_all_orders'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Thêm đơn hàng mới', 'orders/create'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem chi tiết đơn hàng', 'orders/{id}/details'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Hủy đơn hàng', 'orders/cancel'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận thanh toán', 'orders/mark-as-paid'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đang giao hàng', 'orders/mark-as-shipping'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đã giao hàng', 'orders/mark-as-delivered'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận đơn hàng', 'orders/mark-as-confirmed'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đang chờ xử lý', 'orders/mark-as-pending'),
 
     -- Quản lý đơn hàng (ENTRIES)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Xem tất cả đơn nhập', 'View all entries', 'view_all_entries'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Thêm đơn nhập mới', 'Add new entries', 'add_new_entries'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Entry Management'), 'Cập nhật đơn nhập', 'Update entries', 'update_entries'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Xem tất cả đơn nhập', 'view_all_entries'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Thêm đơn nhập mới', 'add_new_entries'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Cập nhật đơn nhập', 'update_entries'),
 
     -- Quản lý thuộc tính (ATTRIBUTE)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Xem tất cả thuộc tính', 'View all attributes', 'view_attributes'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Thêm thuộc tính mới', 'Add new attribute', 'add_new_attribute'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Cập nhật thuộc tính mới', 'Update attribute', 'update_attribute'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Thêm mới thuộc tính', 'Add attribute value', 'add_attribute_value'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Cập nhật thuộc tính', 'Update attribute value', 'update_attribute_value'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Attribute Management'), 'Xóa giá trị thuộc tính', 'Delete attribute value', 'delete_attribute_value'),    
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xem tất cả thuộc tính', 'view_attributes'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm thuộc tính mới', 'add_new_attribute'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính mới', 'update_attribute'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm mới thuộc tính', 'add_attribute_value'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính', 'update_attribute_value'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa giá trị thuộc tính', 'delete_attribute_value'),    
     
     -- Quản lý thương hiệu (BRAND)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Xem tất cả thương hiệu', 'View all brands', 'view_all_brands'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Thêm thương hiệu mới', 'Add new brand', 'add_new_brand'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Cập nhật thương hiệu', 'Update new brand', 'update_brand'),
-	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Brand Management'), 'Xóa thương hiệu', 'Delete brand', 'delete_brand'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_all_brands'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Thêm thương hiệu mới', 'add_new_brand'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Cập nhật thương hiệu', 'update_brand'),
+	((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xóa thương hiệu', 'delete_brand'),
     
     -- Quản lý danh mục (CATEGORY)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Xem tất cả danh mục', 'View all categories', 'view_all_categories'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Thêm danh mục mới', 'Add new category', 'add_new_category'),
-	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Xóa danh mục', 'Remove category', 'delete_category'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Category Management'), 'Cập nhật danh mục', 'Update category', 'update_category'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý danh mục'), 'Xem tất cả danh mục', 'view_all_categories'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý danh mục'), 'Thêm danh mục mới', 'add_new_category'),
+	((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý danh mục'), 'Xóa danh mục', 'delete_category'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý danh mục'), 'Cập nhật danh mục', 'update_category'),
+    
+    -- Quản lý người dùng (USER)
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý người dùng'), 'Xem tất cả người dùng', 'view_all_users'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý người dùng'), 'Thêm người dùng mới', 'add_new_user'),
+	((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý người dùng'), 'Xóa người dùng', 'delete_user'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý người dùng'), 'Cập nhật người dùngc', 'update_user'),
     
     -- Quản lý sản phẩm (PRODUCT)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Xem tất cả sản phẩm', 'View all products', 'view_all_products'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Thêm sản phẩm mới', 'Add new product', 'add_new_product'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Chỉnh sửa sản phẩm', 'Edit product', 'edit_product'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Xóa sản phẩm', 'Delete product', 'delete_product'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Quản lý phiên bản sản phẩm', 'Manage product versions', 'manage_product_versions'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Management'), 'Nhập hàng loạt sản phẩm', 'Bulk import products', 'bulk_import_products'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xem tất cả sản phẩm', 'view_all_products'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Thêm sản phẩm mới', 'add_new_product'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Chỉnh sửa sản phẩm', 'edit_product'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xóa sản phẩm', 'delete_product'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Quản lý phiên bản sản phẩm', 'manage_product_versions'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Nhập hàng loạt sản phẩm', 'bulk_import_products'),
     
     -- Quản lý phiên bản sản phẩm (PRODUCT VERSION)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Version Management'), 'Xem tất cả phiên bản sản phẩm', 'View all product versions', 'view_all_product_versions'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Version Management'), 'Thêm phiên bản sản phẩm mới', 'Add new product version', 'add_new_product_version'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Product Version Management'), 'Xóa phiên bản sản phẩm', 'Delete product version', 'delete_product_version'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xem tất cả phiên bản sản phẩm', 'view_all_product_versions'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Thêm phiên bản sản phẩm mới', 'add_new_product_version'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xóa phiên bản sản phẩm', 'delete_product_version'),
     
     
     -- Quản lý khuyến mãi (PROMOTIONS)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Xem danh sách khuyến mãi', 'View promotions list', 'view_promotions_list'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Kích hoạt khuyến mãi', 'Activate promotions', 'activate_promotions'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Cập nhật khuyến mãi', 'Update promotions', 'update_promotion'),
-	((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Thêm mới khuyến mãi', 'Add new promotions', 'add_new_promotion'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Management'), 'Cập nhật khuyến mãi', 'Update promotions', 'search_promotions'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xem danh sách khuyến mãi', 'view_promotions_list'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Kích hoạt khuyến mãi', 'activate_promotions'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'update_promotion'),
+	((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Thêm mới khuyến mãi', 'add_new_promotion'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'search_promotions'),
     
     -- Quản lý chi tiết khuyến mãi (PROMOTION DETAILS)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Thêm chi tiết khuyến mãi', 'TAdd new promotion details', 'add_new_promotion_details'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Xem chi tiết khuyến mãi', 'View promotion details', 'view_promotion_details'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Cập nhật chi tiết khuyến mãi', 'Update promotion details', 'update_promotion_details'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Details Management'), 'Xóa chi tiết khuyến mãi', 'Delete promotion details', 'delete_promotion_details'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add_new_promotion_details'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xem chi tiết khuyến mãi', 'view_promotion_details'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Cập nhật chi tiết khuyến mãi', 'update_promotion_details'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xóa chi tiết khuyến mãi', 'delete_promotion_details'),
     
     -- Quản lý sản phẩm trong khuyến mãi (PROMOTION PRODUCT)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Promotion Product Management'), 'Xem tất cả sản phẩm khuyến mãi', 'View all promotion products', 'view_all_promotion_products'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý sản phẩm trong khuyến mãi'), 'Xem tất cả sản phẩm khuyến mãi', 'view_all_promotion_products'),
     
     -- Quản lý đánh giá (RATING)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Rating Management'), 'Xem đánh giá', 'View reviews', 'view_reviews'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Rating Management'), 'Xóa đánh giá', 'Delete reviews', 'delete_reviews'),
-    
-    -- Quản lý sản phẩm yêu thích (FAVORITE)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Favorite Management'), 'Xem sản phẩm yêu thích', 'View favorite products', 'view_favorite_products'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xem đánh giá', 'view_reviews'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xóa đánh giá', 'delete_reviews'),
     
     -- Quản lý giỏ hàng (CART)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Cart Management'), 'Xem giỏ hàng', 'View cart', 'view_cart'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Cart Management'), 'Thêm sản phẩm vào giỏ hàng', 'Add product to cart', 'add_product_to_cart'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý giỏ hàng'), 'Xem giỏ hàng', 'view_cart'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý giỏ hàng'), 'Thêm sản phẩm vào giỏ hàng', 'add_product_to_cart'),
     
     -- Quản lý voucher (VOUCHER)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Voucher Management'), 'Quản lý voucher', 'Manage voucher', 'manage_voucher'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý voucher'), 'Quản lý voucher', 'manage_voucher'),
     
     -- Quản lý quyền (ROLE)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Role Management'), 'Xem tất cả quyền', 'View all roles', 'view_all_roles'),
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Role Management'), 'Thêm quyền mới', 'Add new role', 'add_new_role'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý quyền'), 'Xem tất cả quyền', 'view_all_roles'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý quyền'), 'Thêm quyền mới', 'add_new_role'),
     
     -- Thống kê báo cáo (REPORTING)
-    ((SELECT ModuleID FROM Modules WHERE EN_ModuleName = 'Reporting Management'), 'Xem báo cáo', 'View reports', 'view_reports');
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Thống kê báo cáo'), 'Xem báo cáo', 'view_reports');
 
 
-INSERT INTO Roles (RoleName, EN_nameRole) VALUES
-    ('SuperAdmin', 'SuperAdministrator'),
-    ('Admin', 'Administrator'),
-    ('Nhân viên bán hàng', 'Saler'),
-    ('Quản lý', 'Manager'),
-    ('Nhân viên hỗ trợ', 'Support');
+INSERT INTO Roles (RoleName) VALUES
+    ('SuperAdmin'),
+    ('Admin'),
+    ('Nhân viên'),
+    ('Quản lý'),
+    ('Nhân viên hỗ trợ');
 
 -- Thêm dữ liệu mẫu cho bảng UserRoles
 INSERT INTO UserRoles (user_id, role_id) VALUES
     ((SELECT UserID FROM Users WHERE Username like 'user01'), 
      (SELECT Role_ID FROM Roles WHERE RoleName like 'SuperAdmin')),
     ((SELECT UserID FROM Users WHERE Username like 'user02'), 
-     (SELECT Role_ID FROM Roles WHERE RoleName like 'Nhân viên bán hàng')),
+     (SELECT Role_ID FROM Roles WHERE RoleName like 'Nhân viên')),
     ((SELECT UserID FROM Users WHERE Username like 'user03'), 
      (SELECT Role_ID FROM Roles WHERE RoleName like 'Quản lý')),
     ((SELECT UserID FROM Users WHERE Username like 'user04'), 
      (SELECT Role_ID FROM Roles WHERE RoleName like 'Admin')),
     ((SELECT UserID FROM Users WHERE Username like 'user05'), 
-     (SELECT Role_ID FROM Roles WHERE RoleName like 'Nhân viên hỗ trợ'));
+     (SELECT Role_ID FROM Roles WHERE RoleName like 'Nhân viên'));
 
 -- Thêm tất cả quyền cho SuperAdmin
 INSERT INTO PermissionRole (PermissionID, RoleID)
 SELECT PermissionID, (SELECT Role_ID FROM Roles WHERE RoleName LIKE 'SuperAdmin')
 FROM Permissions;
 
-INSERT INTO OrderStatusType (StatusID, Name, EN_Name) VALUES
-(-1, 'Đã hủy', 'Cancelled'),
-(1, 'Chờ xác nhận', 'Pending'),
-(2, 'Chờ thanh toán', 'Pending Payment'),
-(3, 'Đã thanh toán', 'Paid'),
-(4, 'Đã xác nhận', 'Confirmed'),
-(5, 'Đang giao hàng', 'Shipping'),
-(6, 'Đã giao hàng', 'Delivered');
+INSERT INTO OrderStatusType (StatusID, Name) VALUES
+(-1, 'Đã hủy'),
+(1, 'Chờ xác nhận'),
+(2, 'Chờ thanh toán'),
+(3, 'Đã thanh toán'),
+(4, 'Đã xác nhận'),
+(5, 'Đang giao hàng'),
+(6, 'Đã giao hàng');
 
 INSERT INTO OrderStatus (OrderID, StatusID, Time)
 SELECT OrderID, 1, NOW() FROM Orders;
-

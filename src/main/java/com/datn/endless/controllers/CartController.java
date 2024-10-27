@@ -37,10 +37,10 @@ public class CartController {
             return ResponseEntity.ok(carts);
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("User not found", e.getMessage()));
+                    .body(new ErrorResponse("Người dùng không tìm thấy", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
+                    .body(new ErrorResponse("Đã xảy ra lỗi không mong muốn", e.getMessage()));
         }
     }
 
@@ -51,17 +51,17 @@ public class CartController {
             cartService.addToCart(cartModel);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Product added to cart successfully");
+            response.put("message", "Sản phẩm đã được thêm vào giỏ hàng thành công");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("User not found", e.getMessage()));
+                    .body(new ErrorResponse("Người dùng không tìm thấy", e.getMessage()));
         } catch (ProductVersionNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Product version not found", e.getMessage()));
+                    .body(new ErrorResponse("Phiên bản sản phẩm không tìm thấy", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
+                    .body(new ErrorResponse("Đã xảy ra lỗi không mong muốn", e.getMessage()));
         }
     }
 
@@ -72,20 +72,20 @@ public class CartController {
             cartService.updateCartQuantity(cartModel);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Cart quantity updated successfully");
+            response.put("message", "Số lượng giỏ hàng đã được cập nhật thành công");
             return ResponseEntity.ok(response);
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("User not found", e.getMessage()));
+                    .body(new ErrorResponse("Người dùng không tìm thấy", e.getMessage()));
         } catch (ProductVersionNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Product version not found", e.getMessage()));
+                    .body(new ErrorResponse("Phiên bản sản phẩm không tìm thấy", e.getMessage()));
         } catch (CartItemNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Cart item not found", e.getMessage()));
+                    .body(new ErrorResponse("Sản phẩm trong giỏ hàng không tìm thấy", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
+                    .body(new ErrorResponse("Đã xảy ra lỗi không mong muốn", e.getMessage()));
         }
     }
 
@@ -106,20 +106,21 @@ public class CartController {
             cartService.deleteCartItem(productVersionID);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("message", "Cart item deleted successfully");
+            response.put("message", "Sản phẩm trong giỏ hàng đã được xóa thành công");
             return ResponseEntity.ok(response);
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("User not found", e.getMessage()));
+                    .body(new ErrorResponse("Người dùng không tìm thấy", e.getMessage()));
         } catch (ProductVersionNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Product version not found", e.getMessage()));
+                    .body(new ErrorResponse("Phiên bản sản phẩm không tìm thấy", e.getMessage()));
         } catch (CartItemNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Cart item not found", e.getMessage()));
+                    .body(new ErrorResponse("Sản phẩm trong giỏ hàng không tìm thấy", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
+                    .body(new ErrorResponse("Đã xảy ra lỗi không mong muốn", e.getMessage()));
         }
     }
+
 }

@@ -29,26 +29,6 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    private boolean isValidBase64(String base64) {
-        if (base64 == null || base64.isEmpty()) {
-            return false;
-        }
-
-        // Kiểm tra xem có chứa phần header "data:image" hay không
-        if (base64.startsWith("data:image")) {
-            // Tách phần header và chỉ giữ lại phần base64
-            String[] parts = base64.split(",");
-            if (parts.length == 2) {
-                base64 = parts[1]; // Phần mã base64 không có header
-            } else {
-                return false; // Không hợp lệ nếu không có mã base64 sau dấu phẩy
-            }
-        }
-
-        // Kiểm tra định dạng base64
-        return base64.matches("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
-    }
-
     @GetMapping("/get-infor")
     public ResponseEntity<Page<InforDTO>> getAllUsersInfor(
             @RequestParam(value = "page", defaultValue = "0") int page,
@@ -93,11 +73,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
         }
 
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(userModel.getAvatar())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid avatar format")));
-        }
-
         try {
             UserDTO createdUser = userService.saveUser(userModel);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
@@ -115,11 +90,6 @@ public class UserController {
                     .map(error -> error.getDefaultMessage())
                     .collect(Collectors.toList());
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
-        }
-
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(userModel.getAvatar())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid avatar format")));
         }
 
         userModel.setUserID(id);
@@ -143,27 +113,31 @@ public class UserController {
             return ResponseEntity.badRequest().body(new ErrorResponse(errors));
         }
 
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(userModel.getAvatar())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Định dạng avatar không hợp lệ")));
-        }
-
         try {
+            // Lấy người dùng hiện tại
             UserDTO currentUser = userService.getCurrentUser();
             if (currentUser == null) {
                 return ResponseEntity.notFound().build(); // Người dùng không tìm thấy
             }
+
+            // Giả định avatar là URL từ frontend
+            String avatarUrl = userModel.getAvatar();
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                userModel.setAvatar(avatarUrl); // Lưu URL ảnh từ Firebase vào userModel
+            }
+
             userModel.setUserID(currentUser.getUserID());
             UserDTO updatedUser = userService.updateCurrentUser(userModel);
             return ResponseEntity.ok(updatedUser); // Trả về người dùng đã cập nhật
         } catch (RuntimeException e) {
-            // Phân loại thông báo lỗi dựa trên nội dung
             return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse(List.of("Đã xảy ra lỗi khi cập nhật người dùng")));
         }
     }
+
+
 
     // Xóa người dùng theo ID
     @DeleteMapping("/{id}")
@@ -173,5 +147,11 @@ public class UserController {
         }
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 }

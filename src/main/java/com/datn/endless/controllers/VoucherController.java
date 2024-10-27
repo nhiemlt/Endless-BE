@@ -51,7 +51,7 @@ public class VoucherController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -63,16 +63,16 @@ public class VoucherController {
             VoucherDTO voucher = voucherService.getVoucherById(id); // Gọi phương thức từ service
 
             response.put("success", true);
-            response.put("message", "Voucher found successfully"); // Trả về thông báo thành côn    g
+            response.put("message", "Đã tìm thấy voucher"); // Trả về thông báo thành côn    g
             response.put("data", voucher); // Include the found voucher in the response
             return ResponseEntity.ok(response);
         } catch (VoucherNotFoundException e) {
             response.put("success", false);
-            response.put("message", "Voucher not found"); // Trả về thông báo không tìm thấy voucher
+            response.put("message", "Không tìm thấy voucher"); // Trả về thông báo không tìm thấy voucher
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("error", "An unexpected error occurred: " + e.getMessage());
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -82,9 +82,9 @@ public class VoucherController {
     public ResponseEntity<String> addVoucherToAllActiveUsers(@RequestBody VoucherModel voucherModel) {
         try {
             voucherService.addVoucherAllUser(voucherModel);
-            return ResponseEntity.ok("Voucher created and assigned to all active users successfully");
+            return ResponseEntity.ok("Thêm voucher và cấp cho tất cả người dùng đang hoạt động thành công");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request"+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi trong quá trình xử lý yêu cầu"+e.getMessage());
         }
     }
 
@@ -92,32 +92,12 @@ public class VoucherController {
     public ResponseEntity<String> addVoucherUsers(@RequestBody VoucherModel2 voucherModel) {
         try {
             voucherService.addVoucherForUser(voucherModel);
-            return ResponseEntity.ok("Voucher created and assigned to users successfully");
+            return ResponseEntity.ok("Thêm voucher và cấp cho người dùng thành công");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the request"+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi trong quá trình xử lý yêu cầu"+e.getMessage());
         }
     }
 
-
-    @PostMapping("/add")
-    public ResponseEntity<Object> addVoucher(@Valid @RequestBody VoucherModel voucherModel) {
-        Map<String, Object> response = new HashMap<>();
-        try {
-            voucherService.addVoucher(voucherModel);
-            response.put("success", true);
-            response.put("message", "Voucher added successfully");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (VoucherNotFoundException e) { // Thay bằng loại ngoại lệ thực tế
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Voucher already exists", e.getMessage()));
-        } catch (ValidationException e) { // Thêm loại ngoại lệ khác nếu cần
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Validation error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
-        }
-    }
 
 
     @PutMapping("/update/{id}")
@@ -126,20 +106,20 @@ public class VoucherController {
         try {
             voucherService.updateVoucher(id, updatedVoucher);
             response.put("success", true);
-            response.put("message", "Voucher updated successfully");
+            response.put("message", "Cập nhật voucher thành công");
             return ResponseEntity.ok(response);
         } catch (VoucherNotFoundException e) { // Thay bằng loại ngoại lệ thực tế
             response.put("success", false);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Voucher not found", e.getMessage()));
+                    .body(new ErrorResponse("Voucher không tìm thấy", e.getMessage()));
         } catch (ValidationException e) { // Một loại ngoại lệ khác nếu có
             response.put("success", false);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Validation error", e.getMessage()));
+                    .body(new ErrorResponse("Lỗi xác thực", e.getMessage()));
         } catch (Exception e) {
             response.put("success", false);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An unexpected error occurred", e.getMessage()));
+                    .body(new ErrorResponse("Đã xảy ra lỗi không mong muốn", e.getMessage()));
         }
     }
 

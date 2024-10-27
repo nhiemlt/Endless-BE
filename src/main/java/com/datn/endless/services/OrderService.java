@@ -61,69 +61,114 @@ public class OrderService {
     @Autowired
     private NotificationService notificationService;
 
+    // Tính tổng tiền
+    private BigDecimal calculateTotalMoney(List<OrderDetailModel> orderDetails, Voucher voucher) {
+        BigDecimal totalMoney = orderDetails.stream()
+                .map(detail -> calculateDiscountPrice(detail.getProductVersionID()).multiply(BigDecimal.valueOf(detail.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Áp dụng giảm giá từ voucher nếu có
+        if (voucher != null) {
+            validateVoucherUsage(voucher, totalMoney);
+
+            BigDecimal discount = calculateVoucherDiscount(voucher);
+            totalMoney = totalMoney.subtract(discount);
+        }
+
+        return totalMoney;
+    }
+
+    // Phương thức tính giá giảm cho từng sản phẩm
+    private BigDecimal calculateDiscountPrice(String productVersionID) {
+        BigDecimal price = productversionRepository.findById(productVersionID)
+                .orElseThrow(() -> new ProductVersionNotFoundException("Biến thể sản phẩm không tồn tại"))
+                .getPrice();
+
+        LocalDate now = LocalDate.now();
+        return promotionproductRepository.findByProductVersionID(productVersionID).stream()
+                .filter(promo -> !now.isBefore(promo.getPromotionDetailID().getPromotionID().getStartDate())
+                        && !now.isAfter(promo.getPromotionDetailID().getPromotionID().getEndDate()))
+                .map(promo -> price.subtract(price.multiply(BigDecimal.valueOf(promo.getPromotionDetailID().getPercentDiscount()).divide(BigDecimal.valueOf(100)))))
+                .min(BigDecimal::compareTo)
+                .orElse(price).max(BigDecimal.ZERO);
+    }
+
+    // Phương thức kiểm tra điều kiện áp dụng voucher
+    private void validateVoucherUsage(Voucher voucher, BigDecimal totalMoney) {
+        if (voucher.getLeastBill().compareTo(totalMoney) > 0) {
+            throw new VoucherCannotBeUsedException("Tổng tiền hóa đơn chưa đủ để sử dụng voucher!");
+        }
+        if (voucher.getStartDate().isAfter(LocalDate.now()) || voucher.getEndDate().isBefore(LocalDate.now())) {
+            throw new VoucherCannotBeUsedException("Voucher này đã hết hạn");
+        }
+    }
+
+    // Phương thức tính toán voucher discount
+    private BigDecimal calculateVoucherDiscount(Voucher voucher) {
+        BigDecimal discount = BigDecimal.valueOf(voucher.getDiscountLevel());
+        return discount.max(voucher.getLeastDiscount()).min(voucher.getBiggestDiscount());
+    }
 
     public OrderDTO createOrder(OrderModel orderModel) {
-        // Lấy thông tin người dùng hiện tại từ hệ thống đăng nhập
         User currentUser = userRepository.findByUsername(userLoginInformation.getCurrentUser().getUsername());
 
-        // Validate that orderAddress is not null or empty
         if (orderModel.getOrderAddress() == null || orderModel.getOrderAddress().isEmpty()) {
-            throw new IllegalArgumentException("Order address cannot be null or empty");
+            throw new IllegalArgumentException("Địa chỉ không được bỏ trống");
         }
 
         Useraddress userAddress = userAddressRepository.findByUserIDAndAddressID(currentUser, orderModel.getOrderAddress());
-        if(userAddress == null) {
-            throw new AddressNotFoundException("Address with ID " + orderModel.getOrderAddress() + " cannot be used");
+        if (userAddress == null) {
+            throw new AddressNotFoundException("Địa chỉ với mã " + orderModel.getOrderAddress() + " không tìm thấy");
         }
 
-        Voucher voucher = null;
-        if (orderModel.getVoucherID() != null && !orderModel.getVoucherID().isEmpty()) {
-            voucher = voucherRepository.findById(orderModel.getVoucherID())
-                    .orElseThrow(() -> new VoucherNotFoundException("Voucher with ID " + orderModel.getVoucherID() + " not found"));
-        }
+        Voucher voucher = orderModel.getVoucherID() != null && !orderModel.getVoucherID().isEmpty()
+                ? voucherRepository.findById(orderModel.getVoucherID()).orElse(null) : null;
 
-        // Tạo đối tượng Order
+        BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), voucher);
+
         Order order = new Order();
-        order.setOrderID(UUID.randomUUID().toString()); // Generate ID
-        order.setUserID(currentUser); // Gán người dùng hiện tại vào UserID
+        order.setOrderID(UUID.randomUUID().toString());
+        order.setUserID(currentUser);
         order.setVoucherID(voucher);
-        order.setOrderDate(LocalDate.now()); // Ngày hiện tại
+        order.setOrderDate(LocalDate.now());
         order.setOrderAddress(orderModel.getOrderAddress());
         order.setOrderPhone(orderModel.getOrderPhone());
         order.setOrderName(orderModel.getOrderName());
-        order.setOrderdetails(new LinkedHashSet<>()); // Khởi tạo danh sách orderDetails
+        order.setOrderdetails(new LinkedHashSet<>());
         order.setShipFee(orderModel.getShipFee());
         order.setCodValue(orderModel.getCodValue());
         order.setInsuranceValue(orderModel.getInsuranceValue());
         order.setServiceTypeID(orderModel.getServiceTypeID());
-        BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), orderModel.getVoucherID());
+        order.setVoucherDiscount(voucher != null ? calculateVoucherDiscount(voucher) : BigDecimal.ZERO);
         order.setTotalMoney(totalMoney);
 
-        // Tạo và lưu thông tin chi tiết đơn hàng
         for (OrderDetailModel detailModel : orderModel.getOrderDetails()) {
-            if (detailModel.getQuantity()>purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())){
-                throw new ProductVersionQuantityException("Product version quantity is greater than product version quantity in shop");
-            }
-            else{
+            if (detailModel.getQuantity() > purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())) {
+                throw new ProductVersionQuantityException("Số lượng sản phẩm đã chọn vượt quá số lượng trong kho");
+            } else {
                 Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
                 order.getOrderdetails().add(orderDetail);
             }
         }
 
-        // Lưu đơn hàng và thông tin chi tiết
         Order savedOrder = orderRepository.save(order);
+        saveOrderStatus(savedOrder);
 
-        // Tạo trạng thái đơn hàng
-        OrderstatusId orderStatusId = new OrderstatusId(savedOrder.getOrderID(), 1); // 1 là ID trạng thái ban đầu
+        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã " + order.getOrderID() + " đã được tạo thành công!");
+
+        return convertToOrderDTO(savedOrder);
+    }
+
+    // Phương thức lưu trạng thái của hóa đơn
+    private void saveOrderStatus(Order order) {
+        OrderstatusId orderStatusId = new OrderstatusId(order.getOrderID(), 1);
         Orderstatus initialStatus = new Orderstatus();
         initialStatus.setId(orderStatusId);
-        initialStatus.setOrder(savedOrder);
+        initialStatus.setOrder(order);
         initialStatus.setStatusType(orderstatustypeRepository.findById(1)
-                .orElseThrow(() -> new StatusTypeNotFoundException("Order status type not found")));
+                .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy hóa đơn")));
         initialStatus.setTime(Instant.now());
         orderstatusRepository.save(initialStatus);
-        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã "+order.getOrderID()+"đã được tạo thành công!");
-        return convertToOrderDTO(savedOrder);
     }
 
 
@@ -131,7 +176,7 @@ public class OrderService {
     public OrderDTO getOrderDTOById(String id) {
         return orderRepository.findById(id)
                 .map(this::convertToOrderDTO)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException("Không tìm thấy hóa đơn"));
     }
 
     // Lấy tất cả đơn hàng
@@ -159,7 +204,7 @@ public class OrderService {
     // Lấy chi tiết đơn hàng theo ID
     public List<OrderDetailDTO> getOrderDetailsDTOByOrderId(String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException("Không tìm thấy đơn hàng"));
 
         return orderDetailRepository.findByOrderID(order).stream()
                 .map(this::convertToOrderDetailDTO)
@@ -169,7 +214,7 @@ public class OrderService {
     // Lấy trạng thái đơn hàng theo ID
     public List<OrderStatusDTO> getOrderStatusDTOByOrderId(String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException("Không tìm thấy đơn hàng"));
 
         return orderstatusRepository.findByOrder_OrderID(order.getOrderID()).stream()
                 .map(this::convertToOrderStatusDTO)
@@ -178,42 +223,37 @@ public class OrderService {
 
     // Hủy đơn hàng
     public OrderStatusDTO updateOrderStatus(String orderId, int newStatusId, List<Integer> allowedCurrentStatusIds, int timeLimitInHours, String errorMessage) {
-        // Tìm đơn hàng theo ID
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+                .orElseThrow(() -> new OrderNotFoundException("Không tìm thấy đơn hàng"));
 
-        // Lấy trạng thái hiện tại của đơn hàng
         Orderstatus currentStatus = orderstatusRepository.findTopByOrderIdOrderByTimeDesc(orderId)
-                .orElseThrow(() -> new StatusTypeNotFoundException("Current status not found"));
+                .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy trạng thái hiện tại"));
 
         UserDetails userDetails = userLoginInformation.getCurrentUser();
 
         if(newStatusId==-1 || newStatusId==1 || newStatusId==6){
             if(!userDetails.getUsername().equals(order.getUserID().getUsername())) {
-                throw new OrderCannotBeUpdateException("This user is not allowed to update this order");
+                throw new OrderCannotBeUpdateException("Người dùng này không có quyền cập nhật đơn hàng này");
             }
         }
 
-        // Kiểm tra xem trạng thái hiện tại có hợp lệ để chuyển đổi không
         if (!allowedCurrentStatusIds.contains(currentStatus.getStatusType().getId())) {
             throw new InvalidOrderStatusException(errorMessage);
         }
 
-        // Nếu có giới hạn thời gian (ví dụ: 24 giờ), kiểm tra giới hạn này
         if (timeLimitInHours > 0) {
             LocalDateTime orderDateTime = order.getOrderDate().atStartOfDay();
             if (LocalDateTime.now().isAfter(orderDateTime.plusHours(timeLimitInHours))) {
-                throw new OrderCancellationNotAllowedException("Order cannot be updated after the allowed time period");
+                throw new OrderCancellationNotAllowedException("Không thể cập nhật đơn hàng sau khoảng thời gian cho phép");
             }
         }
 
-        // Cập nhật trạng thái đơn hàng
         OrderstatusId orderStatusId = new OrderstatusId(orderId, newStatusId);
         Orderstatus newStatus = new Orderstatus();
         newStatus.setId(orderStatusId);
         newStatus.setOrder(order);
         newStatus.setStatusType(orderstatustypeRepository.findById(newStatusId)
-                .orElseThrow(() -> new StatusTypeNotFoundException("Order status type not found")));
+                .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy loại trạng thái đơn hàng")));
         newStatus.setTime(Instant.now());
         orderstatusRepository.save(newStatus);
 
@@ -225,8 +265,8 @@ public class OrderService {
                 orderId,
                 -1, // Trạng thái 'Hủy đơn hàng'
                 Arrays.asList(1, 2), // Các trạng thái cho phép hủy đơn hàng
-                72, // Giới hạn thời gian 24 giờ
-                "Order cannot be cancelled as it is already paid, shipping"
+                72, // Giới hạn thời gian 72 giờ
+                "Đơn hàng không thể hủy do đã được thanh toán hoặc đang giao"
         );
 
         sendOrderStatusNotification(orderId, "Hủy đơn hàng", "Đơn hàng "+orderId+" đã bị hủy.");
@@ -237,9 +277,9 @@ public class OrderService {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 3, // Trạng thái 'Đã thanh toán'
-                Arrays.asList(1, 2), // Chỉ cho phép thanh toán ở trạng thái 'Chờ thanh toán' và 'Đã xác nhận'
+                Arrays.asList(1, 2), // Trạng thái cho phép thanh toán
                 0, // Không giới hạn thời gian
-                "Order cannot be marked as paid in its current state"
+                "Không thể đặt đơn hàng này thành đã thanh toán"
         );
 
         sendOrderStatusNotification(orderId, "Đã thanh toán", "Đơn hàng "+orderId+" đã được thanh toán.");
@@ -250,9 +290,9 @@ public class OrderService {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 5, // Trạng thái 'Đang giao hàng'
-                Arrays.asList(3, 4), // Chỉ cho phép giao hàng khi đơn đã được thanh toán
+                Arrays.asList(3, 4), // Chỉ cho phép khi đơn đã thanh toán
                 0, // Không giới hạn thời gian
-                "Order cannot be marked as shipping if it has not been paid"
+                "Không thể đặt đơn hàng này thành đang giao"
         );
 
         sendOrderStatusNotification(orderId, "Đang giao hàng", "Đơn hàng "+orderId+" đang được giao.");
@@ -263,9 +303,9 @@ public class OrderService {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 6, // Trạng thái 'Đã giao hàng'
-                Arrays.asList(5), // Chỉ cho phép giao hàng khi đơn hàng đang ở trạng thái 'Đang giao hàng'
+                Arrays.asList(5), // Chỉ cho phép khi đơn hàng đang giao
                 0, // Không giới hạn thời gian
-                "Order cannot be marked as delivered if it is not in shipping state"
+                "Không thể đặt đơn hàng này thành đã giao"
         );
 
         sendOrderStatusNotification(orderId, "Đã giao hàng", "Đơn hàng "+orderId+" đã được giao thành công!");
@@ -276,9 +316,9 @@ public class OrderService {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 4, // Trạng thái 'Đã xác nhận'
-                Arrays.asList(1, 3), // Chỉ cho phép xác nhận đơn hàng ở trạng thái 'Chờ xử lý'
+                Arrays.asList(1, 3), // Chỉ cho phép xác nhận ở trạng thái chờ xử lý
                 0, // Không giới hạn thời gian
-                "Order cannot be confirmed in its current state"
+                "Không thể xác nhận đơn hàng ở trạng thái hiện tại"
         );
 
         sendOrderStatusNotification(orderId, "Đã xác nhận", "Đơn hàng "+orderId+" đã được xác nhận.");
@@ -289,9 +329,9 @@ public class OrderService {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 7, // Trạng thái 'Chờ xử lý'
-                Arrays.asList(4), // Chỉ cho phép đưa đơn hàng về trạng thái 'Chờ xử lý' khi đang ở trạng thái 'Đã xác nhận'
+                Arrays.asList(4), // Chỉ cho phép đưa về trạng thái chờ xử lý khi đang ở trạng thái xác nhận
                 0, // Không giới hạn thời gian
-                "Order cannot be set to pending in its current state"
+                "Không thể đặt đơn hàng này thành chờ xử lý"
         );
 
         sendOrderStatusNotification(orderId, "Chờ xử lý", "Đơn hàng "+orderId+" đã được đưa về trạng thái chờ xử lý.");
@@ -300,127 +340,14 @@ public class OrderService {
 
     private void sendOrderStatusNotification(String orderId, String title, String content) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new StatusTypeNotFoundException("Order status type not found"));
+                .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy loại trạng thái đơn hàng"));
         NotificationModelForUser notificationModel = new NotificationModelForUser();
         notificationModel.setTitle(title);
         notificationModel.setContent(content);
         notificationModel.setUserID(order.getUserID().getUserID());
-        notificationModel.setType("AUTO");
         notificationService.sendNotificationForOrder(notificationModel);
     }
 
-
-
-    // Tính tổng tiền
-    private BigDecimal calculateTotalMoney(List<OrderDetailModel> orderDetails, String voucherID) {
-        BigDecimal totalMoney = BigDecimal.ZERO;
-
-        try {
-            // Tính tổng tiền của tất cả các chi tiết đơn hàng dựa trên giá khuyến mãi
-            for (OrderDetailModel detailModel : orderDetails) {
-                // Giá sau khuyến mãi cho từng sản phẩm
-                BigDecimal price = calculateDiscountPrice(detailModel.getProductVersionID());
-                totalMoney = totalMoney.add(price.multiply(BigDecimal.valueOf(detailModel.getQuantity())));
-            }
-
-            // Kiểm tra voucher nếu có
-            if (voucherID != null && !voucherID.isEmpty()) {
-                Voucher voucher = voucherRepository.findById(voucherID)
-                        .orElseThrow(() -> new VoucherNotFoundException("Voucher with ID " + voucherID + " not found"));
-
-                // Kiểm tra tính hợp lệ của voucher
-                if (voucher.getLeastBill().compareTo(totalMoney) > 0) {
-                    throw new VoucherCannotBeUsedException("The total order value is not enough to use the voucher!");
-                } else if (voucher.getStartDate().isAfter(LocalDate.now()) || voucher.getEndDate().isBefore(LocalDate.now())) {
-                    throw new VoucherCannotBeUsedException("The current time is not suitable to use the voucher");
-                }
-
-                // Tính toán mức giảm giá từ voucher
-                BigDecimal discount = BigDecimal.ZERO;
-                int level = voucher.getDiscountLevel();
-
-                if (voucher.getDiscountForm().equals("Percent")) {
-                    discount = totalMoney.multiply(BigDecimal.valueOf(level)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
-                } else {
-                    discount = BigDecimal.valueOf(level);
-                }
-
-                // Điều chỉnh mức giảm giá dựa trên giới hạn của voucher
-                if (discount.compareTo(voucher.getLeastDiscount()) < 0) {
-                    discount = voucher.getLeastDiscount();
-                } else if (discount.compareTo(voucher.getBiggestDiscount()) > 0) {
-                    discount = voucher.getBiggestDiscount();
-                }
-
-                // Tính tổng tiền cuối cùng sau khi áp dụng voucher
-                totalMoney = totalMoney.subtract(discount);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error calculating total money: " + e.getMessage(), e);
-        }
-
-        return totalMoney;
-    }
-
-    // Tính giá giảm cho từng sản phẩm
-    private BigDecimal calculateDiscountPrice(String productVersionID) {
-        // Lấy giá gốc của sản phẩm
-        BigDecimal price = productversionRepository.findById(productVersionID)
-                .orElseThrow(() -> new ProductVersionNotFoundException("Product Version not found"))
-                .getPrice();
-
-        // Khởi tạo giá giảm
-        BigDecimal discountPricePerUnit = price; // Giá gốc là giá khuyến mãi nếu không có khuyến mãi nào áp dụng
-        LocalDate now = LocalDate.now();
-
-        try {
-            // Lấy danh sách khuyến mãi áp dụng cho sản phẩm
-            List<Promotionproduct> promotionProducts = promotionproductRepository.findByProductVersionID(productVersionID);
-
-            boolean hasValidPromotion = false; // Biến đánh dấu xem có khuyến mãi hợp lệ không
-
-            for (Promotionproduct promotionProduct : promotionProducts) {
-                Promotiondetail promotionDetail = promotionProduct.getPromotionDetailID();
-                Promotion promotion = promotionDetail.getPromotionID();
-
-                // Kiểm tra thời gian khuyến mãi
-                LocalDate startDate = promotion.getStartDate();
-                LocalDate endDate = promotion.getEndDate();
-                if (!now.isBefore(startDate) && !now.isAfter(endDate)) {
-                    // Áp dụng khuyến mãi chỉ khi thời gian hiện tại nằm trong khoảng thời gian khuyến mãi
-                    BigDecimal percentDiscount = BigDecimal.valueOf(promotionDetail.getPercentDiscount()).divide(BigDecimal.valueOf(100)); // e.g., 10 for 10%
-
-                    // Tính toán giảm giá cho một đơn vị sản phẩm
-                    BigDecimal discountAmountPerUnit = percentDiscount.multiply(price);
-                    if (discountAmountPerUnit.compareTo(BigDecimal.ZERO) < 0) {
-                        discountAmountPerUnit = BigDecimal.ZERO;
-                    }
-                    discountPricePerUnit = discountPricePerUnit.subtract(discountAmountPerUnit);
-
-                    hasValidPromotion = true; // Đánh dấu đã có khuyến mãi hợp lệ
-                }
-            }
-
-            // Nếu không có khuyến mãi hợp lệ, giá khuyến mãi bằng giá gốc
-            if (!hasValidPromotion) {
-                discountPricePerUnit = price;
-            }
-
-        } catch (Exception e) {
-            // Log lỗi và trả về thông điệp lỗi chi tiết
-            e.printStackTrace();
-            throw new RuntimeException("Error calculating discount price: " + e.getMessage(), e);
-        }
-
-        // Đảm bảo giá không âm
-        if (discountPricePerUnit.compareTo(BigDecimal.ZERO) < 0) {
-            discountPricePerUnit = BigDecimal.ZERO;
-        }
-
-        return discountPricePerUnit;
-    }
 
 
     // Chuyển đổi Order thành OrderDTO
@@ -433,6 +360,7 @@ public class OrderService {
         dto.setVoucher(order.getVoucherID() != null ? convertVoucherToDTO(order.getVoucherID()) : null);
         dto.setOrderDate(order.getOrderDate());
         dto.setShipFee(order.getShipFee());
+        dto.setVoucherDiscount(order.getVoucherDiscount());
         dto.setTotalMoney(order.getTotalMoney());
         dto.setOrderAddress(formatAddress(order.getOrderAddress()));
         dto.setOrderPhone(order.getOrderPhone());
@@ -489,7 +417,7 @@ public class OrderService {
     private Orderdetail convertToOrderDetailEntity(OrderDetailModel detailModel, Order savedOrder) {
         Orderdetail orderDetail = new Orderdetail();
         Productversion productversion = productversionRepository.findById(detailModel.getProductVersionID())
-                .orElseThrow(() -> new ProductVersionNotFoundException("Product version not found"));
+                .orElseThrow(() -> new ProductVersionNotFoundException("Biến thể sản phẩm không tồn tại"));
         orderDetail.setOrderDetailID(UUID.randomUUID().toString()); // Generate ID
         orderDetail.setOrderID(savedOrder);
         orderDetail.setProductVersionID(productversion);
