@@ -45,11 +45,6 @@ public class Voucher {
     @Column(name = "DiscountLevel", nullable = false)
     private Integer discountLevel;
 
-    @Size(max = 50)
-    @NotNull
-    @Column(name = "DiscountForm", nullable = false, length = 50)
-    private String discountForm;
-
     @NotNull
     @Column(name = "StartDate", nullable = false)
     private LocalDate startDate;

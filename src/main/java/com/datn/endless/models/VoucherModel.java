@@ -32,7 +32,6 @@ public class VoucherModel {
     @Max(value = 50, message = "discountLevel must be at most 50")
     private Integer discountLevel;
 
-    private String discountForm;
 
     @NotNull(message = "startDate must not be empty")
     private LocalDate startDate;
