@@ -25,5 +25,7 @@ public interface UserroleRepository extends JpaRepository<Userrole, String> {
     @Query("SELECT COUNT(ur) FROM Userrole ur WHERE ur.role.roleId = :roleId")
     int countUsersByRole(@Param("roleId") String roleId);
 
+    List<Userrole> findByRole(Role role);
+
 }
 

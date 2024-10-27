@@ -2,6 +2,7 @@ package com.datn.endless.services;
 
 import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
+import com.datn.endless.dtos.UserDTO;
 import com.datn.endless.entities.Role;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Userrole;
@@ -87,6 +88,25 @@ public class UserRoleService {
 
         dto.setPermissions(permissionDTOS);
         return dto;
+    }
+
+    public List<UserDTO> getUsersByRoleId(String roleId) {
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        List<Userrole> userRoles = userRoleRepository.findByRole(role);
+        return userRoles.stream()
+                .map(userrole -> {
+                    UserDTO userDTO = new UserDTO();
+                    userDTO.setUserID(userrole.getUser().getUserID());
+                    userDTO.setUsername(userrole.getUser().getUsername());
+                    userDTO.setFullname(userrole.getUser().getFullname());
+                    userDTO.setEmail(userrole.getUser().getEmail());
+                    userDTO.setPhone(userrole.getUser().getPhone());
+                    userDTO.setAvatar(userrole.getUser().getAvatar());
+                    return userDTO;
+                })
+                .collect(Collectors.toList());
     }
 
 }

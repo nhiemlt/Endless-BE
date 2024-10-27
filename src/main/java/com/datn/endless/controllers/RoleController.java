@@ -2,6 +2,7 @@ package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
+import com.datn.endless.dtos.UserDTO;
 import com.datn.endless.entities.Role;
 import com.datn.endless.models.RoleModel;
 import com.datn.endless.services.PermissionService;
@@ -111,5 +112,11 @@ public class RoleController {
     public ResponseEntity<?> getRoleWithPermissions(@PathVariable("roleId") String roleId) {
         RoleDTO roleDTO = roleService.getRoleWithPermissions(roleId);
         return roleDTO != null ? ResponseEntity.ok(roleDTO) : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{roleId}/users")
+    public ResponseEntity<List<UserDTO>> getUsersByRoleId(@PathVariable String roleId) {
+        List<UserDTO> users = userRoleService.getUsersByRoleId(roleId);
+        return ResponseEntity.ok(users);
     }
 }
