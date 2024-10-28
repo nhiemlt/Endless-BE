@@ -32,9 +32,6 @@ public class AttributeController {
     }
 
 
-
-
-
     // Create new attribute
     @PostMapping
     public ResponseEntity<AttributeDTO> createAttribute(@RequestBody AttributeDTO attributeDTO) {
@@ -53,8 +50,18 @@ public class AttributeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAttribute(@PathVariable String id) {
         attributeService.deleteAttribute(id);
-        return ResponseEntity.ok("Attribute deleted successfully.");
+        return ResponseEntity.ok("Attribute xóa thành công.");
     }
+
+    @GetMapping("/attribute-values")
+    public ResponseEntity<List<AttributeValueDTO>> getAllAttributeValues(
+            @RequestParam(required = false) String attributeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<AttributeValueDTO> values = attributeService.getAllAttributeValues(attributeId, page, size);
+        return ResponseEntity.ok(values);
+    }
+
 
     // Create new attribute value
     @PostMapping("/{attributeId}/values")
@@ -74,6 +81,6 @@ public class AttributeController {
     @DeleteMapping("/values/{valueId}")
     public ResponseEntity<String> deleteAttributeValue(@PathVariable String valueId) {
         attributeService.deleteAttributeValue(valueId);
-        return ResponseEntity.ok("Attribute value deleted successfully.");
+        return ResponseEntity.ok("Attribute value xóa thành công.");
     }
 }

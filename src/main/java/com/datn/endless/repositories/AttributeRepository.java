@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AttributeRepository extends JpaRepository<Attribute, String> {
-
+    // Kiểm tra thuộc tính đã tồn tại bằng tên
+    boolean existsByAttributeName(String attributeName);
     Page<Attribute> findByAttributeNameContainingIgnoreCase(String name, Pageable pageable);
 }
