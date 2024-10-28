@@ -182,4 +182,18 @@ public class RatingService {
         return ratingRepository.countByOrderDetailID_ProductVersionID_ProductVersionID(productVersionID);
     }
 
+    // Xóa đánh giá theo ID
+    public void deleteRatingById(String ratingId) {
+        // Tìm kiếm đánh giá theo ID
+        Rating rating = ratingRepository.findById(ratingId)
+                .orElseThrow(() -> new EntityNotFoundException("Đánh giá không tìm thấy"));
+
+        // Xóa tất cả hình ảnh liên quan đến đánh giá nếu có
+        Set<Ratingpicture> ratingPictures = rating.getRatingpictures();
+        ratingPictureRepository.deleteAll(ratingPictures);
+
+        // Xóa đánh giá
+        ratingRepository.delete(rating);
+    }
+
 }

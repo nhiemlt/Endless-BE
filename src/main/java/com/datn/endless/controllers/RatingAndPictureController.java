@@ -97,6 +97,14 @@ public class RatingAndPictureController {
         return ratingService.getRatingsByProductVersionId(productVersionID);
     }
 
+
+    // API xóa đánh giá theo ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRating(@PathVariable String id) {
+        ratingService.deleteRatingById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     // Thêm đánh giá mới
     @PostMapping("/add")
     public ResponseEntity<Map<String, String>> addRating(
