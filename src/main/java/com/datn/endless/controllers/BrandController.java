@@ -2,92 +2,103 @@ package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.BrandDTO;
 import com.datn.endless.models.BrandModel;
-import com.datn.endless.models.UserModel;
 import com.datn.endless.services.BrandService;
 import com.datn.endless.utils.ErrorResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/brands")
+@CrossOrigin(origins = "*") // Hỗ trợ CORS nếu cần
 public class BrandController {
 
     @Autowired
     private BrandService brandService;
 
-
-    private boolean isValidBase64(String base64) {
-        if (base64 == null || base64.isEmpty()) {
-            return false;
-        }
-
-        // Kiểm tra header "data:image"
-        String base64Data = base64;
-        if (base64.startsWith("data:image")) {
-            String[] parts = base64.split(",");
-            if (parts.length == 2) {
-                base64Data = parts[1];
-            } else {
-                return false;
-            }
-        }
-
-        // Kiểm tra định dạng base64
-        return base64Data.matches("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
-    }
-
-
     // Tạo mới một brand
     @PostMapping
-    public ResponseEntity<?> createBrand(@RequestBody BrandModel brandModel) {
-
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(brandModel.getLogo())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid logo format: The logo must be a valid base64 string.")));
+    public ResponseEntity<?> createBrand(@Valid @RequestBody BrandModel brandModel, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Đầu vào không hợp lệ", result.getAllErrors()));
         }
-        BrandDTO createdBrand = brandService.createBrand(brandModel);
-        return ResponseEntity.ok(createdBrand);
+        try {
+            BrandDTO createdBrand = brandService.createBrand(brandModel);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdBrand);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse(e.getMessage()));
+        }
     }
 
     // Cập nhật brand theo ID
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateBrand(@PathVariable String id ,@RequestParam String name, @RequestParam String logo) {
-        BrandModel brandModel = new BrandModel();
-        brandModel.setName(name);
-        // Kiểm tra định dạng base64 cho avatar
-        if (!isValidBase64(brandModel.getLogo())) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of("Invalid logo format: The logo must be a valid base64 string.")));
-
+    public ResponseEntity<?> updateBrand(@PathVariable String id, @Valid @RequestBody BrandModel brandModel, BindingResult result) {
+        if (result.hasErrors()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Đầu vào không hợp lệ", result.getAllErrors()));
         }
-        BrandDTO updatedBrand = brandService.updateBrand(id, brandModel);
-        return ResponseEntity.ok(updatedBrand);
+        try {
+            BrandDTO updatedBrand = brandService.updateBrand(id, brandModel);
+            return ResponseEntity.ok(updatedBrand);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(e.getMessage()));
+        }
     }
 
     // Lấy tất cả các brand
     @GetMapping
-    public ResponseEntity<List<BrandDTO>> getAllBrands() {
-        List<BrandDTO> brands = brandService.getAllBrands();
+    public ResponseEntity<Page<BrandDTO>> getAllBrands(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "keyword", required = false) String keyword) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BrandDTO> brands = brandService.getBrandsWithPaginationAndSearch(keyword, pageable);
         return ResponseEntity.ok(brands);
     }
 
     // Lấy brand theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<BrandDTO> getBrandById(@PathVariable String id) {
+    public ResponseEntity<?> getBrandById(@PathVariable String id) {
         Optional<BrandDTO> brand = brandService.getBrandById(id);
-        return brand.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        if (brand.isPresent()) {
+            return ResponseEntity.ok(brand.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Không tìm thấy thương hiệu có ID: " + id));
+        }
     }
+    @GetMapping("/sreach")
+    public ResponseEntity<?> searchBrandsByName(@RequestParam String name) {
+        List<BrandDTO> brands = brandService.getBrandsByName(name);
+        if (brands.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Không tìm thấy thương hiệu nào phù hợp: " + name));
+        }
+        return ResponseEntity.ok(brands);
+    }
+
 
     // Xóa brand theo ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBrand(@PathVariable String id) {
-        brandService.deleteBrand(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deleteBrand(@PathVariable String id) {
+        try {
+            brandService.deleteBrand(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse(e.getMessage()));
+        }
     }
 }
