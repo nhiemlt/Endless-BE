@@ -137,7 +137,7 @@ public class NotificationService {
         notification.setNotificationID(UUID.randomUUID().toString());
         notification.setTitle(notificationModel.getTitle());
         notification.setContent(notificationModel.getContent());
-        notification.setType("tạo thủ công");
+        notification.setType("Gửi thủ công");
         notification.setNotificationDate(Instant.now());
         notification.setStatus("Đã gửi");// Khởi tạo Set nếu cần
         return notification;
@@ -171,7 +171,7 @@ public class NotificationService {
         notification.setNotificationID(UUID.randomUUID().toString());
         notification.setTitle(notificationModel.getTitle());
         notification.setContent(notificationModel.getContent());
-        notification.setType("Tạo tự động");
+        notification.setType("Gửi tự động");
         notification.setNotificationDate(Instant.now());
         notification.setStatus("Đã gửi");
 

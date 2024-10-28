@@ -130,7 +130,7 @@ public class OrderService {
         order.setOrderID(UUID.randomUUID().toString());
         order.setUserID(currentUser);
         order.setVoucherID(voucher);
-        order.setOrderDate(LocalDate.now());
+        order.setOrderDate(LocalDateTime.now());
         order.setOrderAddress(orderModel.getOrderAddress());
         order.setOrderPhone(orderModel.getOrderPhone());
         order.setOrderName(orderModel.getOrderName());
@@ -242,11 +242,12 @@ public class OrderService {
         }
 
         if (timeLimitInHours > 0) {
-            LocalDateTime orderDateTime = order.getOrderDate().atStartOfDay();
+            LocalDateTime orderDateTime = order.getOrderDate(); // Sử dụng trực tiếp LocalDateTime nếu đã chứa thời gian
             if (LocalDateTime.now().isAfter(orderDateTime.plusHours(timeLimitInHours))) {
                 throw new OrderCancellationNotAllowedException("Không thể cập nhật đơn hàng sau khoảng thời gian cho phép");
             }
         }
+
 
         OrderstatusId orderStatusId = new OrderstatusId(orderId, newStatusId);
         Orderstatus newStatus = new Orderstatus();
@@ -357,10 +358,10 @@ public class OrderService {
 
         // Handle potential null values
         dto.setCustomer(order.getUserID() != null ? convertUserToDTO(order.getUserID()) : null);
-        dto.setVoucher(order.getVoucherID() != null ? convertVoucherToDTO(order.getVoucherID()) : null);
+        dto.setVoucher(order.getVoucherID()!=null ? order.getVoucherID().getVoucherCode() : null);
+        dto.setVoucherDiscount(order.getVoucherDiscount());
         dto.setOrderDate(order.getOrderDate());
         dto.setShipFee(order.getShipFee());
-        dto.setVoucherDiscount(order.getVoucherDiscount());
         dto.setTotalMoney(order.getTotalMoney());
         dto.setOrderAddress(formatAddress(order.getOrderAddress()));
         dto.setOrderPhone(order.getOrderPhone());
@@ -369,8 +370,14 @@ public class OrderService {
         List<OrderDetailDTO> orderDetailDTOs = order.getOrderdetails() != null ?
                 order.getOrderdetails().stream().map(this::convertToOrderDetailDTO).collect(Collectors.toList()) :
                 new ArrayList<>();
-
         dto.setOrderDetails(orderDetailDTOs);
+        BigDecimal totalProduct = BigDecimal.ZERO;
+        for (OrderDetailDTO detail : orderDetailDTOs) {
+            totalProduct = totalProduct.add(detail.getDiscountPrice() == null ? detail.getPrice() : detail.getDiscountPrice());
+        }
+        BigDecimal money = totalProduct.add(order.getShipFee());
+        dto.setTotalProductPrice(totalProduct);
+        dto.setMoney(money);
 
         return dto;
     }

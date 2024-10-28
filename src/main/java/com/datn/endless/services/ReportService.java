@@ -13,6 +13,8 @@ import com.datn.endless.entities.Orderdetail;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -46,14 +48,18 @@ public class ReportService {
         final LocalDate finalEndDate = endDate;
 
         // Lấy tổng doanh thu từ bảng Order
+        LocalDateTime startDateTime = finalStartDate.atStartOfDay();
+        LocalDateTime endDateTime = finalEndDate.atTime(LocalTime.MAX);
+
         BigDecimal totalRevenue = orderRepository.findAll().stream()
                 .filter(order -> {
-                    LocalDate orderDate = order.getOrderDate();
-                    return (orderDate.isEqual(finalStartDate) || orderDate.isEqual(finalEndDate) ||
-                            (orderDate.isAfter(finalStartDate) && orderDate.isBefore(finalEndDate)));
+                    LocalDateTime orderDate = order.getOrderDate();
+                    return (orderDate.isEqual(startDateTime) || orderDate.isEqual(endDateTime) ||
+                            (orderDate.isAfter(startDateTime) && orderDate.isBefore(endDateTime)));
                 })
                 .map(Order::getTotalMoney)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
 
         return new RevenueReportDTO(totalRevenue, finalStartDate, finalEndDate);
     }

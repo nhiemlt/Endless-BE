@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -40,7 +41,7 @@ public class EntryService {
     public EntryDTO createEntry(EntryModel entryModel) {
         Entry entry = new Entry();
         entry.setEntryID(UUID.randomUUID().toString());
-        entry.setEntryDate(LocalDate.now());
+        entry.setEntryDate(LocalDateTime.now());
         entry.setTotalMoney(BigDecimal.ZERO);
 
         List<Entrydetail> orderDetails = entryModel.getDetails().stream()
@@ -124,7 +125,7 @@ public class EntryService {
     }
 
     Integer getProductVersionEntryQuantity(String productVersionID){
-        Integer quantity = quantity = entrydetailRepository.findTotalPurchasedQuantityByProductVersion(productVersionID);
+        Integer quantity = entrydetailRepository.findTotalPurchasedQuantityByProductVersion(productVersionID);
         return quantity == null ? 0 : quantity;
     }
 

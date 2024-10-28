@@ -69,8 +69,8 @@ CREATE TABLE VersionAttributes (
 CREATE TABLE Promotions (
     PromotionID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     Name VARCHAR(255) NOT NULL,
-    StartDate DATE NOT NULL,
-    EndDate DATE NOT NULL,
+    StartDate DATETIME NOT NULL,
+    EndDate DATETIME NOT NULL,
     Poster LONGTEXT
 );
 
@@ -145,7 +145,7 @@ CREATE TABLE Orders (
     OrderID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     UserID CHAR(36) NOT NULL,
     VoucherID CHAR(36),
-    OrderDate DATE NOT NULL,
+    OrderDate DATETIME NOT NULL,
     ShipFee DECIMAL(18, 2) NOT NULL,
     VoucherDiscount DECIMAL(18, 2) DEFAULT 0,
     TotalMoney DECIMAL(18, 2) NOT NULL,
@@ -194,7 +194,7 @@ CREATE TABLE RatingPictures (
 -- Tạo bảng Entries
 CREATE TABLE Entries (
     EntryID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    EntryDate DATE NOT NULL,
+    EntryDate DATETIME NOT NULL,
     TotalMoney DECIMAL(18, 2) NOT NULL
 );
 
@@ -466,12 +466,12 @@ INSERT INTO UserVouchers (UserID, VoucherID) VALUES
  (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'MOTHERDAY'));
 
 -- Thêm dữ liệu mẫu cho bảng Orders
-INSERT INTO Orders (UserID, VoucherID, OrderDate, ShipFee, TotalMoney, CodValue, InsuranceValue, ServiceTypeID, OrderAddress, OrderPhone, OrderName) VALUES
-((SELECT UserID FROM Users WHERE Username = 'user01'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'SUMMER2024'), '2024-06-05', 60000, 600000, 0, 0, 1, '123 Phúc Xá', '0987654321', 'Nguyen Van A'),
-((SELECT UserID FROM Users WHERE Username = 'user02'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'BLACKFRIDAY'), '2024-11-26', 70000, 1500000, 100000, 0, 1, '456 Cầu Ông Lãnh', '0987654322', 'Le Thi B'),
-((SELECT UserID FROM Users WHERE Username = 'user03'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'TET2024'), '2024-02-01', 50000, 900000, 0, 50000, 2, '789 Phạm Đình Hổ', '0987654323', 'Tran Van C'),
-((SELECT UserID FROM Users WHERE Username = 'user04'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'XMAS2024'), '2024-12-21', 80000, 800000, 200000, 0, 1, '321 Bình Thạnh', '0987654324', 'Pham Thi D'),
-((SELECT UserID FROM Users WHERE Username = 'user05'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'MOTHERSDAY'), '2024-05-11', 60000, 700000, 0, 0, 1, '654 Vĩnh Phúc', '0987654325', 'Hoang Van E');
+INSERT INTO Orders (UserID, VoucherID, VoucherDiscount, OrderDate, ShipFee, TotalMoney, CodValue, InsuranceValue, ServiceTypeID, OrderAddress, OrderPhone, OrderName) VALUES
+((SELECT UserID FROM Users WHERE Username = 'user01'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'SUMMER2024'),10000, '2024-06-05', 60000, 590000, 0, 0, 1, '123 Phúc Xá', '0987654321', 'Nguyen Van A'),
+((SELECT UserID FROM Users WHERE Username = 'user02'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'BLACKFRIDAY'),50000, '2024-10-26', 70000, 1220000, 100000, 0, 1, '456 Cầu Ông Lãnh', '0987654322', 'Le Thi B'),
+((SELECT UserID FROM Users WHERE Username = 'user03'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'TET2024'),20000, '2024-02-01', 50000, 840000, 0, 50000, 2, '789 Phạm Đình Hổ', '0987654323', 'Tran Van C'),
+((SELECT UserID FROM Users WHERE Username = 'user04'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'XMAS2024'),10000, '2024-10-21', 40000, 630000, 200000, 0, 1, '321 Bình Thạnh', '0987654324', 'Pham Thi D'),
+((SELECT UserID FROM Users WHERE Username = 'user05'), (SELECT VoucherID FROM Vouchers WHERE VoucherCode = 'MOTHERSDAY'),10000, '2024-05-11', 60000, 750000, 0, 0, 1, '654 Vĩnh Phúc', '0987654325', 'Hoang Van E');
 
 -- Thêm dữ liệu mẫu cho bảng OrderDetails
 INSERT INTO OrderDetails (OrderID, ProductVersionID, Quantity, Price, DiscountPrice) VALUES
@@ -484,7 +484,7 @@ INSERT INTO OrderDetails (OrderID, ProductVersionID, Quantity, Price, DiscountPr
 ((SELECT OrderID FROM Orders WHERE OrderName = 'Pham Thi D'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 1TB SSD'), 1, 800000, 600000),
 ((SELECT OrderID FROM Orders WHERE OrderName = 'Hoang Van E'), 
- (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 1, 700000, 665000);
+ (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 1, 700000, 700000);
 
 -- Thêm dữ liệu mẫu cho bảng Ratings
 INSERT INTO Ratings (UserID, OrderDetailID, RatingValue, Comment, RatingDate) VALUES
@@ -514,7 +514,7 @@ VALUES
 ('2024-08-01', 5000000),
 ('2024-09-01', 2000000),
 ('2024-10-01', 3000000),
-('2024-11-01', 15000000);
+('2024-10-02', 15000000);
 
 -- Thêm dữ liệu mẫu cho bảng EntryDetails
 INSERT INTO EntryDetails (EntryID, ProductVersionID, Quantity, Price)
@@ -527,7 +527,7 @@ VALUES
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 512GB SSD'), 2, 900000),
 ((SELECT EntryID FROM Entries WHERE EntryDate = '2024-10-01'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 1TB SSD'), 3, 800000),
-((SELECT EntryID FROM Entries WHERE EntryDate = '2024-11-01'), 
+((SELECT EntryID FROM Entries WHERE EntryDate = '2024-10-02'), 
  (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám'), 15, 700000);
 
 -- Thêm dữ liệu mẫu cho bảng Carts
@@ -545,11 +545,11 @@ INSERT INTO Carts (UserID, ProductVersionID, Quantity) VALUES
 
 -- Insert data into Notifications
 INSERT INTO Notifications (Title, Content, Type, NotificationDate, Status) VALUES
-('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'All', '2024-06-01 08:00:00', 'Sent'),
-('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'All', '2024-11-25 09:00:00', 'Scheduled'),
-('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'All', '2024-01-15 07:00:00', 'Sent'),
-('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'All', '2024-12-20 10:00:00', 'Sent'),
-('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'All', '2024-05-10 08:30:00', 'Scheduled');
+('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'Gửi tự động', '2024-06-01 08:00:00', 'Sent'),
+('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'Gửi tự động', '2024-11-25 09:00:00', 'Scheduled'),
+('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'Gửi tự động', '2024-01-15 07:00:00', 'Sent'),
+('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'Gửi tự động', '2024-12-20 10:00:00', 'Sent'),
+('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'Gửi tự động', '2024-05-10 08:30:00', 'Scheduled');
 
 -- Insert data into NotificationRecipients
 INSERT INTO NotificationRecipients (NotificationID, UserID, Status) VALUES
