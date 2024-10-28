@@ -35,6 +35,11 @@ public class AuthController {
         return authService.verifyEmail(token);
     }
 
+    @GetMapping("/verify-reset-email")
+    public ResponseEntity<String> verifyResetEmail(@RequestParam("token") String token) {
+        return authService.verifyResetEmail(token);
+    }
+
     @GetMapping("/verify-auth-token")
     public ResponseEntity<Map<String, Object>> verifyAuthToken(@RequestParam("token") String token) {
         return authService.verifyAuthToken(token);

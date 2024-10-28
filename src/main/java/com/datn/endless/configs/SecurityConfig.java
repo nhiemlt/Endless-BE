@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/register").permitAll()  // Sử dụng quyền register
                         .requestMatchers("/verify").permitAll()  // Sử dụng quyền verify
                         .requestMatchers("/verify-auth-token").permitAll()  // Sử dụng quyền verify
+                        .requestMatchers("/verify-reset-email").permitAll()  // Sử dụng quyền verify
                         .requestMatchers("/login/google").permitAll()  // Sử dụng quyền login/google
                         .requestMatchers("/forgot-password").permitAll()  // Sử dụng quyền forgot-password
                         .requestMatchers("/reset-password").permitAll()  // Sử dụng quyền reset-password
