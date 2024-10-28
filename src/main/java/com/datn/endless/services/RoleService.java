@@ -26,6 +26,8 @@ public class RoleService {
     @Autowired
     private PermissionRepository permissionRepository;
 
+    private static final Set<String> PROTECTED_ROLES = Set.of("Nhân viên", "SuperAdmin");
+
     public List<RoleDTO> getAllRoles() {
         List<Role> roles = roleRepository.findAll();
         List<RoleDTO> dtos = new ArrayList<>();
@@ -45,8 +47,11 @@ public class RoleService {
     }
 
     public Role createRole(RoleModel roleModel) {
-        Role role = new Role();
+        if (PROTECTED_ROLES.contains(roleModel.getRoleName())) {
+            throw new IllegalArgumentException("Cannot create protected role: " + roleModel.getRoleName());
+        }
 
+        Role role = new Role();
         // Generate UUID if roleId is null
         if (roleModel.getRoleId() == null) {
             role.setRoleId(UUID.randomUUID().toString());
@@ -55,8 +60,6 @@ public class RoleService {
         }
 
         role.setRoleName(roleModel.getRoleName());
-
-        // Handle permissions
         Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(roleModel.getPermissionIds()));
         role.setPermissions(permissions);
 
@@ -67,11 +70,14 @@ public class RoleService {
         Optional<Role> existingRoleOpt = roleRepository.findById(roleModel.getRoleId());
         if (existingRoleOpt.isPresent()) {
             Role existingRole = existingRoleOpt.get();
-            existingRole.setRoleName(roleModel.getRoleName());
 
-            Set<Permission> permissions = new HashSet<>(
-                    permissionRepository.findAllById(roleModel.getPermissionIds())
-            );
+            // Kiểm tra xem có phải role bảo vệ không
+            if (PROTECTED_ROLES.contains(existingRole.getRoleName())) {
+                throw new IllegalArgumentException("Cannot update protected role: " + existingRole.getRoleName());
+            }
+
+            existingRole.setRoleName(roleModel.getRoleName());
+            Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(roleModel.getPermissionIds()));
             existingRole.setPermissions(permissions);
 
             return roleRepository.save(existingRole);
@@ -79,9 +85,15 @@ public class RoleService {
         return null;
     }
 
-
     public void deleteRole(String roleId) {
-        roleRepository.deleteById(roleId);
+        Optional<Role> existingRoleOpt = roleRepository.findById(roleId);
+        if (existingRoleOpt.isPresent()) {
+            Role existingRole = existingRoleOpt.get();
+            if (PROTECTED_ROLES.contains(existingRole.getRoleName())) {
+                throw new IllegalArgumentException("Cannot delete protected role: " + existingRole.getRoleName());
+            }
+            roleRepository.deleteById(roleId);
+        }
     }
 
     // Chuyển đổi từ Role entity sang RoleDTO
