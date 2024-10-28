@@ -145,6 +145,76 @@ public class AuthService {
         }
     }
 
+    public ResponseEntity<Map<String, Object>> updateEmail(String username, String email) {
+        Map<String, Object> response = new HashMap<>();
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            response.put("error", "Không tìm thấy user");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (userRepository.findByEmail(email) != null) {
+            response.put("error", "Email đã được sử dụng, vui lòng nhập email khác.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            String secret = new Constant().getAUTH_KEY();
+            SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+            long expirationTimeMillis = 24 * 60 * 60 * 1000L;
+            JWT jwt = new JWT(secretKey, expirationTimeMillis);
+
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("email", email);
+
+            String verificationToken = jwt.generateToken(username, claims);
+            String verificationLink = "http://localhost:8080/verify-reset-email?token=" + verificationToken;
+
+            mailService.sendVerificationUpdateMail(username, user.getEmail(), verificationLink);
+
+            response.put("success", true);
+            response.put("message", "Vui lòng kiểm tra email để hoàn tất cập nhật email");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "Internal server error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    public ResponseEntity<String> verifyResetEmail(String token) {
+        String title = "Xác minh thất bại!";
+        String message = "Có lỗi xảy ra.";
+        String content = "Vui lòng thử lại sau vài phút.";
+
+        try {
+            String secret = new Constant().getAUTH_KEY();
+            SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+            JWT jwt = new JWT(secretKey, 24 * 60 * 60 * 1000L);
+
+            if (!jwt.isTokenValid(token)) {
+                return ResponseEntity.badRequest().body(generateHtml(title, "Token không chính xác hoặc đã hết hạn", content));
+            }
+
+            Claims claims = jwt.getClaims(token);
+            String username = (String) claims.getSubject();
+            String email = (String) claims.get("email");
+
+            User user = userRepository.findByUsername(username);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(generateHtml(title, "Không tìm thấy người dùng phù hợp", content));
+            }
+            user.setEmail(email);
+            userRepository.save(user);
+
+            title = "Xác minh thành công!";
+            message = "Cảm ơn bạn!";
+            content = "Email của bạn đã được cập nhật thành công.";
+            return ResponseEntity.ok(generateHtml(title, message, content));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(generateHtml("Lỗi hệ thống!", "Internal server error: " + e.getMessage(), content));
+        }
+    }
+
     public ResponseEntity<String> verifyEmail(String token) {
         String title = "Xác minh thất bại!";
         String message = "Có lỗi xảy ra.";
@@ -346,7 +416,6 @@ public class AuthService {
             return generateHtml(title, message, content);
         }
     }
-
 
 
     public ResponseEntity<Map<String, Object>> validateToken(String token) {

@@ -33,6 +33,12 @@ public class UserService {
     @Autowired
     private UseraddressRepository userAddressRepository;
 
+    @Autowired
+    private MailService mailService;
+
+    @Autowired
+    AuthService authService;
+
     // Chuyển đổi User thành UserDTO
     private UserDTO convertToDTO(User user) {
         List<RoleDTO> roles = user.getRoles() != null ? user.getRoles().stream()
@@ -132,13 +138,6 @@ public class UserService {
             throw new UserNotFoundException("Người dùng không tồn tại."); // Sử dụng ngoại lệ tùy chỉnh
         }
 
-        // Kiểm tra xem email có thay đổi và đã tồn tại không
-        if (user.getEmail() !=null && !user.getEmail().equals(userModel.getEmail())) {
-            if (userRepository.findByEmail(userModel.getEmail()) != null) {
-                throw new EmailAlreadyExistsException("Email đã tồn tại."); // Sử dụng ngoại lệ tùy chỉnh
-            }
-        }
-
         // Kiểm tra xem số điện thoại có thay đổi và đã tồn tại không
         if (user.getPhone() !=null && !user.getPhone().equals(userModel.getPhone())) {
             if (userRepository.findByPhone(userModel.getPhone()) != null) {
@@ -149,7 +148,6 @@ public class UserService {
         // Cập nhật thông tin người dùng
         user.setFullname(userModel.getFullname());
         user.setPhone(userModel.getPhone());
-        user.setEmail(userModel.getEmail());
 
         // Cập nhật chuỗi base64 của avatar từ frontend
         if (userModel.getAvatar() != null && !userModel.getAvatar().isEmpty()) {
@@ -158,6 +156,14 @@ public class UserService {
 
         // Lưu thay đổi vào cơ sở dữ liệu
         userRepository.save(user);
+        if (!user.getPassword().isEmpty() && user.getEmail() !=null && !user.getEmail().equals(userModel.getEmail())) {
+            if (userRepository.findByEmail(userModel.getEmail()) != null) {
+                throw new EmailAlreadyExistsException("Email đã tồn tại."); // Sử dụng ngoại lệ tùy chỉnh
+            }
+            else{
+                authService.updateEmail(user.getUsername(), userModel.getEmail());
+            }
+        }
         return convertToDTO(user); // Trả về DTO của người dùng đã cập nhật
     }
 
@@ -217,4 +223,23 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
+    public UserDTO updateEmailByAdmin(String userId, String newEmail) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("Người dùng không tồn tại."));
+
+        // Kiểm tra xem email mới có đã tồn tại trong hệ thống không
+        if (userRepository.findByEmail(newEmail) != null) {
+            throw new EmailAlreadyExistsException("Email đã tồn tại.");
+        }
+
+        // Cập nhật email
+        user.setEmail(newEmail);
+        userRepository.save(user);
+
+        return convertToDTO(user);
+    }
+
+
+
+
 }
+
