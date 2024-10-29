@@ -58,9 +58,12 @@ public class AuthController {
 
     @PostMapping("/change-password")
     public ResponseEntity<Map<String, Object>> changePassword(@RequestBody Map<String, String> passwordMap) {
-        Map<String, Object> response = (Map<String, Object>) authService.changePassword(passwordMap);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        // Gọi phương thức service để thay đổi mật khẩu
+        ResponseEntity<Map<String, Object>> response = authService.changePassword(passwordMap);
+        // Trả về phản hồi từ service mà không cần ép kiểu
+        return response;  // Trả về trực tiếp ResponseEntity từ service
     }
+
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, Object>> forgotPassword(@RequestParam String email) throws MessagingException {
