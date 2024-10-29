@@ -5,6 +5,7 @@ import com.datn.endless.models.GoogleLoginModel;
 import com.datn.endless.models.LoginModel;
 import com.datn.endless.models.RegisterModel;
 import com.datn.endless.services.AuthService;
+import com.datn.endless.services.UserLoginInfomation;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    UserLoginInfomation userLoginInfomation;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginModel loginRequest) {
@@ -60,9 +64,11 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> changePassword(@RequestBody Map<String, String> passwordMap) {
         // Gọi phương thức service để thay đổi mật khẩu
         ResponseEntity<Map<String, Object>> response = authService.changePassword(passwordMap);
+
         // Trả về phản hồi từ service mà không cần ép kiểu
         return response;  // Trả về trực tiếp ResponseEntity từ service
     }
+
 
 
     @PostMapping("/forgot-password")
