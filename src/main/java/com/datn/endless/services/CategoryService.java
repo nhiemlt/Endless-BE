@@ -4,11 +4,12 @@ import com.datn.endless.dtos.CategoryDTO;
 import com.datn.endless.entities.Category;
 import com.datn.endless.models.CategoryModel;
 import com.datn.endless.repositories.CategoryRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,47 +21,57 @@ public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Transactional
     public CategoryDTO createCategory(CategoryModel categoryModel) {
+        validateCategoryModel(categoryModel);
+
+        // Kiểm tra xem tên danh mục đã tồn tại chưa
+        if (categoryRepository.findByName(categoryModel.getName()).isPresent()) {
+            throw new IllegalArgumentException("Tên danh mục đã tồn tại: " + categoryModel.getName());
+        }
+
         Category newCategory = new Category();
         newCategory.setCategoryID(UUID.randomUUID().toString());
         newCategory.setName(categoryModel.getName());
         return convertToDTO(categoryRepository.save(newCategory));
     }
 
-    public List<CategoryDTO> getCategories(String name, String id, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Category> categoryPage;
+    @Transactional
+    public CategoryDTO updateCategory(String id, CategoryModel categoryModel) {
+        validateCategoryModel(categoryModel);
 
-        // Nếu có ID, tìm kiếm theo ID
-        if (id != null && !id.isEmpty()) {
-            Optional<Category> categoryOpt = categoryRepository.findById(id);
-            return categoryOpt.map(this::convertToDTO)
-                    .map(List::of) // Trả về danh sách chứa CategoryDTO
-                    .orElse(List.of()); // Trả về danh sách rỗng nếu không tìm thấy
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy danh mục có ID: " + id));
+
+        // Kiểm tra xem tên danh mục mới có trùng với tên đã tồn tại không
+        if (!existingCategory.getName().equals(categoryModel.getName()) &&
+                categoryRepository.findByName(categoryModel.getName()).isPresent()) {
+            throw new IllegalArgumentException("Tên danh mục đã tồn tại: " + categoryModel.getName());
         }
 
-        // Tìm kiếm theo tên hoặc tên tiếng Anh
-        if (name != null && !name.isEmpty()) {
-            categoryPage = categoryRepository.findByNameContainingIgnoreCase(name, pageable);
-        } else {
-            categoryPage = categoryRepository.findAll(pageable);
-        }
+        existingCategory.setName(categoryModel.getName());
 
-        // Chuyển đổi và trả về danh sách CategoryDTO
-        return categoryPage.getContent().stream()
-                .map(this::convertToDTO)
-                .toList();
+        return convertToDTO(categoryRepository.save(existingCategory));
     }
 
-
+    public Page<CategoryDTO> getCategoriesWithPaginationAndSearch(String keyword, Pageable pageable) {
+        Page<Category> categories;
+        if (keyword != null && !keyword.isEmpty()) {
+            categories = categoryRepository.findByNameContainingIgnoreCase(keyword, pageable);
+        } else {
+            categories = categoryRepository.findAll(pageable);
+        }
+        return categories.map(this::convertToDTO);
+    }
 
     public Optional<CategoryDTO> getCategoryById(String id) {
         return categoryRepository.findById(id).map(this::convertToDTO);
     }
 
+    @Transactional
     public void deleteCategory(String id) {
         if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Category not found with ID: " + id);
+            throw new IllegalArgumentException("Không tìm thấy danh mục có ID: " + id);
         }
         categoryRepository.deleteById(id);
     }
@@ -69,19 +80,13 @@ public class CategoryService {
         CategoryDTO categoryDTO = new CategoryDTO();
         categoryDTO.setCategoryID(category.getCategoryID());
         categoryDTO.setName(category.getName());
+        // Thêm các thuộc tính khác nếu cần
         return categoryDTO;
     }
 
-    public CategoryDTO updateCategory(String id, CategoryModel categoryModel) {
-        // Tìm danh mục theo ID
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + id));
-
-        // Cập nhật thông tin của danh mục
-        existingCategory.setName(categoryModel.getName());
-
-        // Lưu danh mục đã cập nhật
-        return convertToDTO(categoryRepository.save(existingCategory));
+    private void validateCategoryModel(CategoryModel categoryModel) {
+        if (!StringUtils.hasText(categoryModel.getName())) {
+            throw new IllegalArgumentException("Tên danh mục không được để trống.");
+        }
     }
-
 }

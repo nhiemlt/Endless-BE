@@ -6,5 +6,5 @@ import lombok.Data;
 public class CategoryDTO {
     private String categoryID ;
     private String name;
-    private String enName;
+
 }

@@ -10,7 +10,5 @@ public class ProductDTO {
     private CategoryDTO categoryID;
     private BrandDTO brandID;
     private String name;
-    private String nameEn;
     private String description;
-    private String enDescription;
 }

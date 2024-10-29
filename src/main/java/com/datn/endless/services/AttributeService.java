@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,18 +30,14 @@ public class AttributeService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Attribute> attributePage;
 
-        // Tìm kiếm theo ID
-        if (id != null && !id.isEmpty()) {
-            Attribute attribute = attributeRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Attribute not found"));
-            return List.of(convertToDTO(attribute));
-        }
-
-        // Tìm kiếm theo tên hoặc tên tiếng Anh
-        if (name != null && !name.isEmpty()) {
-            attributePage = attributeRepository.findByAttributeNameContainingIgnoreCase(name, pageable);
-        }  else {
+        if (!StringUtils.hasText(id) && !StringUtils.hasText(name)) {
             attributePage = attributeRepository.findAll(pageable);
+        } else if (StringUtils.hasText(id)) {
+            Attribute attribute = attributeRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thuộc tính."));
+            return List.of(convertToDTO(attribute));
+        } else {
+            attributePage = attributeRepository.findByAttributeNameContainingIgnoreCase(name, pageable);
         }
 
         return attributePage.getContent().stream()
@@ -48,15 +45,124 @@ public class AttributeService {
                 .collect(Collectors.toList());
     }
 
+    public List<AttributeValueDTO> getAllAttributeValues(String attributeId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Attributevalue> attributeValuePage;
 
+        // Nếu có ID của AttributeValue, tìm kiếm trực tiếp
+        if (StringUtils.hasText(attributeId)) {
+            Attributevalue attributeValue = attributeValueRepository.findById(attributeId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy giá trị thuộc tính."));
+            return List.of(convertToValueDTO(attributeValue));
+        }
+
+        if (StringUtils.hasText(attributeId)) {
+            Attribute attribute = attributeRepository.findById(attributeId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thuộc tính."));
+            attributeValuePage = attributeValueRepository.findByAttribute(attribute, pageable);
+        } else {
+            attributeValuePage = attributeValueRepository.findAll(pageable);
+        }
+
+        return attributeValuePage.getContent().stream()
+                .map(this::convertToValueDTO)
+                .collect(Collectors.toList());
+    }
+
+    public AttributeDTO createAttribute(AttributeDTO attributeDTO) {
+        if (!StringUtils.hasText(attributeDTO.getAttributeName())) {
+            throw new RuntimeException("Tên thuộc tính không được bỏ trống.");
+        }
+
+        if (attributeRepository.existsByAttributeName(attributeDTO.getAttributeName())) {
+            throw new RuntimeException("Thuộc tính đã tồn tại.");
+        }
+
+        Attribute attribute = new Attribute();
+        attribute.setAttributeID(UUID.randomUUID().toString());
+        attribute.setAttributeName(attributeDTO.getAttributeName());
+
+        Attribute savedAttribute = attributeRepository.save(attribute);
+        return convertToDTO(savedAttribute);
+    }
+
+    public AttributeDTO updateAttribute(String id, AttributeDTO attributeDTO) {
+        if (!StringUtils.hasText(attributeDTO.getAttributeName())) {
+            throw new RuntimeException("Tên thuộc tính không được bỏ trống.");
+        }
+
+        Attribute attribute = attributeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thuộc tính."));
+
+        if (attributeRepository.existsByAttributeName(attributeDTO.getAttributeName())
+                && !attribute.getAttributeName().equals(attributeDTO.getAttributeName())) {
+            throw new RuntimeException("Thuộc tính đã tồn tại.");
+        }
+
+        attribute.setAttributeName(attributeDTO.getAttributeName());
+        attributeRepository.save(attribute);
+
+        return convertToDTO(attribute);
+    }
+
+    public void deleteAttribute(String id) {
+        if (!attributeRepository.existsById(id)) {
+            throw new RuntimeException("Không tìm thấy thuộc tính.");
+        }
+        attributeRepository.deleteById(id);
+    }
+
+    public AttributeValueDTO createAttributeValue(String attributeId, AttributeValueDTO attributeValueDTO) {
+        if (!StringUtils.hasText(attributeValueDTO.getAttributeValue())) {
+            throw new RuntimeException("Giá trị thuộc tính không được bỏ trống.");
+        }
+
+        Attribute attribute = attributeRepository.findById(attributeId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thuộc tính."));
+
+        if (attributeValueRepository.existsByValueAndAttribute(attributeValueDTO.getAttributeValue(), attribute)) {
+            throw new RuntimeException("Giá trị thuộc tính đã tồn tại cho thuộc tính này.");
+        }
+
+        Attributevalue attributeValue = new Attributevalue();
+        attributeValue.setAttributeValueID(UUID.randomUUID().toString());
+        attributeValue.setValue(attributeValueDTO.getAttributeValue());
+        attributeValue.setAttribute(attribute);
+
+        attributeValueRepository.save(attributeValue);
+        return convertToValueDTO(attributeValue);
+    }
+
+    public AttributeValueDTO updateAttributeValue(String valueId, AttributeValueDTO attributeValueDTO) {
+        if (!StringUtils.hasText(attributeValueDTO.getAttributeValue())) {
+            throw new RuntimeException("Giá trị thuộc tính không được bỏ trống.");
+        }
+
+        Attributevalue attributeValue = attributeValueRepository.findById(valueId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giá trị thuộc tính."));
+
+        if (attributeValueRepository.existsByValueAndAttribute(attributeValueDTO.getAttributeValue(), attributeValue.getAttribute())
+                && !attributeValue.getValue().equals(attributeValueDTO.getAttributeValue())) {
+            throw new RuntimeException("Giá trị thuộc tính đã tồn tại cho thuộc tính này.");
+        }
+
+        attributeValue.setValue(attributeValueDTO.getAttributeValue());
+        attributeValueRepository.save(attributeValue);
+        return convertToValueDTO(attributeValue);
+    }
+
+    public void deleteAttributeValue(String valueId) {
+        if (!attributeValueRepository.existsById(valueId)) {
+            throw new RuntimeException("Không tìm thấy giá trị thuộc tính.");
+        }
+        attributeValueRepository.deleteById(valueId);
+    }
 
     private AttributeDTO convertToDTO(Attribute attribute) {
         AttributeDTO attributeDTO = new AttributeDTO();
         attributeDTO.setAttributeID(attribute.getAttributeID());
         attributeDTO.setAttributeName(attribute.getAttributeName());
 
-
-        // Lấy giá trị cho thuộc tính này
         List<Attributevalue> values = attributeValueRepository.findByAttribute(attribute);
         attributeDTO.setAttributeValues(values.stream()
                 .map(this::convertToValueDTO)
@@ -69,65 +175,6 @@ public class AttributeService {
         AttributeValueDTO dto = new AttributeValueDTO();
         dto.setAttributeValueID(attributeValue.getAttributeValueID());
         dto.setAttributeValue(attributeValue.getValue());
-
         return dto;
-    }
-
-    public AttributeDTO createAttribute(AttributeDTO attributeDTO) {
-        Attribute attribute = new Attribute();
-        attribute.setAttributeID(UUID.randomUUID().toString());
-        attribute.setAttributeName(attributeDTO.getAttributeName());
-
-
-        Attribute savedAttribute = attributeRepository.save(attribute);
-        return convertToDTO(savedAttribute);
-    }
-
-    public AttributeDTO updateAttribute(String id, AttributeDTO attributeDTO) {
-        Attribute attribute = attributeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Attribute not found"));
-
-        attribute.setAttributeName(attributeDTO.getAttributeName());
-
-        attributeRepository.save(attribute);
-
-        return convertToDTO(attribute);
-    }
-
-    public void deleteAttribute(String id) {
-        if (!attributeRepository.existsById(id)) {
-            throw new RuntimeException("Attribute not found");
-        }
-        attributeRepository.deleteById(id);
-    }
-
-    public AttributeValueDTO createAttributeValue(String attributeId, AttributeValueDTO attributeValueDTO) {
-        Attribute attribute = attributeRepository.findById(attributeId)
-                .orElseThrow(() -> new RuntimeException("Attribute not found"));
-
-        Attributevalue attributeValue = new Attributevalue();
-        attributeValue.setAttributeValueID(UUID.randomUUID().toString());
-        attributeValue.setValue(attributeValueDTO.getAttributeValue());
-        attributeValue.setAttribute(attribute); // Thiết lập thuộc tính
-
-        attributeValueRepository.save(attributeValue);
-        return convertToValueDTO(attributeValue);
-    }
-
-    public AttributeValueDTO updateAttributeValue(String valueId, AttributeValueDTO attributeValueDTO) {
-        Attributevalue attributeValue = attributeValueRepository.findById(valueId)
-                .orElseThrow(() -> new RuntimeException("Attribute Value not found"));
-
-        attributeValue.setValue(attributeValueDTO.getAttributeValue());
-
-        attributeValueRepository.save(attributeValue);
-        return convertToValueDTO(attributeValue);
-    }
-
-    public void deleteAttributeValue(String valueId) {
-        if (!attributeValueRepository.existsById(valueId)) {
-            throw new RuntimeException("Attribute Value not found");
-        }
-        attributeValueRepository.deleteById(valueId);
     }
 }

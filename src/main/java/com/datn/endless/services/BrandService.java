@@ -2,14 +2,15 @@ package com.datn.endless.services;
 
 import com.datn.endless.dtos.BrandDTO;
 import com.datn.endless.entities.Brand;
-import com.datn.endless.exceptions.ConvertImageException;
 import com.datn.endless.models.BrandModel;
 import com.datn.endless.repositories.BrandRepository;
-import com.datn.endless.utils.ImageUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,9 +21,14 @@ public class BrandService {
     @Autowired
     private BrandRepository brandRepository;
 
-
-
+    @Transactional
     public BrandDTO createBrand(BrandModel brandModel) {
+        validateBrandModel(brandModel);
+
+        if (brandRepository.findByName(brandModel.getName()).isPresent()) {
+            throw new IllegalArgumentException("Tên thương hiệu đã tồn tại: " + brandModel.getName());
+        }
+
         Brand newBrand = new Brand();
         newBrand.setBrandID(UUID.randomUUID().toString());
         newBrand.setName(brandModel.getName());
@@ -30,31 +36,50 @@ public class BrandService {
         return convertToDTO(brandRepository.save(newBrand));
     }
 
+    @Transactional
     public BrandDTO updateBrand(String id, BrandModel brandModel) {
+        validateBrandModel(brandModel);
+
         Brand existingBrand = brandRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Brand not found with ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thương hiệu có ID: " + id));
+
+        if (!existingBrand.getName().equals(brandModel.getName()) &&
+                brandRepository.findByName(brandModel.getName()).isPresent()) {
+            throw new IllegalArgumentException("Tên thương hiệu đã tồn tại: " + brandModel.getName());
+        }
 
         existingBrand.setName(brandModel.getName());
         existingBrand.setLogo(brandModel.getLogo());
 
-
-
         return convertToDTO(brandRepository.save(existingBrand));
     }
 
-    public List<BrandDTO> getAllBrands() {
-        return brandRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .toList();
+    public Page<BrandDTO> getBrandsWithPaginationAndSearch(String keyword, Pageable pageable) {
+        Page<Brand> brands;
+        if (keyword != null && !keyword.isEmpty()) {
+            brands = brandRepository.searchByName(keyword, pageable);
+        } else {
+            brands = brandRepository.findAll(pageable);
+        }
+        return brands.map(this::convertToDTO);
     }
 
     public Optional<BrandDTO> getBrandById(String id) {
         return brandRepository.findById(id).map(this::convertToDTO);
     }
 
+    public List<BrandDTO> getBrandsByName(String name) {
+        List<Brand> brands = brandRepository.findByNameContainingIgnoreCase(name);
+        return brands.stream()
+                .map(this::convertToDTO)
+                .toList();
+    }
+
+
+    @Transactional
     public void deleteBrand(String id) {
         if (!brandRepository.existsById(id)) {
-            throw new RuntimeException("Brand not found with ID: " + id);
+            throw new IllegalArgumentException("Không tìm thấy thương hiệu có ID: " + id);
         }
         brandRepository.deleteById(id);
     }
@@ -66,5 +91,14 @@ public class BrandService {
         brandDTO.setLogo(brand.getLogo());
         // Thêm các thuộc tính khác nếu cần
         return brandDTO;
+    }
+
+    private void validateBrandModel(BrandModel brandModel) {
+        if (!StringUtils.hasText(brandModel.getName())) {
+            throw new IllegalArgumentException("Tên thương hiệu không được để trống.");
+        }
+        if (!StringUtils.hasText(brandModel.getLogo())) {
+            throw new IllegalArgumentException("Logo thương hiệu không được để trống.");
+        }
     }
 }

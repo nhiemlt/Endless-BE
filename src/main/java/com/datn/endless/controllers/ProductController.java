@@ -26,6 +26,8 @@ public class ProductController {
     public ResponseEntity<?> getProductsOrProductById(
             @RequestParam(required = false) String id,
             @RequestParam(required = false) String name,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) String brandId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
@@ -36,7 +38,7 @@ public class ProductController {
                     .orElse(ResponseEntity.notFound().build());
         } else {
             // Nếu không có id, trả về danh sách sản phẩm với filter
-            List<ProductDTO> products = productService.getProducts(name,  page, size);
+            List<ProductDTO> products = productService.getProducts(name, categoryId, brandId, page, size);
             return ResponseEntity.ok(products);
         }
     }
