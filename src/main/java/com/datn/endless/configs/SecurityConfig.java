@@ -149,8 +149,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/roles/manage").hasAuthority("add_new_user_role")
                         .requestMatchers(HttpMethod.GET, "/api/roles/manage/users/{userId}/roles").hasAuthority("view_user_role")
                         .requestMatchers(HttpMethod.GET, "/api/roles/manage/roles/{roleId}/users").hasAuthority("view_role_user")
-                        .requestMatchers(HttpMethod.PUT, "/api/roles/manage{id}").hasAuthority("update_user_role")
-                        .requestMatchers(HttpMethod.DELETE, "/api/roles/manage{id}").hasAuthority("delete_user_role")
+                        .requestMatchers(HttpMethod.PUT, "/api/roles/manage/{id}").hasAuthority("update_user_role")
+                        .requestMatchers(HttpMethod.DELETE, "/api/roles/manage/{id}").hasAuthority("delete_user_role")
 
                         .requestMatchers(HttpMethod.POST, "/api/ratings").hasAuthority("view_reviews")
                         .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
