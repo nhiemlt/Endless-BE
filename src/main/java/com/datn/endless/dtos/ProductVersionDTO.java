@@ -12,8 +12,7 @@ public class ProductVersionDTO {
     private String versionName;
     private BigDecimal purchasePrice;
     private BigDecimal price;
-    private BigDecimal shipFee
-            ;
+    private BigDecimal shipFee; // là weight
     private BigDecimal height;
     private BigDecimal length;
     private BigDecimal width;
@@ -31,7 +30,6 @@ public class ProductVersionDTO {
     private long    NumberOfReviews;
 
 
-    List<RatingDTO> ratings;
     List<VersionAttributeDTO> versionAttributes;
     private List<PromotionDTO> promotions; // Danh sách các chương trình khuyến mãi áp dụng cho sản phẩm
 

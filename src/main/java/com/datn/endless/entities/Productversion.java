@@ -40,19 +40,15 @@ public class Productversion {
     @Column(name = "Price", nullable = false, precision = 18, scale = 2)
     private BigDecimal price;
 
-    @NotNull
     @Column(name = "Weight", nullable = false, precision = 18, scale = 2)
     private BigDecimal weight;
 
-    @NotNull
     @Column(name = "Height", nullable = false, precision = 18, scale = 2)
     private BigDecimal height;
 
-    @NotNull
     @Column(name = "Length", nullable = false, precision = 18, scale = 2)
     private BigDecimal length;
 
-    @NotNull
     @Column(name = "Width", nullable = false, precision = 18, scale = 2)
     private BigDecimal width;
 

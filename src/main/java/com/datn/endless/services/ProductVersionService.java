@@ -95,9 +95,7 @@ public class ProductVersionService {
         productVersion.setHeight(productVersionModel.getHeight());
         productVersion.setLength(productVersionModel.getLength());
         productVersion.setWidth(productVersionModel.getWidth());
-
-        productVersion.setImage(convertImageToBase64(productVersionModel.getImage())); // Chuyển đổi hình ảnh
-
+        productVersion.setImage(productVersionModel.getImage());
         productVersion.setStatus("Active");
 
         // Lưu phiên bản sản phẩm
@@ -107,19 +105,7 @@ public class ProductVersionService {
         return convertToDTO(savedVersion);
     }
 
-    // Hàm chuyển đổi MultipartFile thành String (base64)
-    private String convertImageToBase64(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return null; // Hoặc xử lý theo nhu cầu
-        }
 
-        try {
-            byte[] bytes = file.getBytes();
-            return Base64.getEncoder().encodeToString(bytes);
-        } catch (IOException e) {
-            throw new RuntimeException("Error converting image to base64: " + e.getMessage(), e);
-        }
-    }
     // Cập nhật ProductVersion
     public ProductVersionDTO updateProductVersion(String productVersionID, ProductVersionModel productVersionModel) {
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
@@ -132,7 +118,7 @@ public class ProductVersionService {
         existingProductVersion.setHeight(productVersionModel.getHeight());
         existingProductVersion.setLength(productVersionModel.getLength());
         existingProductVersion.setWidth(productVersionModel.getWidth());
-        existingProductVersion.setImage(convertImageToBase64(productVersionModel.getImage())); // Chuyển đổi hình ảnh
+        existingProductVersion.setImage(productVersionModel.getImage());
 
         // Cập nhật thông tin
         Productversion updatedVersion = productVersionRepository.save(existingProductVersion);
@@ -157,9 +143,9 @@ public class ProductVersionService {
     private ProductVersionDTO convertToDTO(Productversion productVersion) {
         ProductForProcVersionDTO productDTO = new ProductForProcVersionDTO();
         productDTO.setProductID(productVersion.getProductID().getProductID());
+        productDTO.setName(productVersion.getProductID().getName());
         productDTO.setCategoryName(productVersion.getProductID().getCategoryID().getName());
         productDTO.setBrandName(productVersion.getProductID().getBrandID().getName());
-        productDTO.setName(productVersion.getProductID().getName());
 
 
 

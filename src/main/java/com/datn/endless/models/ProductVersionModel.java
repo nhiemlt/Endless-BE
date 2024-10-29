@@ -11,36 +11,34 @@ import java.util.List;
 @Data
 public class ProductVersionModel {
 
-    @NotNull(message = "Product ID cannot be null.")
+    @NotNull(message = "Mã sản phẩm không được để trống.")
     private String productID;
 
-    @Size(max = 255, message = "Version name cannot exceed 255 characters.")
-    @NotNull(message = "Version name cannot be null.")
+    @Size(max = 255, message = "Tên phiên bản không được vượt quá 255 ký tự.")
+    @NotNull(message = "Tên phiên bản không được để trống.")
     private String versionName;
 
-    private String description;
-
-    @NotNull(message = "Purchase price cannot be null.")
+    @NotNull(message = "Giá nhập không được để trống.")
     private BigDecimal purchasePrice;
 
-    @NotNull(message = "Price cannot be null.")
+    @NotNull(message = "Giá bán không được để trống.")
     private BigDecimal price;
 
-    @NotNull(message = "Weight cannot be null.")
+    @NotNull(message = "Trọng lượng không được để trống.")
     private BigDecimal weight;
 
-    @NotNull(message = "Height cannot be null.")
+    @NotNull(message = "Chiều cao không được để trống.")
     private BigDecimal height;
 
-    @NotNull(message = "Length cannot be null.")
+    @NotNull(message = "Chiều dài không được để trống.")
     private BigDecimal length;
 
-    @NotNull(message = "Width cannot be null.")
+    @NotNull(message = "Chiều rộng không được để trống.")
     private BigDecimal width;
 
-    @NotNull(message = "Image cannot be null.")
-    private MultipartFile image; // Chỉnh sửa ở đây
+    @NotNull(message = "Hình ảnh không được để trống.")
+    private String image;
 
-    @NotNull(message = "Please choose some Attributes.")
+    @NotNull(message = "Vui lòng chọn các thuộc tính.")
     private List<String> attributeValueID;
 }

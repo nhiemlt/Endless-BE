@@ -30,7 +30,7 @@ public class ProductVersionController {
 
     @GetMapping
     public ResponseEntity<?> getProductVersions(
-            @RequestParam(required = false) String id, 
+            @RequestParam(required = false) String id,
             @RequestParam(required = false) String versionName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -56,10 +56,13 @@ public class ProductVersionController {
     public ResponseEntity<ProductVersionDTO> createProductVersion(
             @RequestParam String productID,
             @RequestParam String versionName,
-            @RequestParam String description,
             @RequestParam double price,
             @RequestParam double purchasePrice,
-            @RequestParam MultipartFile image,
+            @RequestParam double weight,
+            @RequestParam double height,
+            @RequestParam double length,
+            @RequestParam double width,
+            @RequestParam String image,
             @RequestParam List<String> attributeValueID) { // Thêm attributeValueID
 
         ProductVersionModel model = new ProductVersionModel();
@@ -67,6 +70,10 @@ public class ProductVersionController {
         model.setVersionName(versionName);
         model.setPrice(BigDecimal.valueOf(price));
         model.setPurchasePrice(BigDecimal.valueOf(purchasePrice));
+        model.setWeight(BigDecimal.valueOf(weight));
+        model.setHeight(BigDecimal.valueOf(height));
+        model.setLength(BigDecimal.valueOf(length));
+        model.setWidth(BigDecimal.valueOf(width));
         model.setImage(image);
         model.setAttributeValueID(attributeValueID);
 
@@ -80,18 +87,24 @@ public class ProductVersionController {
             @PathVariable("id") String productVersionID,
             @RequestParam String productID,
             @RequestParam String versionName,
-            @RequestParam String description,
             @RequestParam double price,
             @RequestParam double purchasePrice,
-            @RequestParam MultipartFile image,
+            @RequestParam double weight,
+            @RequestParam double height,
+            @RequestParam double length,
+            @RequestParam double width,
+            @RequestParam String image,
             @RequestParam List<String> attributeValueID) {
 
         ProductVersionModel model = new ProductVersionModel();
         model.setProductID(productID);
         model.setVersionName(versionName);
-        model.setDescription(description);
         model.setPrice(BigDecimal.valueOf(price));
         model.setPurchasePrice(BigDecimal.valueOf(purchasePrice));
+        model.setWeight(BigDecimal.valueOf(weight));
+        model.setHeight(BigDecimal.valueOf(height));
+        model.setLength(BigDecimal.valueOf(length));
+        model.setWidth(BigDecimal.valueOf(width));
         model.setImage(image);
         model.setAttributeValueID(attributeValueID);
 
