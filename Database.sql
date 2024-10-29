@@ -93,7 +93,7 @@ CREATE TABLE PromotionProducts (
 
 CREATE TABLE Users (
     UserID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    Username VARCHAR(255),
+    Username VARCHAR(255) NOT NULL,
     Fullname VARCHAR(255),
     Password VARCHAR(255),
     Phone VARCHAR(11),
@@ -362,16 +362,16 @@ INSERT INTO Products (CategoryID, BrandID, Name, Description) VALUES
 
 -- Thêm dữ liệu mẫu cho bảng ProductVersions
 INSERT INTO ProductVersions (ProductID, VersionName, CostPrice, Price, Weight, Height, Length, Width, Status, Image) VALUES
-((SELECT ProductID FROM Products WHERE Name = 'iPhone 13'), '128GB - Đen', 19000000, 22000000, 173, 7.65, 14.67, 0.73, 'Active', 'https://example.com/images/iphone_13_black.png'),
-((SELECT ProductID FROM Products WHERE Name = 'Samsung Galaxy S21'), '256GB - Trắng', 15000000, 18000000, 200, 7.9, 15.5, 0.7, 'Active', 'https://example.com/images/galaxy_s21_white.png'),
-((SELECT ProductID FROM Products WHERE Name = 'Dell XPS 13'), '16GB RAM - 512GB SSD', 30000000, 35000000, 1400, 1.48, 30.1, 19.9, 'Active', 'https://example.com/images/dell_xps_13.png'),
-((SELECT ProductID FROM Products WHERE Name = 'MacBook Pro 14'), '16GB RAM - 1TB SSD', 50000000, 55000000, 1600, 1.6, 31.3, 22.2, 'Active', 'https://example.com/images/macbook_pro_14.png'),
-((SELECT ProductID FROM Products WHERE Name = 'iPad Pro 11'), '128GB - Xám', 20000000, 23000000, 468, 0.61, 24.81, 17.95, 'Active', 'https://example.com/images/ipad_pro_11_gray.png'),
-((SELECT ProductID FROM Products WHERE Name = 'AirPods Pro'), 'AirPods Pro', 5000000, 6000000, 56, 5.4, 4.5, 2.5, 'Active', 'https://example.com/images/airpods_pro.png'),
-((SELECT ProductID FROM Products WHERE Name = 'Surface Pen'), 'Bút cảm ứng - Đen', 2000000, 2500000, 20, 0.6, 14, 1.5, 'Active', 'https://example.com/images/surface_pblack.png'),
-((SELECT ProductID FROM Products WHERE Name = 'Apple Watch Series 7'), '44mm - Xanh', 12000000, 14000000, 100, 1.1, 4.5, 3.3, 'Active', 'https://example.com/images/apple_watch_7_blue.png'),
-((SELECT ProductID FROM Products WHERE Name = 'Samsung QLED 55'), 'QLED 55 inch', 15000000, 18000000, 21000, 7.9, 123.2, 72.6, 'Active', 'https://example.com/images/samsung_qled_55.png'),
-((SELECT ProductID FROM Products WHERE Name = 'Asus RT-AX88U'), 'Router Wi-Fi 6', 4000000, 4500000, 960, 3.1, 25, 15, 'Active', 'https://example.com/images/asus_rt_ax88u.png');
+((SELECT ProductID FROM Products WHERE Name = 'iPhone 13'), '128GB - Đen', 19000000, 22000000, 173, 7.65, 14.67, 0.73, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'Samsung Galaxy S21'), '256GB - Trắng', 15000000, 18000000, 200, 7.9, 15.5, 0.7, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'Dell XPS 13'), '16GB RAM - 512GB SSD', 30000000, 35000000, 1400, 1.48, 30.1, 19.9, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'MacBook Pro 14'), '16GB RAM - 1TB SSD', 50000000, 55000000, 1600, 1.6, 31.3, 22.2, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'iPad Pro 11'), '128GB - Xám', 20000000, 23000000, 468, 0.61, 24.81, 17.95, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'AirPods Pro'), 'AirPods Pro', 5000000, 6000000, 56, 5.4, 4.5, 2.5, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'Surface Pen'), 'Bút cảm ứng - Đen', 2000000, 2500000, 20, 0.6, 14, 1.5, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'Apple Watch Series 7'), '44mm - Xanh', 12000000, 14000000, 100, 1.1, 4.5, 3.3, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'Samsung QLED 55'), 'QLED 55 inch', 15000000, 18000000, 21000, 7.9, 123.2, 72.6, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
+((SELECT ProductID FROM Products WHERE Name = 'Asus RT-AX88U'), 'Router Wi-Fi 6', 4000000, 4500000, 960, 3.1, 25, 15, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633');
 
 
 -- Thêm dữ liệu mẫu cho bảng VersionAttributes
@@ -433,16 +433,16 @@ JOIN ProductVersions pv ON (pv.VersionName = '128GB - Đen' AND pd.PercentDiscou
 
 -- Thêm dữ liệu mẫu cho bảng Users
 INSERT INTO Users (Username, Fullname, Password, Phone, Email, Avatar, active, forgetPassword) VALUES
-('user01', 'Nguyen Van A', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654321', 'user01@example.com', 'https://example.com/avatars/user01.png', TRUE, FALSE),
-('user02', 'Le Thi B', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654322', 'user02@example.com', 'https://example.com/avatars/user02.png', TRUE, FALSE),
-('user03', 'Tran Van C', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654323', 'user03@example.com', 'https://example.com/avatars/user03.png', TRUE, FALSE),
-('user04', 'Pham Thi D', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654324', 'user04@example.com', 'https://example.com/avatars/user04.png', TRUE, FALSE),
-('user05', 'Hoang Van E', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654325', 'user05@example.com', 'https://example.com/avatars/user05.png', TRUE, FALSE),
-('user06', 'Vu Thi F', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654326', 'user06@example.com', 'https://example.com/avatars/user06.png', TRUE, FALSE),
-('user07', 'Nguyen Van G', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654327', 'user07@example.com', 'https://example.com/avatars/user07.png', TRUE, FALSE),
-('user08', 'Le Thi H', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654328', 'user08@example.com', 'https://example.com/avatars/user08.png', TRUE, FALSE),
-('user09', 'Tran Van I', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654329', 'user09@example.com', 'https://example.com/avatars/user09.png', TRUE, FALSE),
-('user10', 'Pham Thi J', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654330', 'user10@example.com', 'https://example.com/avatars/user10.png', TRUE, FALSE);
+('user01', 'Nguyen Van A', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654321', 'user01@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user02', 'Le Thi B', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654322', 'user02@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user03', 'Tran Van C', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654323', 'user03@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user04', 'Pham Thi D', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654324', 'user04@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user05', 'Hoang Van E', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654325', 'user05@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user06', 'Vu Thi F', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654326', 'user06@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user07', 'Nguyen Van G', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654327', 'user07@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user08', 'Le Thi H', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654328', 'user08@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user09', 'Tran Van I', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654329', 'user09@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
+('user10', 'Pham Thi J', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654330', 'user10@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE);
 
 -- Thêm dữ liệu mẫu cho bảng Vouchers
 INSERT INTO Vouchers (VoucherCode, LeastBill, LeastDiscount, BiggestDiscount, DiscountLevel, StartDate, EndDate) VALUES

@@ -302,6 +302,11 @@ public class AuthService {
                 response.put("error", "User not found.");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
+            else{
+                User user = userOpt.get();
+                String role = !user.getRoles().isEmpty() ? "admin" : "customer";
+                response.put("role", role);
+            }
 
             response.put("success", true);
             response.put("message", "Token verified successfully. You can now log in.");
