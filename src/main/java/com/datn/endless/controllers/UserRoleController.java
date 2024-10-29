@@ -1,5 +1,6 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.UserDTO;
 import com.datn.endless.dtos.UserRoleDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.services.UserRoleService;
@@ -11,15 +12,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users/{userId}/roles")
+@RequestMapping("/api/roles/manage")
 public class UserRoleController {
 
     @Autowired
     private UserRoleService userRoleService;
 
-    @GetMapping
+    @GetMapping("/users/{userId}/roles")
     public ResponseEntity<List<RoleDTO>> getRolesByUser(@PathVariable String userId) {
         return ResponseEntity.ok(userRoleService.getRolesByUser(userId));
+    }
+
+    @GetMapping("/roles/{roleId}/users")
+    public ResponseEntity<List<UserDTO>> getUsersByRole(@PathVariable String roleId) {
+        List<UserDTO> users = userRoleService.getUsersByRoleId(roleId);
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/search")
