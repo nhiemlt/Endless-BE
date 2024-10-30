@@ -28,9 +28,6 @@ public class Attributevalue {
     @Column(name = "Value", nullable = false)
     private String value;
 
-//    @Size(max = 255)
-//    @Column(name = "EN_value")
-//    private String enValue;
 
 
 }
