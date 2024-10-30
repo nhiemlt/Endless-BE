@@ -1,12 +1,17 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.dtos.ErrorResponse;
 import com.datn.endless.dtos.PromotionDTO;
 import com.datn.endless.models.PromotionModel;
 import com.datn.endless.services.PromotionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,49 +28,78 @@ public class PromotionController {
 
     // Tạo mới một promotion
     @PostMapping
-    public ResponseEntity<PromotionDTO> createPromotion(
-            @RequestParam String name,
-            @RequestParam String enName,
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate,
-            @RequestParam(required = false) MultipartFile poster,
-            @RequestParam String enDescription) {
+    public ResponseEntity<?> createPromotion(@Valid @RequestBody PromotionDTO promotionDTO, BindingResult result) {
+        // Kiểm tra lỗi hợp lệ
+        if (result.hasErrors()) {
+            // Lấy thông báo lỗi đầu tiên (hoặc bạn có thể xử lý để lấy thông báo lỗi khác nếu cần)
+            String errorMessage = result.getFieldError() != null ? result.getFieldError().getDefaultMessage() : "Đầu vào không hợp lệ";
 
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Đầu vào không hợp lệ", errorMessage));
+        }
+
+        // Chuyển đổi PromotionDTO thành PromotionModel
         PromotionModel promotionModel = new PromotionModel();
-        promotionModel.setName(name);
-        promotionModel.setStartDate(startDate);
-        promotionModel.setEndDate(endDate);
-        promotionModel.setPoster(poster);
+        promotionModel.setName(promotionDTO.getName());
+        promotionModel.setStartDate(promotionDTO.getStartDate());
+        promotionModel.setEndDate(promotionDTO.getEndDate());
+        promotionModel.setPoster(promotionDTO.getPoster());
 
-        PromotionDTO createdPromotion = promotionService.createPromotion(promotionModel);
-        return ResponseEntity.ok(createdPromotion);
+        try {
+            // Tạo mới promotion thông qua dịch vụ
+            PromotionDTO createdPromotion = promotionService.createPromotion(promotionModel);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdPromotion);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("Lỗi", e.getMessage())); // Cung cấp tên lỗi
+        }
     }
 
-    // Cập nhật promotion theo ID
+
     @PutMapping("/{id}")
-    public ResponseEntity<PromotionDTO> updatePromotion(
+    public ResponseEntity<?> updatePromotion(
             @PathVariable String id,
-            @RequestParam String name,
-            @RequestParam String enName,
-            @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate,
-            @RequestParam(required = false) MultipartFile poster,
-            @RequestParam String enDescription) {
+            @Valid @RequestBody PromotionDTO promotionDTO,
+            BindingResult result) {
 
+        // Kiểm tra lỗi hợp lệ
+        if (result.hasErrors()) {
+            // Lấy thông báo lỗi đầu tiên (hoặc bạn có thể xử lý để lấy thông báo lỗi khác nếu cần)
+            String errorMessage = result.getFieldError() != null ? result.getFieldError().getDefaultMessage() : "Đầu vào không hợp lệ";
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Đầu vào không hợp lệ", errorMessage));
+        }
+
+        // Chuyển đổi PromotionDTO thành PromotionModel
         PromotionModel promotionModel = new PromotionModel();
-        promotionModel.setName(name);
-        promotionModel.setStartDate(startDate);
-        promotionModel.setEndDate(endDate);
-        promotionModel.setPoster(poster);
+        promotionModel.setName(promotionDTO.getName());
+        promotionModel.setStartDate(promotionDTO.getStartDate());
+        promotionModel.setEndDate(promotionDTO.getEndDate());
+        promotionModel.setPoster(promotionDTO.getPoster());
 
-        PromotionDTO updatedPromotion = promotionService.updatePromotion(id, promotionModel);
-        return ResponseEntity.ok(updatedPromotion);
+        try {
+            // Cập nhật promotion thông qua dịch vụ
+            PromotionDTO updatedPromotion = promotionService.updatePromotion(id, promotionModel);
+            return ResponseEntity.ok(updatedPromotion);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponse("Lỗi", e.getMessage())); // Cung cấp tên lỗi
+        }
     }
 
-    // Lấy tất cả các promotion
+    // Lấy tất cả các promotion hoặc lọc theo tiêu chí
     @GetMapping
-    public ResponseEntity<List<PromotionDTO>> getAllPromotions() {
-        List<PromotionDTO> promotions = promotionService.getAllPromotions();
+    public ResponseEntity<Page<PromotionDTO>> getAllPromotions(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size); // Tạo pageable
+        Page<PromotionDTO> promotions = promotionService.findPromotionsByCriteria(name, startDate, endDate, pageable);
+
         return ResponseEntity.ok(promotions);
     }
 
@@ -76,22 +110,20 @@ public class PromotionController {
         return promotion.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+
     // Xóa promotion theo ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePromotion(@PathVariable String id) {
-        promotionService.deletePromotion(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deletePromotion(@PathVariable String id) {
+        try {
+            promotionService.deletePromotion(id);
+            return ResponseEntity.ok(new ErrorResponse("Xóa promotion thành công", "Promotion với ID " + id + " đã được xóa.")); // Trả về thông báo thành công
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ErrorResponse("Không tìm thấy promotion", e.getMessage())); // Cung cấp thông báo lỗi rõ ràng
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("Có lỗi xảy ra", e.getMessage())); // Xử lý các lỗi khác
+        }
     }
 
-    // Lọc promotion theo tiêu chí
-    @GetMapping("/search")
-    public ResponseEntity<Page<PromotionDTO>> searchPromotions(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate,
-            Pageable pageable) {
-
-        Page<PromotionDTO> promotions = promotionService.findPromotionsByCriteria(name, startDate, endDate, pageable);
-        return ResponseEntity.ok(promotions);
-    }
 }

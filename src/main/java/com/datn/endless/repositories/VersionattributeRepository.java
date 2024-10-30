@@ -10,11 +10,18 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface VersionattributeRepository extends JpaRepository<Versionattribute, String> {
     @Transactional
     @Modifying
     @Query("DELETE FROM Versionattribute va WHERE va.productVersionID.productVersionID = :productVersionID")
     void deleteByProductVersionID(@Param("productVersionID") String productVersionID);
+
+//    List<Versionattribute> findByProductVersionID(String productVersionID);
+
+    // Nếu cần so sánh với ID, chắc chắn ID là kiểu String
+    public abstract List<Versionattribute> findByProductVersionID(Productversion productVersion);
 
 
 
