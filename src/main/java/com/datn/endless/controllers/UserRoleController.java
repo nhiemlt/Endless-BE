@@ -41,8 +41,8 @@ public class UserRoleController {
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{roleId}")
-    public ResponseEntity<Void> deleteUserRole(@PathVariable("userId") String userId, @PathVariable("roleId") String roleId) {
+    @DeleteMapping("/{roleId}/users/{userId}")
+    public ResponseEntity<Void> deleteUserRole(@PathVariable("roleId") String roleId, @PathVariable("userId") String userId) {
         try {
             userRoleService.deleteUserRole(userId, roleId);
             return ResponseEntity.noContent().build();

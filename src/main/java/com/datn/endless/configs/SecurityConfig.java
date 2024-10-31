@@ -148,8 +148,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/promotion-products/{id}").hasAuthority("delete_promotion_product")
 
                         .requestMatchers(HttpMethod.POST, "/api/roles/manage").hasAuthority("add_new_user_role")
-                        .requestMatchers(HttpMethod.GET, "/api/roles/manage/users/{userId}/roles").hasAuthority("view_user_role")
-                        .requestMatchers(HttpMethod.GET, "/api/roles/manage/roles/{roleId}/users").hasAuthority("view_role_user")
+                        .requestMatchers(HttpMethod.GET, "/api/roles/manage/users/{id}/roles").hasAuthority("view_all_roles")
+                        .requestMatchers(HttpMethod.GET, "/api/roles/manage/roles/{id}/users").hasAuthority("view_all_roles")
                         .requestMatchers(HttpMethod.PUT, "/api/roles/manage/{id}").hasAuthority("update_user_role")
                         .requestMatchers(HttpMethod.DELETE, "/api/roles/manage/{id}").hasAuthority("delete_user_role")
 
