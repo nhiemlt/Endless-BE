@@ -10,17 +10,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, String> {
-    boolean existsByName(String name);
-    boolean existsByNameAndPromotionIDNot(String name, String promotionID);
-    List<Promotion> findByNameContainingIgnoreCase(String name);
-    Page<Promotion> findByNameContaining(String name, Pageable pageable);
 
 
-    @Query("SELECT p FROM Promotion p WHERE (p.startDate BETWEEN :startDate AND :endDate) OR (p.endDate BETWEEN :startDate AND :endDate)")
-    List<Promotion> findByDateRange(LocalDate startDate, LocalDate endDate);
 
     @Query("SELECT p FROM Promotion p WHERE "
             + "(:name IS NULL OR p.name LIKE %:name%) AND "
@@ -31,4 +26,7 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             Pageable pageable);
+
+    // Tìm khuyến mãi theo tên
+    Optional<Promotion> findByName(String name);
 }

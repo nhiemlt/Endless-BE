@@ -33,6 +33,9 @@ public class AuthService {
     @Autowired
     private MailService mailService;
 
+    @Autowired
+    UserLoginInfomation userLoginInfomation;
+
     private JWT jwt;
 
     public ResponseEntity<Map<String, Object>> login(LoginModel loginRequest) {
@@ -468,26 +471,38 @@ public class AuthService {
         return ResponseEntity.ok(response);
     }
 
+
     public ResponseEntity<Map<String, Object>> changePassword(Map<String, String> passwordMap) {
         Map<String, Object> response = new HashMap<>();
 
-        String username = passwordMap.get("username");
         String oldPassword = passwordMap.get("oldPassword");
         String newPassword = passwordMap.get("newPassword");
 
+        // Lấy username từ thông tin người dùng đã đăng nhập
+        String username = userLoginInfomation.getCurrentUsername();
+
+        // Kiểm tra xem người dùng có tồn tại không
         Optional<User> userOpt = Optional.ofNullable(userRepository.findByUsername(username));
         if (userOpt.isEmpty()) {
             response.put("error", "User not found.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
+        
         User user = userOpt.get();
 
+        // Kiểm tra xem người dùng có mật khẩu không
+        if (user.getPassword() == null) {
+            response.put("error", "User does not have a password set. Password cannot be changed.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Kiểm tra mật khẩu cũ
         if (!Encode.checkCode(oldPassword, user.getPassword())) {
             response.put("error", "Old password is incorrect.");
             return ResponseEntity.badRequest().body(response);
         }
 
+        // Cập nhật mật khẩu mới
         user.setPassword(Encode.hashCode(newPassword));
         userRepository.save(user);
 
@@ -495,5 +510,6 @@ public class AuthService {
         response.put("message", "Password changed successfully.");
         return ResponseEntity.ok(response);
     }
+
 
 }
