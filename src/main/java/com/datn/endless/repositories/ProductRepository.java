@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,5 +22,15 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
     // Thêm phương thức tìm kiếm theo CategoryID hoặc BrandID
     Page<Product> findByCategoryIDOrBrandID(String categoryId, String brandId, Pageable pageable);
+
+    // Tìm danh sách sản phẩm theo tên
+    @Query("SELECT p FROM Product p WHERE p.name LIKE %:name%")
+    List<Product> findByNameContaining(@Param("name") String name);
+
+    @Query("SELECT p FROM Product p WHERE p.categoryID.name LIKE %:name%")
+    List<Product> findByCategoryNameContaining(@Param("name") String name);
+
+    @Query("SELECT p FROM Product p WHERE p.brandID.name LIKE %:name%")
+    List<Product> findByBrandNameContaining(@Param("name") String name);
 }
 
