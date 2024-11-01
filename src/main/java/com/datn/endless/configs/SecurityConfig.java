@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/register").permitAll()  // Sử dụng quyền register
                         .requestMatchers("/verify").permitAll()  // Sử dụng quyền verify
                         .requestMatchers("/verify-auth-token").permitAll()  // Sử dụng quyền verify
+                        .requestMatchers("/verify-reset-email").permitAll()  // Sử dụng quyền verify
                         .requestMatchers("/login/google").permitAll()  // Sử dụng quyền login/google
                         .requestMatchers("/forgot-password").permitAll()  // Sử dụng quyền forgot-password
                         .requestMatchers("/reset-password").permitAll()  // Sử dụng quyền reset-password
@@ -146,10 +147,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/promotion-products/{id}").hasAuthority("update_promotion_product")
                         .requestMatchers(HttpMethod.DELETE, "/api/promotion-products/{id}").hasAuthority("delete_promotion_product")
 
-                        .requestMatchers(HttpMethod.POST, "/user-roles").hasAuthority("add_new_user_role")
-                        .requestMatchers(HttpMethod.GET, "/user-roles/{id}").hasAuthority("view_user_role")
-                        .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
-                        .requestMatchers(HttpMethod.DELETE, "/user-roles/{id}").hasAuthority("delete_user_role")
+                        .requestMatchers(HttpMethod.POST, "/api/roles/manage").hasAuthority("add_new_user_role")
+                        .requestMatchers(HttpMethod.GET, "/api/roles/manage/users/{userId}/roles").hasAuthority("view_user_role")
+                        .requestMatchers(HttpMethod.GET, "/api/roles/manage/roles/{roleId}/users").hasAuthority("view_role_user")
+                        .requestMatchers(HttpMethod.PUT, "/api/roles/manage/{id}").hasAuthority("update_user_role")
+                        .requestMatchers(HttpMethod.DELETE, "/api/roles/manage/{id}").hasAuthority("delete_user_role")
 
                         .requestMatchers(HttpMethod.POST, "/api/ratings").hasAuthority("view_reviews")
                         .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")

@@ -64,6 +64,19 @@ public class MailService {
         sendHtmlMail(to, subject, htmlBody);
     }
 
+    public void sendVerificationUpdateMail(String username, String to, String verificationLink) throws MessagingException {
+        String subject = "Xác Minh thay đổi email";
+        String htmlBody = "<p>Chào " + username + ",</p>"
+                + "<p>Cảm ơn bạn đã sử dụng dịch vụ của Endless.</p>"
+                + "<p>Vui lòng nhấp vào liên kết dưới đây để xác minh địa chỉ email của bạn:</p>"
+                + "<p><a href=\"" + verificationLink + "\">Xác nhận thay đổi email của bạn</a></p>"
+                + "<p>Nếu bạn không yêu cầu đổi email, vui lòng bỏ qua email.</p>"
+                + "<p>Cảm ơn bạn đã chú ý.</p>"
+                + "<p>Trân trọng,<br> Endless</p>";
+
+        sendHtmlMail(to, subject, htmlBody);
+    }
+
     public void sendVerificationMail(String username, String to, String verificationLink) throws MessagingException {
         String subject = "Xác Minh Email Tài Khoản Endless";
         String htmlBody = "<p>Chào " + username + ",</p>"

@@ -9,6 +9,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -24,7 +25,7 @@ public class Entry {
 
     @NotNull
     @Column(name = "EntryDate", nullable = false)
-    private LocalDate entryDate;
+    private LocalDateTime entryDate;
 
     @NotNull
     @Column(name = "TotalMoney", nullable = false, precision = 18, scale = 2)

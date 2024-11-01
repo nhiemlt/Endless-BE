@@ -33,6 +33,9 @@ public class AuthService {
     @Autowired
     private MailService mailService;
 
+    @Autowired
+    UserLoginInfomation userLoginInfomation;
+
     private JWT jwt;
 
     public ResponseEntity<Map<String, Object>> login(LoginModel loginRequest) {
@@ -145,6 +148,76 @@ public class AuthService {
         }
     }
 
+    public ResponseEntity<Map<String, Object>> updateEmail(String username, String email) {
+        Map<String, Object> response = new HashMap<>();
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            response.put("error", "Không tìm thấy user");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        if (userRepository.findByEmail(email) != null) {
+            response.put("error", "Email đã được sử dụng, vui lòng nhập email khác.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            String secret = new Constant().getAUTH_KEY();
+            SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+            long expirationTimeMillis = 24 * 60 * 60 * 1000L;
+            JWT jwt = new JWT(secretKey, expirationTimeMillis);
+
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("email", email);
+
+            String verificationToken = jwt.generateToken(username, claims);
+            String verificationLink = "http://localhost:8080/verify-reset-email?token=" + verificationToken;
+
+            mailService.sendVerificationUpdateMail(username, user.getEmail(), verificationLink);
+
+            response.put("success", true);
+            response.put("message", "Vui lòng kiểm tra email để hoàn tất cập nhật email");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", "Internal server error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    public ResponseEntity<String> verifyResetEmail(String token) {
+        String title = "Xác minh thất bại!";
+        String message = "Có lỗi xảy ra.";
+        String content = "Vui lòng thử lại sau vài phút.";
+
+        try {
+            String secret = new Constant().getAUTH_KEY();
+            SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
+            JWT jwt = new JWT(secretKey, 24 * 60 * 60 * 1000L);
+
+            if (!jwt.isTokenValid(token)) {
+                return ResponseEntity.badRequest().body(generateHtml(title, "Token không chính xác hoặc đã hết hạn", content));
+            }
+
+            Claims claims = jwt.getClaims(token);
+            String username = (String) claims.getSubject();
+            String email = (String) claims.get("email");
+
+            User user = userRepository.findByUsername(username);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(generateHtml(title, "Không tìm thấy người dùng phù hợp", content));
+            }
+            user.setEmail(email);
+            userRepository.save(user);
+
+            title = "Xác minh thành công!";
+            message = "Cảm ơn bạn!";
+            content = "Email của bạn đã được cập nhật thành công.";
+            return ResponseEntity.ok(generateHtml(title, message, content));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(generateHtml("Lỗi hệ thống!", "Internal server error: " + e.getMessage(), content));
+        }
+    }
+
     public ResponseEntity<String> verifyEmail(String token) {
         String title = "Xác minh thất bại!";
         String message = "Có lỗi xảy ra.";
@@ -231,6 +304,11 @@ public class AuthService {
             if (userOpt.isEmpty()) {
                 response.put("error", "User not found.");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            else{
+                User user = userOpt.get();
+                String role = !user.getRoles().isEmpty() ? "admin" : "customer";
+                response.put("role", role);
             }
 
             response.put("success", true);
@@ -348,7 +426,6 @@ public class AuthService {
     }
 
 
-
     public ResponseEntity<Map<String, Object>> validateToken(String token) {
         Map<String, Object> response = new HashMap<>();
         String secret = new Constant().getAUTH_KEY();
@@ -394,26 +471,38 @@ public class AuthService {
         return ResponseEntity.ok(response);
     }
 
+
     public ResponseEntity<Map<String, Object>> changePassword(Map<String, String> passwordMap) {
         Map<String, Object> response = new HashMap<>();
 
-        String username = passwordMap.get("username");
         String oldPassword = passwordMap.get("oldPassword");
         String newPassword = passwordMap.get("newPassword");
 
+        // Lấy username từ thông tin người dùng đã đăng nhập
+        String username = userLoginInfomation.getCurrentUsername();
+
+        // Kiểm tra xem người dùng có tồn tại không
         Optional<User> userOpt = Optional.ofNullable(userRepository.findByUsername(username));
         if (userOpt.isEmpty()) {
             response.put("error", "User not found.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-
+        
         User user = userOpt.get();
 
+        // Kiểm tra xem người dùng có mật khẩu không
+        if (user.getPassword() == null) {
+            response.put("error", "User does not have a password set. Password cannot be changed.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Kiểm tra mật khẩu cũ
         if (!Encode.checkCode(oldPassword, user.getPassword())) {
             response.put("error", "Old password is incorrect.");
             return ResponseEntity.badRequest().body(response);
         }
 
+        // Cập nhật mật khẩu mới
         user.setPassword(Encode.hashCode(newPassword));
         userRepository.save(user);
 
@@ -421,5 +510,6 @@ public class AuthService {
         response.put("message", "Password changed successfully.");
         return ResponseEntity.ok(response);
     }
+
 
 }

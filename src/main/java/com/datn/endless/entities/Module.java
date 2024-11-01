@@ -30,12 +30,4 @@ public class Module {
     @Column(name = "description")
     private String description;
 
-    @Size(max = 255)
-    @Column(name = "EN_ModuleName")
-    private String enModulename;
-
-    @Size(max = 255)
-    @Column(name = "EN_description")
-    private String enDescription;
-
 }

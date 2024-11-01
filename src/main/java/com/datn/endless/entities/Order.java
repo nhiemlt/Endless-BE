@@ -9,6 +9,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public class Order {
 
     @NotNull
     @Column(name = "OrderDate", nullable = false)
-    private LocalDate orderDate;
+    private LocalDateTime orderDate;
 
     @NotNull
     @Column(name = "ShipFee", nullable = false, precision = 18, scale = 2)

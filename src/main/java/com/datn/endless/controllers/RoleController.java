@@ -1,6 +1,6 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.dtos.PermissionDTO;
+import com.datn.endless.dtos.ModuleWithPermissionsDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.dtos.UserDTO;
 import com.datn.endless.entities.Role;
@@ -17,8 +17,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/roles")
@@ -35,8 +36,8 @@ public class RoleController {
 
     // Phương thức GET để lấy toàn bộ permissions
     @GetMapping("/permissions")
-    public ResponseEntity<List<PermissionDTO>> getAllPermissions() {
-        List<PermissionDTO> permissions = permissionService.getAllPermissions();
+    public ResponseEntity<List<ModuleWithPermissionsDTO>> getAllPermissions() {
+        List<ModuleWithPermissionsDTO> permissions = permissionService.getAllPermissions();
         return ResponseEntity.ok(permissions);
     }
 
@@ -48,7 +49,14 @@ public class RoleController {
 
     @GetMapping
     public ResponseEntity<List<RoleDTO>> getAllRoles() {
-        return ResponseEntity.ok(roleService.getAllRoles());
+        List<RoleDTO> allRoles = roleService.getAllRoles();
+
+        // Lọc ra các role không mong muốn
+        List<RoleDTO> filteredRoles = allRoles.stream()
+                .filter(role -> !Set.of("Nhân viên", "SuperAdmin").contains(role.getRoleName()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(filteredRoles);
     }
 
     @GetMapping("/{roleId}")
