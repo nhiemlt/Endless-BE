@@ -85,7 +85,7 @@ public class CartService {
 
         Cart cart = cartRepository.findByUserIDAndProductVersionID(currentUser, productVersion)
                 .orElseThrow(() -> new CartItemNotFoundException("Mặt hàng trong giỏ không tìm thấy"));
-        if (cart.getQuantity() + cartModel.getQuantity() > prodQuantity) {
+        if (cartModel.getQuantity() > prodQuantity) {
             throw new QuantityException("Số lượng vượt quá sản phẩm tồn kho!");
         } else {
             cart.setQuantity(cartModel.getQuantity());
