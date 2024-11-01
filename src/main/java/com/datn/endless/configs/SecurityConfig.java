@@ -61,6 +61,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/ratings/id/{id}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/ratings/add").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/ratings/productVersion/{productVersionID}").permitAll()
+                        .requestMatchers("/api/roles/**").permitAll()
+                        .requestMatchers("/api/permission/**").permitAll()
 
                         // Các API yêu cầu đăng nhập
                         .requestMatchers("/logout").authenticated()  // Sử dụng quyền logout
@@ -83,9 +85,10 @@ public class SecurityConfig {
                         // Các API yêu cầu quyền (dựa theo permission code)
                         .requestMatchers(HttpMethod.POST, "/notifications/send").hasAuthority("send_notifications")
                         .requestMatchers(HttpMethod.POST, "/notifications/send-all").hasAuthority("send_notifications")
-                        .requestMatchers(HttpMethod.POST, "/notifications/markAsRead").hasAuthority("notifications/markAsRead")
-                        .requestMatchers(HttpMethod.POST, "/notifications/markAllAsRead").hasAuthority("notifications/markAllAsRead")
+                        .requestMatchers(HttpMethod.POST, "/notifications/markAsRead").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/notifications/markAllAsRead").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/notifications/delete").hasAuthority("notifications/delete")
+                        .requestMatchers(HttpMethod.DELETE, "/notifications/delete/{notificationRecipientID}").authenticated()
 
                         .requestMatchers("/api/vouchers").hasAuthority("manage_voucher")
                         .requestMatchers("/api/vouchers/**").hasAuthority("manage_voucher")
@@ -147,11 +150,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/promotion-products/{id}").hasAuthority("update_promotion_product")
                         .requestMatchers(HttpMethod.DELETE, "/api/promotion-products/{id}").hasAuthority("delete_promotion_product")
 
-                        .requestMatchers(HttpMethod.POST, "/api/roles/manage").hasAuthority("add_new_user_role")
-                        .requestMatchers(HttpMethod.GET, "/api/roles/manage/users/{id}/roles").hasAuthority("view_all_roles")
-                        .requestMatchers(HttpMethod.GET, "/api/roles/manage/roles/{id}/users").hasAuthority("view_all_roles")
-                        .requestMatchers(HttpMethod.PUT, "/api/roles/manage/{id}").hasAuthority("update_user_role")
-                        .requestMatchers(HttpMethod.DELETE, "/api/roles/manage/{id}").hasAuthority("delete_user_role")
+//                        .requestMatchers(HttpMethod.POST, "/api/roles").hasAuthority("add_new_user_role")
 
                         .requestMatchers(HttpMethod.POST, "/api/ratings").hasAuthority("view_reviews")
                         .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
