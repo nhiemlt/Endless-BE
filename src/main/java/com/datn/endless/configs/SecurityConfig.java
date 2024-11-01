@@ -71,7 +71,7 @@ public class SecurityConfig {
                         .requestMatchers("/notifications/user").authenticated()
                         .requestMatchers("/notifications/unread-count").authenticated()// Sử dụng quyền view_all_notifications
                         .requestMatchers("/favorites").authenticated()  // Sử dụng quyền view_favorites
-                        .requestMatchers("/carts").authenticated()  // Sử dụng quyền view_carts
+                        .requestMatchers("/carts/**").authenticated()  // Sử dụng quyền view_carts
                         .requestMatchers(HttpMethod.POST, "/orders/create").authenticated()  // Sử dụng quyền orders/create
                         .requestMatchers(HttpMethod.POST, "/ratings/add").authenticated()  // Sử dụng quyền ratings/add
                         .requestMatchers("/api/users/current").authenticated()  // Sử dụng quyền logout

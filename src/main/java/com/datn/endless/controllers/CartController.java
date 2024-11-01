@@ -2,6 +2,7 @@ package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.CartDTO;
 import com.datn.endless.dtos.ErrorResponse;
+import com.datn.endless.exceptions.QuantityException;
 import com.datn.endless.models.CartModel;
 import com.datn.endless.services.CartService;
 import com.datn.endless.exceptions.CartItemNotFoundException;
@@ -23,7 +24,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/carts")
-@CrossOrigin(origins = "*")
 public class CartController {
 
     @Autowired
@@ -59,6 +59,9 @@ public class CartController {
         } catch (ProductVersionNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorResponse("Phiên bản sản phẩm không tìm thấy", e.getMessage()));
+        } catch (QuantityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Số lượng vượt quá sản phẩm tồn kho", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("Đã xảy ra lỗi không mong muốn", e.getMessage()));
@@ -83,11 +86,15 @@ public class CartController {
         } catch (CartItemNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ErrorResponse("Sản phẩm trong giỏ hàng không tìm thấy", e.getMessage()));
+        } catch (QuantityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse("Số lượng vượt quá sản phẩm tồn kho", e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("Đã xảy ra lỗi không mong muốn", e.getMessage()));
         }
     }
+
 
     // Phương thức xử lý ngoại lệ để trả về thông báo lỗi xác thực
     @ExceptionHandler(MethodArgumentNotValidException.class)
