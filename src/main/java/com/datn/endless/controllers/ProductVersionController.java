@@ -51,72 +51,29 @@ public class ProductVersionController {
             return ResponseEntity.ok(productVersions);
         }
     }
-    // Tạo mới ProductVersion
+
     @PostMapping
     public ResponseEntity<ProductVersionDTO> createProductVersion(
-            @RequestParam String productID,
-            @RequestParam String versionName,
-            @RequestParam double price,
-            @RequestParam double purchasePrice,
-            @RequestParam double weight,
-            @RequestParam double height,
-            @RequestParam double length,
-            @RequestParam double width,
-            @RequestParam String image,
-            @RequestParam List<String> attributeValueID) { // Thêm attributeValueID
-
-        ProductVersionModel model = new ProductVersionModel();
-        model.setProductID(productID);
-        model.setVersionName(versionName);
-        model.setPrice(BigDecimal.valueOf(price));
-        model.setPurchasePrice(BigDecimal.valueOf(purchasePrice));
-        model.setWeight(BigDecimal.valueOf(weight));
-        model.setHeight(BigDecimal.valueOf(height));
-        model.setLength(BigDecimal.valueOf(length));
-        model.setWidth(BigDecimal.valueOf(width));
-        model.setImage(image);
-        model.setAttributeValueID(attributeValueID);
+            @Valid @RequestBody ProductVersionModel model) {
 
         ProductVersionDTO createdProductVersion = productVersionService.createProductVersion(model);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdProductVersion);
     }
 
-    // Cập nhật ProductVersion
     @PutMapping("/{id}")
     public ResponseEntity<ProductVersionDTO> updateProductVersion(
             @PathVariable("id") String productVersionID,
-            @RequestParam String productID,
-            @RequestParam String versionName,
-            @RequestParam double price,
-            @RequestParam double purchasePrice,
-            @RequestParam double weight,
-            @RequestParam double height,
-            @RequestParam double length,
-            @RequestParam double width,
-            @RequestParam String image,
-            @RequestParam List<String> attributeValueID) {
-
-        ProductVersionModel model = new ProductVersionModel();
-        model.setProductID(productID);
-        model.setVersionName(versionName);
-        model.setPrice(BigDecimal.valueOf(price));
-        model.setPurchasePrice(BigDecimal.valueOf(purchasePrice));
-        model.setWeight(BigDecimal.valueOf(weight));
-        model.setHeight(BigDecimal.valueOf(height));
-        model.setLength(BigDecimal.valueOf(length));
-        model.setWidth(BigDecimal.valueOf(width));
-        model.setImage(image);
-        model.setAttributeValueID(attributeValueID);
+            @Valid @RequestBody ProductVersionModel model) {
 
         ProductVersionDTO updatedProductVersion = productVersionService.updateProductVersion(productVersionID, model);
         return ResponseEntity.ok(updatedProductVersion);
     }
-
-    // Xóa ProductVersion theo ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProductVersion(@PathVariable("id") String productVersionID) {
+    public ResponseEntity<String> deleteProductVersion(@PathVariable("id") String productVersionID) {
         productVersionService.deleteProductVersion(productVersionID);
-        return ResponseEntity.noContent().build();
+        // Thông báo khi xóa thành công
+        return ResponseEntity.ok("Xóa phiên bản sản phẩm thành công.");
     }
+
 }
 
