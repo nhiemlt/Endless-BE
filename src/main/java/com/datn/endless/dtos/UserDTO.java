@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserDTO {
@@ -18,6 +17,6 @@ public class UserDTO {
     private String phone;
     private String email;
     private String avatar;
-    private List<RoleDTO> roles;
+    private String role;
     private List<UseraddressDTO> addresses;
 }

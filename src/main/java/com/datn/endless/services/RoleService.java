@@ -1,14 +1,18 @@
 package com.datn.endless.services;
 
+import com.datn.endless.dtos.ModuleDTO;
 import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.entities.Permission;
 import com.datn.endless.entities.Role;
+import com.datn.endless.exceptions.RemoveRoleException;
+import com.datn.endless.exceptions.RoleNotFoundException;
 import com.datn.endless.models.RoleModel;
 import com.datn.endless.repositories.PermissionRepository;
 import com.datn.endless.repositories.RoleRepository;
-import com.datn.endless.repositories.UserroleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,120 +25,79 @@ public class RoleService {
     private RoleRepository roleRepository;
 
     @Autowired
-    private UserroleRepository userroleRepository;
-
-    @Autowired
     private PermissionRepository permissionRepository;
 
-    private static final Set<String> PROTECTED_ROLES = Set.of("Nhân viên", "SuperAdmin");
-
-    public List<RoleDTO> getAllRoles() {
-        List<Role> roles = roleRepository.findAll();
-        List<RoleDTO> dtos = new ArrayList<>();
-        for (Role role : roles) {
-            dtos.add(toDto(role));
+    // Lấy tất cả roles với phân trang, tìm kiếm theo keyword và sắp xếp
+    public Page<RoleDTO> getAllRoles(String keyword, Pageable pageable) {
+        if (keyword != null && !keyword.isEmpty()) {
+            return roleRepository.findByRoleNameContainingIgnoreCase(keyword, pageable).map(this::toDTO);
         }
-        return dtos;
+        return roleRepository.findAll(pageable).map(this::toDTO);
     }
 
-    public int countUsersInRole(String roleId) {
-        return userroleRepository.countUsersByRole(roleId);
+    // Lấy role theo ID và danh sách permissions
+    public Optional<RoleDTO> getRoleById(String id) {
+        return roleRepository.findById(id).map(this::toDTO);
     }
 
-
-    public RoleDTO getRoleById(String roleId) {
-        return toDto(roleRepository.findById(roleId).orElse(null));
-    }
-
-    public Role createRole(RoleModel roleModel) {
-        if (PROTECTED_ROLES.contains(roleModel.getRoleName())) {
-            throw new IllegalArgumentException("Cannot create protected role: " + roleModel.getRoleName());
-        }
-
+    // Tạo mới role và thêm permissions
+    public RoleDTO createRole(RoleModel roleModel) {
         Role role = new Role();
-        // Generate UUID if roleId is null
-        if (roleModel.getRoleId() == null) {
-            role.setRoleId(UUID.randomUUID().toString());
-        } else {
-            role.setRoleId(roleModel.getRoleId());
-        }
-
+        role.setRoleId(UUID.randomUUID().toString());
         role.setRoleName(roleModel.getRoleName());
-        Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(roleModel.getPermissionIds()));
+
+        Set<Permission> permissions = fetchPermissionsByIds(roleModel.getPermissionIds());
         role.setPermissions(permissions);
 
-        return roleRepository.save(role);
+        role = roleRepository.save(role);
+        return toDTO(role);
     }
 
-    public Role updateRole(RoleModel roleModel) {
-        Optional<Role> existingRoleOpt = roleRepository.findById(roleModel.getRoleId());
-        if (existingRoleOpt.isPresent()) {
-            Role existingRole = existingRoleOpt.get();
+    // Cập nhật role và cập nhật lại danh sách permissions
+    public Optional<RoleDTO> updateRole(String id, RoleModel roleModel) {
+        Optional<Role> roleOpt = roleRepository.findById(id);
+        if (roleOpt.isPresent()) {
+            Role role = roleOpt.get();
+            role.setRoleName(roleModel.getRoleName());
 
-            // Kiểm tra xem có phải role bảo vệ không
-            if (PROTECTED_ROLES.contains(existingRole.getRoleName())) {
-                throw new IllegalArgumentException("Cannot update protected role: " + existingRole.getRoleName());
-            }
+            role.getPermissions().clear();  // Xóa tất cả các permissions hiện có
+            role.getPermissions().addAll(fetchPermissionsByIds(roleModel.getPermissionIds()));  // Gán lại permissions mới
 
-            existingRole.setRoleName(roleModel.getRoleName());
-            Set<Permission> permissions = new HashSet<>(permissionRepository.findAllById(roleModel.getPermissionIds()));
-            existingRole.setPermissions(permissions);
-
-            return roleRepository.save(existingRole);
+            role = roleRepository.save(role);
+            return Optional.of(toDTO(role));
         }
-        return null;
+        return Optional.empty();
     }
 
-    public void deleteRole(String roleId) {
-        Optional<Role> existingRoleOpt = roleRepository.findById(roleId);
-        if (existingRoleOpt.isPresent()) {
-            Role existingRole = existingRoleOpt.get();
-            if (PROTECTED_ROLES.contains(existingRole.getRoleName())) {
-                throw new IllegalArgumentException("Cannot delete protected role: " + existingRole.getRoleName());
-            }
-            roleRepository.deleteById(roleId);
+    // Xóa role và các permissions liên quan
+    public void deleteRole(String id) {
+        Role role = roleRepository.findById(id)
+                .orElseThrow(() -> new RoleNotFoundException("Role không tồn tại với id: " + id));
+
+        if (role.getRoleName().equals("Nhân viên") || role.getRoleName().equals("SuperAdmin")) {
+            throw new RemoveRoleException("Không thể xóa nhân viên này");
         }
-    }
 
-    // Chuyển đổi từ Role entity sang RoleDTO
-    public RoleDTO toDto(Role role) {
-        RoleDTO dto = new RoleDTO();
-        dto.setRoleId(role.getRoleId().toString());
-        dto.setRoleName(role.getRoleName());
-
-        // Chuyển đổi permissions
-        List<PermissionDTO> permissionDTOS = new ArrayList<>();
-        for (Permission permission : role.getPermissions()) {
-            PermissionDTO permissionDTO = new PermissionDTO();
-            permissionDTO.setPermissionId(permission.getPermissionID());
-            permissionDTO.setPermissionName(permission.getPermissionName());
-            permissionDTOS.add(permissionDTO);
-        }
-        dto.setPermissions(permissionDTOS); // Đặt danh sách quyền vào DTO
-
-        return dto;
+        roleRepository.deleteById(id);
     }
 
 
-    // Chuyển đổi từ RoleDTO sang Role entity
-    public Role toEntity(RoleDTO dto) {
-        Role role = new Role();
-        role.setRoleId(dto.getRoleId());  // Chuyển đổi String sang UUID
-        role.setRoleName(dto.getRoleName());
-        Set<Permission> permissions = null;
-        for(PermissionDTO permissionDTO : dto.getPermissions()) {
-            Permission permission = new Permission();
-            permissionRepository.findById(permissionDTO.getPermissionId()).orElse(null);
-            permission.setPermissionName(permissionDTO.getPermissionName());
-            permissions.add(permission);
-        }
-        role.setPermissions(permissions);
-        return role;
+    // Chuyển Role sang DTO
+    private RoleDTO toDTO(Role role) {
+        Set<PermissionDTO> permissionDTOs = role.getPermissions().stream()
+                .map(permission -> new PermissionDTO(
+                        permission.getPermissionID(),
+                        permission.getModuleID().getModuleName(),
+                        permission.getCode(),
+                        permission.getPermissionName()))
+                .collect(Collectors.toSet());
+
+        return new RoleDTO(role.getRoleId(), role.getRoleName(), permissionDTOs);
     }
 
-    public RoleDTO getRoleWithPermissions(String roleId) {
-        Role role = roleRepository.findById(roleId).orElse(null);
-        return role != null ? toDto(role) : null;
+    // Lấy danh sách permissions theo ID
+    private Set<Permission> fetchPermissionsByIds(List<String> permissionIds) {
+        return new HashSet<>(permissionRepository.findAllById(permissionIds));
     }
 
 }

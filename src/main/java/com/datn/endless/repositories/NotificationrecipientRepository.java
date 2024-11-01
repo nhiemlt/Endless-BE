@@ -24,7 +24,7 @@ public interface NotificationrecipientRepository extends JpaRepository<Notificat
 
     void deleteByNotificationID(Notification notification);
 
-    @Query("SELECT COUNT(nr) FROM Notificationrecipient nr WHERE nr.userID.username = :userId AND nr.status = 'UNREAD'")
+    @Query("SELECT COUNT(nr) FROM Notificationrecipient nr WHERE nr.userID.username = :userId AND nr.status = 'Chưa đọc'")
     Long countUnreadNotifications(@Param("userId") String username);
 
     @Transactional

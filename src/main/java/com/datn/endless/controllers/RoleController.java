@@ -1,25 +1,22 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.dtos.ModuleWithPermissionsDTO;
+
 import com.datn.endless.dtos.RoleDTO;
-import com.datn.endless.dtos.UserDTO;
-import com.datn.endless.entities.Role;
+import com.datn.endless.exceptions.RemoveRoleException;
+import com.datn.endless.exceptions.RoleNotFoundException;
 import com.datn.endless.models.RoleModel;
-import com.datn.endless.services.PermissionService;
 import com.datn.endless.services.RoleService;
-import com.datn.endless.services.UserRoleService;
-import com.datn.endless.utils.ErrorResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/roles")
@@ -28,103 +25,53 @@ public class RoleController {
     @Autowired
     private RoleService roleService;
 
-    @Autowired
-    UserRoleService userRoleService;
-
-    @Autowired
-    private PermissionService permissionService;
-
-    // Phương thức GET để lấy toàn bộ permissions
-    @GetMapping("/permissions")
-    public ResponseEntity<List<ModuleWithPermissionsDTO>> getAllPermissions() {
-        List<ModuleWithPermissionsDTO> permissions = permissionService.getAllPermissions();
-        return ResponseEntity.ok(permissions);
-    }
-
-    @GetMapping("/{roleId}/count")
-    public ResponseEntity<Integer> getUserCountByRole(@PathVariable("roleId") String roleId) {
-        int userCount = roleService.countUsersInRole(roleId);
-        return ResponseEntity.ok(userCount);
-    }
-
+    // Lấy tất cả roles với phân trang, lọc, tìm kiếm theo keyword, và sắp xếp
     @GetMapping
-    public ResponseEntity<List<RoleDTO>> getAllRoles() {
-        List<RoleDTO> allRoles = roleService.getAllRoles();
+    public ResponseEntity<Page<RoleDTO>> getAllRoles(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "sortBy", defaultValue = "roleName") String sortBy,
+            @RequestParam(value = "direction", defaultValue = "asc") String direction) {
 
-        // Lọc ra các role không mong muốn
-        List<RoleDTO> filteredRoles = allRoles.stream()
-                .filter(role -> !Set.of("Nhân viên", "SuperAdmin").contains(role.getRoleName()))
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(filteredRoles);
+        Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<RoleDTO> roles = roleService.getAllRoles(keyword, pageable);
+        return ResponseEntity.ok(roles);
     }
 
-    @GetMapping("/{roleId}")
-    public ResponseEntity<?> getRoleById(@PathVariable("roleId") String roleId) {
-        try {
-            RoleDTO dto = roleService.getRoleById(roleId);
-            return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
-        }
+    // Lấy role theo ID và kèm danh sách permissions
+    @GetMapping("/{id}")
+    public ResponseEntity<RoleDTO> getRoleById(@PathVariable String id) {
+        Optional<RoleDTO> role = roleService.getRoleById(id);
+        return role.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // Tạo mới role và gán permissions cho role
     @PostMapping
-    public ResponseEntity<RoleDTO> createRole(@Validated(RoleModel.OnCreate.class) @RequestBody RoleModel roleModel) {
-        Role createdRole = roleService.createRole(roleModel);
-        return ResponseEntity.status(HttpStatus.CREATED).body(roleService.toDto(createdRole));
+    public ResponseEntity<RoleDTO> createRole(@Valid @RequestBody RoleModel roleModel) {
+        RoleDTO createdRole = roleService.createRole(roleModel);
+        return ResponseEntity.ok(createdRole);
     }
 
-    @PutMapping
-    public ResponseEntity<RoleDTO> updateRole(@Validated(RoleModel.OnUpdate.class) @RequestBody RoleModel roleModel) {
-        Role updatedRole = roleService.updateRole(roleModel);
-        return ResponseEntity.ok(roleService.toDto(updatedRole));
+    // Cập nhật role và cập nhật lại danh sách permissions cho role
+    @PutMapping("/{id}")
+    public ResponseEntity<RoleDTO> updateRole(@PathVariable String id, @Valid @RequestBody RoleModel roleModel) {
+        Optional<RoleDTO> updatedRole = roleService.updateRole(id, roleModel);
+        return updatedRole.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{roleId}")
-    public ResponseEntity<?> deleteRole(@PathVariable("roleId") String roleId) {
+    // Xóa role và tất cả các permissions liên quan đến role
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRole(@PathVariable String id) {
         try {
-            roleService.deleteRole(roleId);
+            roleService.deleteRole(id);
             return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(List.of(e.getMessage())));
+        } catch (RoleNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (RemoveRoleException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 
-    @GetMapping("get-all-user-roles-permission")
-    public ResponseEntity<?> getAllUserRoles() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return ResponseEntity.noContent().build();
-        } else {
-            List<RoleDTO> roleDtos = userRoleService.getRolesByUsername(authentication.getName());
-            if (roleDtos.isEmpty()) {
-                return ResponseEntity.noContent().build();
-            } else {
-                return ResponseEntity.ok(roleDtos);
-            }
-        }
-    }
-
-    @GetMapping("/get-user-roles-permission/{userId}")
-    public ResponseEntity<?> getUserRolesById(@PathVariable("userId") String userId) {
-        List<RoleDTO> roleDtos = userRoleService.getRolesByUser(userId);
-        if (roleDtos.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.ok(roleDtos);
-        }
-    }
-
-    @GetMapping("/{roleId}/permissions")
-    public ResponseEntity<?> getRoleWithPermissions(@PathVariable("roleId") String roleId) {
-        RoleDTO roleDTO = roleService.getRoleWithPermissions(roleId);
-        return roleDTO != null ? ResponseEntity.ok(roleDTO) : ResponseEntity.notFound().build();
-    }
-
-    @GetMapping("/{roleId}/users")
-    public ResponseEntity<List<UserDTO>> getUsersByRoleId(@PathVariable String roleId) {
-        List<UserDTO> users = userRoleService.getUsersByRoleId(roleId);
-        return ResponseEntity.ok(users);
-    }
 }

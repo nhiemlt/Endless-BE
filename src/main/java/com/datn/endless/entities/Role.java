@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Getter
@@ -26,15 +27,9 @@ public class Role {
     private String roleName;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "PermissionRole",
-            joinColumns = @JoinColumn(name = "roleid"),
-            inverseJoinColumns = @JoinColumn(name = "PermissionID")
-    )
-    private Set<Permission> permissions;
-
-    public String getName() {
-        return roleName;
-    }
+    @JoinTable(name = "permissionrole",
+            joinColumns = @JoinColumn(name = "RoleID"),
+            inverseJoinColumns = @JoinColumn(name = "PermissionID"))
+    private Set<Permission> permissions = new LinkedHashSet<>();
 
 }

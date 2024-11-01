@@ -8,9 +8,6 @@ import java.util.List;
 
 @Data
 public class RoleModel {
-
-    @Null(groups = OnCreate.class, message = "Role ID must be null when creating a new role")
-    @NotNull(groups = OnUpdate.class, message = "Role ID cannot be null when updating a role")
     private String roleId;
 
     @NotEmpty(message = "Role name cannot be empty")
@@ -18,7 +15,4 @@ public class RoleModel {
 
     @NotEmpty(message = "Permissions cannot be empty")
     private List<String> permissionIds;
-
-    public interface OnCreate {}
-    public interface OnUpdate {}
 }
