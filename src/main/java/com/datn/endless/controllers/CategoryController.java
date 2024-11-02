@@ -82,14 +82,10 @@ public class CategoryController {
 
     // Xóa danh mục
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable String id) {
-        categoryService.deleteCategory(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> deleteCategory(@PathVariable String id) {
+            categoryService.deleteCategory(id);
+            return ResponseEntity.ok("Xóa danh mục thành công"); // Trả về thông báo thành công
     }
 
-    private List<String> createErrorResponse(BindingResult bindingResult) {
-        return bindingResult.getAllErrors().stream()
-                .map(error -> error.getDefaultMessage())
-                .toList();
-    }
+
 }

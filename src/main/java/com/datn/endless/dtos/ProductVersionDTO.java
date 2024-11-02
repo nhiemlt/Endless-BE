@@ -17,7 +17,7 @@ public class ProductVersionDTO {
     private BigDecimal length;
     private BigDecimal width;
 
-    private String status;
+//    private String status;
     private String image;
 
     private double discountPercentage;

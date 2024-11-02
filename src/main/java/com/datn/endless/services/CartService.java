@@ -1,6 +1,7 @@
 package com.datn.endless.services;
 
 import com.datn.endless.dtos.CartDTO;
+import com.datn.endless.exceptions.QuantityException;
 import com.datn.endless.models.CartModel;
 import com.datn.endless.entities.Cart;
 import com.datn.endless.entities.Productversion;
@@ -36,6 +37,9 @@ public class CartService {
     @Autowired
     private final UserLoginInfomation userLoginInformation;
 
+    @Autowired
+    private EntryService entryService;
+
     // Lấy danh sách giỏ hàng của người dùng hiện tại
     public List<CartDTO> getCarts() {
         User currentUser = getCurrentUser();
@@ -50,6 +54,8 @@ public class CartService {
         Productversion productVersion = productversionRepository.findById(cartModel.getProductVersionID())
                 .orElseThrow(() -> new ProductVersionNotFoundException("Phiên bản sản phẩm không tìm thấy"));
 
+        int prodQuantity = entryService.getProductVersionQuantity(cartModel.getProductVersionID());
+
         Cart cart = cartRepository.findByUserIDAndProductVersionID(currentUser, productVersion)
                 .orElse(new Cart());
 
@@ -60,8 +66,13 @@ public class CartService {
         } else { // Sản phẩm đã có trong giỏ, cập nhật số lượng
             cart.setQuantity(cart.getQuantity() + cartModel.getQuantity());
         }
+        if (cart.getQuantity() > prodQuantity) {
+            throw new QuantityException("Số lượng vượt quá sản phẩm tồn kho!");
+        }
+        else{
+            cartRepository.save(cart);
+        }
 
-        cartRepository.save(cart);
     }
 
     // Cập nhật số lượng sản phẩm trong giỏ hàng
@@ -70,12 +81,16 @@ public class CartService {
         User currentUser = getCurrentUser();
         Productversion productVersion = productversionRepository.findById(cartModel.getProductVersionID())
                 .orElseThrow(() -> new ProductVersionNotFoundException("Phiên bản sản phẩm không tìm thấy"));
+        int prodQuantity = entryService.getProductVersionQuantity(cartModel.getProductVersionID());
 
         Cart cart = cartRepository.findByUserIDAndProductVersionID(currentUser, productVersion)
                 .orElseThrow(() -> new CartItemNotFoundException("Mặt hàng trong giỏ không tìm thấy"));
-
-        cart.setQuantity(cartModel.getQuantity());
-        cartRepository.save(cart);
+        if (cartModel.getQuantity() > prodQuantity) {
+            throw new QuantityException("Số lượng vượt quá sản phẩm tồn kho!");
+        } else {
+            cart.setQuantity(cartModel.getQuantity());
+            cartRepository.save(cart);
+        }
     }
 
     // Xóa sản phẩm khỏi giỏ hàng

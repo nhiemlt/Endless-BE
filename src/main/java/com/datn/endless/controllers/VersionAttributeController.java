@@ -54,8 +54,9 @@ public class VersionAttributeController {
 
     // Xóa VersionAttribute theo ID
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteVersionAttribute(@PathVariable String id) {
+    public ResponseEntity<String> deleteVersionAttribute(@PathVariable String id) {
         versionAttributeService.deleteVersionAttribute(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok("Xóa VersionAttribute thành công");
     }
+
 }
