@@ -13,6 +13,10 @@ public interface UseraddressRepository extends JpaRepository<Useraddress, String
     // Tìm danh sách địa chỉ theo userID
     @Query("SELECT ua FROM Useraddress ua WHERE ua.userID = :user")
     List<Useraddress> findByUser(User user);
+
+    @Query("SELECT ua FROM Useraddress ua WHERE ua.userID.userID = :userId")
+    List<Useraddress> findAllByUserID(String userId);
+
     // Tìm địa chỉ theo userID và addressID
     Useraddress findByUserIDAndAddressID(User user, String addressID);
 
