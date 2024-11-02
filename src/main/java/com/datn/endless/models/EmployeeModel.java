@@ -15,7 +15,6 @@ import java.util.List;
 public class EmployeeModel {
     private String userID;
 
-    @NotEmpty(message = "Username cannot be empty")
     private String username;
 
     @NotEmpty(message = "Fullname cannot be empty")

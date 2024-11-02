@@ -95,7 +95,7 @@ public class BrandController {
     public ResponseEntity<?> deleteBrand(@PathVariable String id) {
         try {
             brandService.deleteBrand(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("Xóa brand thành công"); // Trả về thông báo thành công
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ErrorResponse(e.getMessage()));

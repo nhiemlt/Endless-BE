@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserroleRepository extends JpaRepository<Userrole, String> {
@@ -26,6 +27,10 @@ public interface UserroleRepository extends JpaRepository<Userrole, String> {
     int countUsersByRole(@Param("roleId") String roleId);
 
     List<Userrole> findByRole(Role role);
+
+    Optional<Userrole> findByUserRoleId(String userRoleId);
+
+    List<Userrole> findAllByUser_UserID(String userID);
 
 }
 
