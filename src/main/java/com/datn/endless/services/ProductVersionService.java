@@ -63,6 +63,21 @@ public class ProductVersionService {
         return pageResult.map(this::convertToDTO);
     }
 
+    public Page<ProductVersionDTO> getProductVersionsByKeyword(int page, int size, String sortBy, String direction, String keyword) {
+        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Tìm kiếm ProductVersion theo từ khóa
+        Page<Productversion> pageResult = (keyword != null && !keyword.isEmpty())
+                ? productVersionRepository.findByVersionNameContaining(keyword, pageable)
+                : productVersionRepository.findByStatusActive(pageable);
+
+        // Chuyển đổi các kết quả tìm kiếm thành DTOs
+        return pageResult.map(this::convertToDTO);
+    }
+
+
+
     // Lấy tất cả danh sách phiên bản sản phẩm theo người dùng.
     public Page<ProductVersionDTO> getActiveProductVersions(int page, int size, String sortBy, String direction) {
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
@@ -300,6 +315,17 @@ public class ProductVersionService {
         return convertToDTO(updatedVersion);
     }
 
+    // Cập nhật Status
+    public ProductVersionDTO updateProductVersionStatus(String productVersionID, String status) {
+        Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
+                .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
+
+        // Cập nhật trạng thái
+        existingProductVersion.setStatus(status); // Giả sử status là một thuộc tính trong Productversion
+        Productversion updatedVersion = productVersionRepository.save(existingProductVersion);
+
+        return convertToDTO(updatedVersion);
+    }
 
     // Xóa ProductVersion
     public void deleteProductVersion(String productVersionID) {

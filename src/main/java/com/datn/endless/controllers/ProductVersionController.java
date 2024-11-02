@@ -26,18 +26,18 @@ public class ProductVersionController {
     @Autowired
     private ProductVersionService productVersionService;
 
-    @GetMapping("/by-product-name")
-    public ResponseEntity<List<ProductVersionDTO>> getActiveProductVersionsByProductName(@RequestParam String name) {
-        List<ProductVersionDTO> activeProductVersions = productVersionService.getActiveProductVersionsByProductName(name);
-        return ResponseEntity.ok(activeProductVersions);
-    }
+    @GetMapping("/get-user")
+    public ResponseEntity<Page<ProductVersionDTO>> searchProductVersions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "versionName") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction,
+            @RequestParam(required = false) String keyword) {
 
-    @GetMapping("/by-category-or-brand")
-    public ResponseEntity<List<ProductVersionDTO>> searchByCategoryOrBrand(@RequestParam(required = false) String categoryName,
-                                                                           @RequestParam(required = false) String brandName) {
-        List<ProductVersionDTO> productVersions = productVersionService.getProductVersionsByCategoryOrBrandName(categoryName, brandName);
+        Page<ProductVersionDTO> productVersions = productVersionService.getProductVersionsByKeyword(page, size, sortBy, direction, keyword);
         return ResponseEntity.ok(productVersions);
     }
+
 
     @PostMapping("/filter")
     public ResponseEntity<List<ProductVersionDTO>> filterProductVersions(
@@ -67,17 +67,6 @@ public class ProductVersionController {
     }
 
 
-    // API lấy danh sách Active ProductVersions với phân trang và sắp xếp
-    @GetMapping("/active")
-    public ResponseEntity<?> getActiveProductVersions(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "versionName") String sortBy,
-            @RequestParam(defaultValue = "ASC") String direction) {
-
-        Page<ProductVersionDTO> activeProductVersions = productVersionService.getActiveProductVersions(page, size, sortBy, direction);
-        return ResponseEntity.ok(activeProductVersions);
-    }
 
     @GetMapping
     public ResponseEntity<?> getProductVersions(
@@ -111,6 +100,20 @@ public class ProductVersionController {
         return ResponseEntity.ok(updatedProductVersion);
     }
 
+    @PutMapping("/{id}/status")
+    public ResponseEntity<String> updateProductVersionStatus(
+            @PathVariable("id") String productVersionID,
+            @RequestParam String status) {
+
+        // Cập nhật trạng thái phiên bản sản phẩm
+        productVersionService.updateProductVersionStatus(productVersionID, status);
+
+        // Gửi thông báo thành công với dòng trạng thái đã cập nhật
+        return ResponseEntity.ok("Cập nhật trạng thái thành " + status + " cho phiên bản sản phẩm với ID: " + productVersionID);
+    }
+
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProductVersion(@PathVariable("id") String productVersionID) {
         productVersionService.deleteProductVersion(productVersionID);
@@ -124,5 +127,6 @@ public class ProductVersionController {
     public ResponseEntity<String> handleProductVersionInactiveException(ProductVersionInactiveException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+
 }
 
