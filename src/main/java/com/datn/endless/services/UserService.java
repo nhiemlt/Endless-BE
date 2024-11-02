@@ -10,7 +10,6 @@ import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.UserModel;
 import com.datn.endless.repositories.UserRepository;
 import com.datn.endless.repositories.UseraddressRepository;
-import jdk.jshell.spi.ExecutionControl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,26 +33,10 @@ public class UserService {
     private UseraddressRepository userAddressRepository;
 
     @Autowired
-    private MailService mailService;
-
-    @Autowired
     AuthService authService;
 
     // Chuyển đổi User thành UserDTO
     private UserDTO convertToDTO(User user) {
-        List<RoleDTO> roles = user.getRoles() != null ? user.getRoles().stream()
-                .map(role -> {
-                    RoleDTO roleDTO = new RoleDTO();
-                    roleDTO.setRoleId(role.getRoleId());
-                    roleDTO.setRoleName(role.getRoleName());
-                    roleDTO.setPermissions(
-                            role.getPermissions().stream()
-                                    .map(permission -> new PermissionDTO(permission.getPermissionID(), permission.getPermissionName()))
-                                    .collect(Collectors.toList())
-                    );
-                    return roleDTO;
-                })
-                .collect(Collectors.toList()) : null;
 
         List<Useraddress> addresses = userAddressRepository.findByUser(user);
         List<UseraddressDTO> addressDTOs = addresses != null ? addresses.stream()
@@ -70,17 +53,17 @@ public class UserService {
                         address.getDetailAddress() != null ? address.getDetailAddress() : null
                 ))
                 .collect(Collectors.toList()) : null;
-
-        return UserDTO.builder()
-                .userID(user.getUserID())
-                .username(user.getUsername())
-                .fullname(user.getFullname())
-                .phone(user.getPhone())
-                .email(user.getEmail())
-                .avatar(user.getAvatar())
-                .roles(roles)
-                .addresses(addressDTOs)
-                .build();
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUserID(user.getUserID());
+        userDTO.setUsername(user.getUsername());
+        userDTO.setEmail(user.getEmail());
+        String role = user.getRoles().isEmpty() ? "customer" : "admin";
+        userDTO.setRole(role);
+        userDTO.setAddresses(addressDTOs);
+        userDTO.setPhone(user.getPhone());
+        userDTO.setAvatar(user.getAvatar());
+        userDTO.setFullname(user.getFullname());
+        return userDTO;
     }
 
     private InforDTO convertToInfor(User user) {
@@ -107,11 +90,6 @@ public class UserService {
         return users.map(this::convertToInfor);
     }
 
-    // Chuyển đổi danh sách User thành danh sách UserDTO
-    private List<UserDTO> convertToDTOList(List<User> users) {
-        return users.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
     // Lấy người dùng theo ID
     public UserDTO getUserById(String id) {
         User user = userRepository.findById(id).orElse(null);
@@ -126,7 +104,6 @@ public class UserService {
         user.setPhone(userModel.getPhone());
         user.setEmail(userModel.getEmail());
         user.setAvatar(userModel.getAvatar());
-
         User savedUser = userRepository.save(user);
         return convertToDTO(savedUser);
     }

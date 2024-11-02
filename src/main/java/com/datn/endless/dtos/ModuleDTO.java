@@ -8,16 +8,15 @@ import lombok.NoArgsConstructor;
 import lombok.Value;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
- * DTO for {@link com.datn.endless.entities.Role}
+ * DTO for {@link com.datn.endless.entities.Module}
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleDTO implements Serializable {
-    String roleId;
-    String roleName;
-    Set<PermissionDTO> permissions;
+public class ModuleDTO implements Serializable {
+    String moduleID;
+    String moduleName;
+    String description;
 }
