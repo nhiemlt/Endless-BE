@@ -6,9 +6,11 @@ import lombok.Value;
 import java.io.Serializable;
 import java.util.Set;
 
-
+/**
+ * DTO for {@link com.datn.endless.entities.User}
+ */
 @Value
-public class EmployeeDTO implements Serializable {
+public class CustomerDTO implements Serializable {
     String userID;
     @Size(max = 255)
     String username;
@@ -20,5 +22,5 @@ public class EmployeeDTO implements Serializable {
     String email;
     String avatar;
     Boolean active;
-    Set<EmployeeRoleDTO> roles;
+    Set<UseraddressDTO> userAddressDTOS;
 }

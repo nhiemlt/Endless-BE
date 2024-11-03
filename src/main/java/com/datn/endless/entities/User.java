@@ -1,11 +1,13 @@
 package com.datn.endless.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Getter
@@ -53,6 +55,9 @@ public class User {
     @Lob
     @Column(name = "Token")
     private String token;
+
+    @Column(name = "CreateDate")
+    private LocalDateTime createDate;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

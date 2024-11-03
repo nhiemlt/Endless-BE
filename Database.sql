@@ -101,7 +101,8 @@ CREATE TABLE Users (
     Avatar TEXT,
     Active BOOLEAN DEFAULT TRUE,
     ForgetPassword BOOLEAN DEFAULT FALSE,
-    Token TEXT
+    Token TEXT,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tạo bảng UserAddresses

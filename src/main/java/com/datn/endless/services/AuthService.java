@@ -2,6 +2,7 @@ package com.datn.endless.services;
 
 import com.datn.endless.entities.Role;
 import com.datn.endless.entities.User;
+import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.*;
 import com.datn.endless.repositories.UserRepository;
 import com.datn.endless.utils.RandomUtil;
@@ -424,7 +425,6 @@ public class AuthService {
             return generateHtml(title, message, content);
         }
     }
-
 
     public ResponseEntity<Map<String, Object>> validateToken(String token) {
         Map<String, Object> response = new HashMap<>();
