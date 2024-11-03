@@ -1,7 +1,6 @@
 package com.datn.endless.services;
 
 import com.datn.endless.dtos.*;
-import com.datn.endless.entities.Permission;
 import com.datn.endless.entities.Role;
 import com.datn.endless.entities.User;
 import com.datn.endless.entities.Userrole;
@@ -18,7 +17,6 @@ import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -100,6 +98,9 @@ public class EmployeeService {
     public EmployeeDTO updateEmployee(String userId, EmployeeModel employeeModel) {
         User user = employeeRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Không tìm thấy nhân viên"));
+        if(user.getRoles().isEmpty()){
+            throw new DuplicateResourceException("Đây là tài khoản khách hàng");
+        }
         if (!employeeModel.getPhone().equals(user.getPhone()) && employeeRepository.existsByPhone(employeeModel.getPhone())) {
             throw new DuplicateResourceException("Số điện thoại đã tồn tại");
         }
@@ -115,8 +116,16 @@ public class EmployeeService {
     public EmployeeDTO toggleEmployeeStatus(String userId) {
         User user = employeeRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Không tìm thấy nhân viên"));
+        if(user.getRoles().isEmpty()){
+            throw new DuplicateResourceException("Đây là tài khoản khách hàng");
+        }
         if(user.getUsername().equals(userLoginInfomation.getCurrentUsername())) {
             throw new DuplicateResourceException("Bạn không thể thay đổi trạng thái tài khoản của bản thân !");
+        }
+        for (Role role: user.getRoles()){
+            if(role.getRoleName().equals("SuperAdmin")){
+                throw new DuplicateResourceException("Bạn không thể thay đổi trạng thái kích hoạt của tài khoản này");
+            }
         }
         boolean active = user.getActive();
         user.setActive(!active);
@@ -251,8 +260,7 @@ public class EmployeeService {
     private UserroleDTO convertToUserRoleDTO(Userrole userrole) {
         RoleDTO roleDTO = new RoleDTO(
                 userrole.getRole().getRoleId(),
-                userrole.getRole().getRoleName(),
-                null);
+                userrole.getRole().getRoleName());
 
         return new UserroleDTO(
                 userrole.getUserRoleId(),

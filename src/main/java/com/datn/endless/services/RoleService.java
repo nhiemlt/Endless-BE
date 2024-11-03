@@ -5,11 +5,13 @@ import com.datn.endless.dtos.PermissionDTO;
 import com.datn.endless.dtos.RoleDTO;
 import com.datn.endless.entities.Permission;
 import com.datn.endless.entities.Role;
+import com.datn.endless.exceptions.DuplicateResourceException;
 import com.datn.endless.exceptions.RemoveRoleException;
 import com.datn.endless.exceptions.RoleNotFoundException;
 import com.datn.endless.models.RoleModel;
 import com.datn.endless.repositories.PermissionRepository;
 import com.datn.endless.repositories.RoleRepository;
+import com.datn.endless.repositories.UserroleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +28,8 @@ public class RoleService {
 
     @Autowired
     private PermissionRepository permissionRepository;
+    @Autowired
+    private UserroleRepository userroleRepository;
 
     // Lấy tất cả roles với phân trang, tìm kiếm theo keyword và sắp xếp
     public Page<RoleDTO> getAllRoles(String keyword, Pageable pageable) {
@@ -42,6 +46,9 @@ public class RoleService {
 
     // Tạo mới role và thêm permissions
     public RoleDTO createRole(RoleModel roleModel) {
+        if(roleRepository.findByRoleName(roleModel.getRoleName())!=null){
+            throw new DuplicateResourceException("Tên vai trò này đã tồn tại");
+        }
         Role role = new Role();
         role.setRoleId(UUID.randomUUID().toString());
         role.setRoleName(roleModel.getRoleName());
@@ -58,8 +65,15 @@ public class RoleService {
         Optional<Role> roleOpt = roleRepository.findById(id);
         if (roleOpt.isPresent()) {
             Role role = roleOpt.get();
+            if(!role.getRoleName().equals(roleModel.getRoleName())){
+                if(roleRepository.findByRoleName(roleModel.getRoleName())!=null){
+                    throw new DuplicateResourceException("Tên vai trò này đã tồn tại");
+                }
+            }
             role.setRoleName(roleModel.getRoleName());
-
+            if (role.getRoleName().equals("Nhân viên") || role.getRoleName().equals("SuperAdmin")) {
+                throw new RemoveRoleException("Không thể cập nhật vai trò này do đây là vai trò quang trọng");
+            }
             role.getPermissions().clear();  // Xóa tất cả các permissions hiện có
             role.getPermissions().addAll(fetchPermissionsByIds(roleModel.getPermissionIds()));  // Gán lại permissions mới
 
@@ -75,7 +89,11 @@ public class RoleService {
                 .orElseThrow(() -> new RoleNotFoundException("Role không tồn tại với id: " + id));
 
         if (role.getRoleName().equals("Nhân viên") || role.getRoleName().equals("SuperAdmin")) {
-            throw new RemoveRoleException("Không thể xóa nhân viên này");
+            throw new RemoveRoleException("Không thể xóa vai trò này do đây là vai trò quang trọng");
+        }
+
+        if(!userroleRepository.findByRole(role).isEmpty()){
+            throw new RemoveRoleException("Không thể xóa vai trò này do xung đột dữ liệu");
         }
 
         roleRepository.deleteById(id);
@@ -91,8 +109,11 @@ public class RoleService {
                         permission.getCode(),
                         permission.getPermissionName()))
                 .collect(Collectors.toSet());
+        int employee = userroleRepository.countUsersByRole(role.getRoleId());
+        int employeeActive = userroleRepository.countUsersActiveByRole(role.getRoleId());
+        int employeeInactive = userroleRepository.countUsersInactiveByRole(role.getRoleId());
 
-        return new RoleDTO(role.getRoleId(), role.getRoleName(), permissionDTOs);
+        return new RoleDTO(role.getRoleId(), role.getRoleName(),employee, employeeActive, employeeInactive, permissionDTOs);
     }
 
     // Lấy danh sách permissions theo ID

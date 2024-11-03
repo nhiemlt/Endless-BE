@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Value;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * DTO for {@link com.datn.endless.entities.Module}
