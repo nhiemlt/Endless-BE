@@ -361,7 +361,7 @@ public class ProductVersionService {
         dto.setVersionName(productVersion.getVersionName());
         dto.setPurchasePrice(productVersion.getPurchasePrice()); // giá nhap || giá góc
         dto.setPrice(productVersion.getPrice()); //gia ban
-        dto.setShipFee(productVersion.getWeight()); //gia ban
+        dto.setWeight(productVersion.getWeight()); //gia ban
         dto.setHeight(productVersion.getHeight());
         dto.setLength(productVersion.getLength());
         dto.setWidth(productVersion.getWidth());
