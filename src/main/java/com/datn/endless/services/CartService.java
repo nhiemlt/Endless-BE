@@ -139,4 +139,14 @@ public class CartService {
         dto.setQuantity(cart.getQuantity());
         return dto;
     }
+
+    // Lấy tổng số lượng sản phẩm trong giỏ hàng của người dùng hiện tại
+    public int getTotalCartQuantity() {
+        User currentUser = getCurrentUser();
+        List<Cart> carts = cartRepository.findByUserID(currentUser);
+
+        return carts.stream().mapToInt(Cart::getQuantity).sum();
+    }
+
+
 }

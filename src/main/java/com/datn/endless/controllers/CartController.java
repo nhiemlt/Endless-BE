@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/carts")
+@RequestMapping("/carts")
 public class CartController {
 
     @Autowired
@@ -128,6 +128,13 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("Đã xảy ra lỗi không mong muốn", e.getMessage()));
         }
+    }
+
+    // API lấy tổng số lượng sản phẩm trong giỏ hàng
+    @GetMapping("/total-quantity")
+    public ResponseEntity<Integer> getTotalCartQuantity() {
+        int totalQuantity = cartService.getTotalCartQuantity();
+        return ResponseEntity.ok(totalQuantity);
     }
 
 }
