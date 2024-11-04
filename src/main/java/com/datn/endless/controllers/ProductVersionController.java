@@ -38,6 +38,15 @@ public class ProductVersionController {
         return ResponseEntity.ok(productVersions);
     }
 
+    // API tìm kiếm ProductVersion theo ID
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductVersionDTO> getProductVersionById(@PathVariable("id") String productVersionID) {
+        // Gọi service để tìm kiếm ProductVersion theo ID
+        ProductVersionDTO productVersionDTO = productVersionService.searchProductVersionById(productVersionID);
+
+        return ResponseEntity.ok(productVersionDTO);
+    }
+
 
     @PostMapping("/filter")
     public ResponseEntity<List<ProductVersionDTO>> filterProductVersions(

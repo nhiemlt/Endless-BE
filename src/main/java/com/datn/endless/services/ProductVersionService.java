@@ -51,6 +51,18 @@ public class ProductVersionService {
     @Autowired
     private OrderdetailRepository orderDetailRepository;
 
+
+    // Tìm kiếm ProductVersion theo ID
+    public ProductVersionDTO searchProductVersionById(String productVersionID) {
+        // Tìm phiên bản sản phẩm dựa trên productVersionID
+        Productversion productVersion = productVersionRepository.findById(productVersionID)
+                .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm với ID: " + productVersionID));
+
+        // Chuyển đổi Productversion thành ProductVersionDTO
+        return convertToDTO(productVersion);
+    }
+
+
     // Lấy danh sách ProductVersions với phân trang, lọc và sắp xếp
     public Page<ProductVersionDTO> getProductVersions(int page, int size, String sortBy, String direction, String keyword) {
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
