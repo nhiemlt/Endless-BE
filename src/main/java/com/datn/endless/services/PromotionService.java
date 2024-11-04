@@ -2,6 +2,7 @@ package com.datn.endless.services;
 
 import com.datn.endless.dtos.PromotionDTO;
 import com.datn.endless.entities.Promotion;
+import com.datn.endless.exceptions.InvalidImageFormatException;
 import com.datn.endless.models.PromotionModel;
 import com.datn.endless.repositories.PromotionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,9 @@ public class PromotionService {
             throw new IllegalArgumentException("Poster khuyến mãi không được để trống.");
         }
 
+        // Kiểm tra định dạng ảnh
+        validateImageFormat(promotionModel.getPoster());
+
         // Kiểm tra trùng tên
         if (promotionRepository.findByName(promotionModel.getName()).isPresent()) {
             throw new IllegalArgumentException("Tên khuyến mãi đã tồn tại: " + promotionModel.getName());
@@ -107,5 +111,17 @@ public class PromotionService {
     public Page<PromotionDTO> findPromotionsByCriteria(String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         return promotionRepository.findByCriteria(name, startDate, endDate, pageable)
                 .map(this::convertToDTO);
+    }
+
+
+    private void validateImageFormat(String poster) {
+        if (poster == null || poster.isEmpty()) {
+            throw new IllegalArgumentException("Định dạng hình ảnh không hợp lệ. Không tìm thấy hình ảnh.");
+        }
+
+        String extension = poster.substring(poster.lastIndexOf('.') + 1).toLowerCase();
+        if (!extension.equals("jpg") && !extension.equals("jpeg") && !extension.equals("png") && !extension.equals("gif")) {
+            throw new InvalidImageFormatException("Định dạng hình ảnh không hợp lệ. Chỉ chấp nhận JPG, PNG, hoặc GIF.");
+        }
     }
 }
