@@ -137,6 +137,10 @@ public class CartService {
         dto.setDiscountPrice(discountPrice);
 
         dto.setQuantity(cart.getQuantity());
+        dto.setWeight(cart.getProductVersionID().getWeight().intValue());
+        dto.setHeight(cart.getProductVersionID().getHeight().intValue());
+        dto.setLength(cart.getProductVersionID().getLength().intValue());
+        dto.setWidth(cart.getProductVersionID().getWidth().intValue());
         return dto;
     }
 
