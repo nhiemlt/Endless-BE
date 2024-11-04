@@ -11,14 +11,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -273,11 +271,13 @@ public class ProductVersionService {
     }
 
 
-    // Tạo mới ProductVersion
     public ProductVersionDTO createProductVersion(ProductVersionModel productVersionModel) {
         Product product = productRepository.findById(productVersionModel.getProductID())
                 .orElseThrow(() -> new ProductNotFoundException("Không tìm thấy sản phẩm"));
 
+        if (!isImageFormatValid(productVersionModel.getImage())) {
+            throw new InvalidImageFormatException("Định dạng hình ảnh không hợp lệ.");
+        }
 
         Productversion productVersion = new Productversion();
         productVersion.setProductVersionID(UUID.randomUUID().toString());
@@ -300,12 +300,15 @@ public class ProductVersionService {
     }
 
 
+
     // Cập nhật ProductVersion
     public ProductVersionDTO updateProductVersion(String productVersionID, ProductVersionModel productVersionModel) {
-
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
                 .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
 
+        if (!isImageFormatValid(productVersionModel.getImage())) {
+            throw new InvalidImageFormatException("Định dạng hình ảnh không hợp lệ.");
+        }
 
         existingProductVersion.setVersionName(productVersionModel.getVersionName());
         existingProductVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
@@ -316,16 +319,14 @@ public class ProductVersionService {
         existingProductVersion.setWidth(productVersionModel.getWidth());
         existingProductVersion.setImage(productVersionModel.getImage());
 
-
         // Cập nhật thông tin
         Productversion updatedVersion = productVersionRepository.save(existingProductVersion);
-
-        // Xóa các VersionAttribute cũ và thêm mới
         versionAttributeRepository.deleteByProductVersionID(productVersionID);
         saveVersionAttributes(productVersionModel.getAttributeValueID(), updatedVersion);
 
         return convertToDTO(updatedVersion);
     }
+
 
     // Cập nhật Status
     public ProductVersionDTO updateProductVersionStatus(String productVersionID, String status) {
@@ -468,6 +469,11 @@ public class ProductVersionService {
             versionAttributeRepository.save(versionAttribute);
         }
     }
+
+    private boolean isImageFormatValid(String imageUrl) {
+        return imageUrl != null && (imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif"));
+    }
+
 
 
 }

@@ -68,12 +68,6 @@ public class BrandService {
         return brandRepository.findById(id).map(this::convertToDTO);
     }
 
-    public List<BrandDTO> getBrandsByName(String name) {
-        List<Brand> brands = brandRepository.findByNameContainingIgnoreCase(name);
-        return brands.stream()
-                .map(this::convertToDTO)
-                .toList();
-    }
 
 
     @Transactional
@@ -100,5 +94,15 @@ public class BrandService {
         if (!StringUtils.hasText(brandModel.getLogo())) {
             throw new IllegalArgumentException("Logo thương hiệu không được để trống.");
         }
+
+        // Kiểm tra định dạng ảnh cho logo
+        String logo = brandModel.getLogo();
+        String fileExtension = logo.substring(logo.lastIndexOf(".") + 1).toLowerCase();
+
+        List<String> allowedExtensions = List.of("jpg", "jpeg", "png", "gif");
+        if (!allowedExtensions.contains(fileExtension)) {
+            throw new IllegalArgumentException("Định dạng ảnh không hợp lệ. Chỉ chấp nhận các định dạng: .jpg, .jpeg, .png, .gif");
+        }
     }
+
 }
