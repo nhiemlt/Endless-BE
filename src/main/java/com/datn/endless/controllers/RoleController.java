@@ -2,6 +2,7 @@ package com.datn.endless.controllers;
 
 
 import com.datn.endless.dtos.RoleDTO;
+import com.datn.endless.exceptions.DuplicateResourceException;
 import com.datn.endless.exceptions.RemoveRoleException;
 import com.datn.endless.exceptions.RoleNotFoundException;
 import com.datn.endless.models.RoleModel;
@@ -44,33 +45,47 @@ public class RoleController {
     @GetMapping("/{id}")
     public ResponseEntity<RoleDTO> getRoleById(@PathVariable String id) {
         Optional<RoleDTO> role = roleService.getRoleById(id);
-        return role.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        return role.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     // Tạo mới role và gán permissions cho role
     @PostMapping
-    public ResponseEntity<RoleDTO> createRole(@Valid @RequestBody RoleModel roleModel) {
-        RoleDTO createdRole = roleService.createRole(roleModel);
-        return ResponseEntity.ok(createdRole);
+    public ResponseEntity<?> createRole(@Valid @RequestBody RoleModel roleModel) {
+        try {
+            RoleDTO createdRole = roleService.createRole(roleModel);
+            return ResponseEntity.ok(createdRole);
+        } catch (DuplicateResourceException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 
     // Cập nhật role và cập nhật lại danh sách permissions cho role
     @PutMapping("/{id}")
-    public ResponseEntity<RoleDTO> updateRole(@PathVariable String id, @Valid @RequestBody RoleModel roleModel) {
-        Optional<RoleDTO> updatedRole = roleService.updateRole(id, roleModel);
-        return updatedRole.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> updateRole(@PathVariable String id, @Valid @RequestBody RoleModel roleModel) {
+        try{
+            Optional<RoleDTO> updatedRole = roleService.updateRole(id, roleModel);
+            return updatedRole.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (RoleNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (RemoveRoleException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }catch (DuplicateResourceException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
     }
 
     // Xóa role và tất cả các permissions liên quan đến role
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRole(@PathVariable String id) {
+    public ResponseEntity<?> deleteRole(@PathVariable String id) {
         try {
             roleService.deleteRole(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.status(HttpStatus.OK).body("Xóa thành công");
         } catch (RoleNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (RemoveRoleException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }catch (DuplicateResourceException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 

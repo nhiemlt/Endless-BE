@@ -19,5 +19,13 @@ import java.util.Set;
 public class RoleDTO implements Serializable {
     String roleId;
     String roleName;
+    Integer employees;
+    Integer employeeActives;
+    Integer employeeInactive;
     Set<PermissionDTO> permissions;
+
+    public RoleDTO(String roleId, String roleName) {
+        this.roleId = roleId;
+        this.roleName = roleName;
+    }
 }
