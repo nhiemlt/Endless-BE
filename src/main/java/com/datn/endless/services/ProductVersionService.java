@@ -11,14 +11,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -51,6 +49,18 @@ public class ProductVersionService {
     @Autowired
     private OrderdetailRepository orderDetailRepository;
 
+
+    // Tìm kiếm ProductVersion theo ID
+    public ProductVersionDTO searchProductVersionById(String productVersionID) {
+        // Tìm phiên bản sản phẩm dựa trên productVersionID
+        Productversion productVersion = productVersionRepository.findById(productVersionID)
+                .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm với ID: " + productVersionID));
+
+        // Chuyển đổi Productversion thành ProductVersionDTO
+        return convertToDTO(productVersion);
+    }
+
+
     // Lấy danh sách ProductVersions với phân trang, lọc và sắp xếp
     public Page<ProductVersionDTO> getProductVersions(int page, int size, String sortBy, String direction, String keyword) {
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
@@ -62,6 +72,21 @@ public class ProductVersionService {
 
         return pageResult.map(this::convertToDTO);
     }
+
+    public Page<ProductVersionDTO> getProductVersionsByKeyword(int page, int size, String sortBy, String direction, String keyword) {
+        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Tìm kiếm ProductVersion theo từ khóa
+        Page<Productversion> pageResult = (keyword != null && !keyword.isEmpty())
+                ? productVersionRepository.findByVersionNameContaining(keyword, pageable)
+                : productVersionRepository.findByStatusActive(pageable);
+
+        // Chuyển đổi các kết quả tìm kiếm thành DTOs
+        return pageResult.map(this::convertToDTO);
+    }
+
+
 
     // Lấy tất cả danh sách phiên bản sản phẩm theo người dùng.
     public Page<ProductVersionDTO> getActiveProductVersions(int page, int size, String sortBy, String direction) {
@@ -246,11 +271,13 @@ public class ProductVersionService {
     }
 
 
-    // Tạo mới ProductVersion
     public ProductVersionDTO createProductVersion(ProductVersionModel productVersionModel) {
         Product product = productRepository.findById(productVersionModel.getProductID())
                 .orElseThrow(() -> new ProductNotFoundException("Không tìm thấy sản phẩm"));
 
+        if (!isImageFormatValid(productVersionModel.getImage())) {
+            throw new InvalidImageFormatException("Định dạng hình ảnh không hợp lệ.");
+        }
 
         Productversion productVersion = new Productversion();
         productVersion.setProductVersionID(UUID.randomUUID().toString());
@@ -273,12 +300,15 @@ public class ProductVersionService {
     }
 
 
+
     // Cập nhật ProductVersion
     public ProductVersionDTO updateProductVersion(String productVersionID, ProductVersionModel productVersionModel) {
-
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
                 .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
 
+        if (!isImageFormatValid(productVersionModel.getImage())) {
+            throw new InvalidImageFormatException("Định dạng hình ảnh không hợp lệ.");
+        }
 
         existingProductVersion.setVersionName(productVersionModel.getVersionName());
         existingProductVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
@@ -289,17 +319,26 @@ public class ProductVersionService {
         existingProductVersion.setWidth(productVersionModel.getWidth());
         existingProductVersion.setImage(productVersionModel.getImage());
 
-
         // Cập nhật thông tin
         Productversion updatedVersion = productVersionRepository.save(existingProductVersion);
-
-        // Xóa các VersionAttribute cũ và thêm mới
         versionAttributeRepository.deleteByProductVersionID(productVersionID);
         saveVersionAttributes(productVersionModel.getAttributeValueID(), updatedVersion);
 
         return convertToDTO(updatedVersion);
     }
 
+
+    // Cập nhật Status
+    public ProductVersionDTO updateProductVersionStatus(String productVersionID, String status) {
+        Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
+                .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
+
+        // Cập nhật trạng thái
+        existingProductVersion.setStatus(status); // Giả sử status là một thuộc tính trong Productversion
+        Productversion updatedVersion = productVersionRepository.save(existingProductVersion);
+
+        return convertToDTO(updatedVersion);
+    }
 
     // Xóa ProductVersion
     public void deleteProductVersion(String productVersionID) {
@@ -322,7 +361,7 @@ public class ProductVersionService {
         dto.setVersionName(productVersion.getVersionName());
         dto.setPurchasePrice(productVersion.getPurchasePrice()); // giá nhap || giá góc
         dto.setPrice(productVersion.getPrice()); //gia ban
-        dto.setShipFee(productVersion.getWeight()); //gia ban
+        dto.setWeight(productVersion.getWeight()); //gia ban
         dto.setHeight(productVersion.getHeight());
         dto.setLength(productVersion.getLength());
         dto.setWidth(productVersion.getWidth());
@@ -430,6 +469,11 @@ public class ProductVersionService {
             versionAttributeRepository.save(versionAttribute);
         }
     }
+
+    private boolean isImageFormatValid(String imageUrl) {
+        return imageUrl != null && (imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif"));
+    }
+
 
 
 }

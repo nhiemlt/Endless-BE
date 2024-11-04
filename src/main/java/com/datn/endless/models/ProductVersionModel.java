@@ -39,6 +39,9 @@ public class ProductVersionModel {
     @DecimalMin(value = "0.0", inclusive = false, message = "Chiều rộng phải lớn hơn 0.")
     private BigDecimal width;
 
+    private String status;
+
+
     @NotNull(message = "Hình ảnh không được để trống.")
     @Size(max = 500, message = "Đường dẫn hình ảnh không được vượt quá 500 ký tự.")
     private String image;

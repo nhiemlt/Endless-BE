@@ -137,6 +137,20 @@ public class CartService {
         dto.setDiscountPrice(discountPrice);
 
         dto.setQuantity(cart.getQuantity());
+        dto.setWeight(cart.getProductVersionID().getWeight().intValue());
+        dto.setHeight(cart.getProductVersionID().getHeight().intValue());
+        dto.setLength(cart.getProductVersionID().getLength().intValue());
+        dto.setWidth(cart.getProductVersionID().getWidth().intValue());
         return dto;
     }
+
+    // Lấy tổng số lượng sản phẩm trong giỏ hàng của người dùng hiện tại
+    public int getTotalCartQuantity() {
+        User currentUser = getCurrentUser();
+        List<Cart> carts = cartRepository.findByUserID(currentUser);
+
+        return carts.stream().mapToInt(Cart::getQuantity).sum();
+    }
+
+
 }

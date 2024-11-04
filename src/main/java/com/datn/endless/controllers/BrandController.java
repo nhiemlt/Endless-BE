@@ -79,15 +79,6 @@ public class BrandController {
                     .body(new ErrorResponse("Không tìm thấy thương hiệu có ID: " + id));
         }
     }
-    @GetMapping("/sreach")
-    public ResponseEntity<?> searchBrandsByName(@RequestParam String name) {
-        List<BrandDTO> brands = brandService.getBrandsByName(name);
-        if (brands.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ErrorResponse("Không tìm thấy thương hiệu nào phù hợp: " + name));
-        }
-        return ResponseEntity.ok(brands);
-    }
 
 
     // Xóa brand theo ID

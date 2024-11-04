@@ -14,4 +14,8 @@ public class CartDTO {
     private BigDecimal price;
     private BigDecimal discountPrice;
     private Integer quantity;
+    private Integer weight;
+    private Integer height;
+    private Integer length;
+    private Integer width;
 }
