@@ -8,7 +8,6 @@ import java.util.List;
 @Data
 public class ProductVersionModel {
 
-    @NotNull(message = "Mã sản phẩm không được để trống.")
     private String productID;
 
     @NotNull(message = "Tên phiên bản không được để trống.")
@@ -41,9 +40,7 @@ public class ProductVersionModel {
 
     private String status;
 
-
-    @NotNull(message = "Hình ảnh không được để trống.")
-    @Size(max = 500, message = "Đường dẫn hình ảnh không được vượt quá 500 ký tự.")
+    @Size(max = 500, message = "URL image phải ít hơn 500 ký tự")
     private String image;
 
     private List<String> attributeValueID;

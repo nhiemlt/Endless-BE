@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -21,8 +23,8 @@ public class Attribute {
     @Column(name = "AttributeName", nullable = false)
     private String attributeName;
 
-//    @Size(max = 255)
-//    @Column(name = "EN_atributeName") // Chỉnh sửa tên cột
-//    private String enAtributename;
+    // Thêm quan hệ với Attributevalue
+    @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Attributevalue> attributeValues;
 
 }

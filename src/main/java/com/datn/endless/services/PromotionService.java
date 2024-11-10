@@ -62,8 +62,6 @@ public class PromotionService {
             throw new IllegalArgumentException("Poster khuyến mãi không được để trống.");
         }
 
-        // Kiểm tra định dạng ảnh
-        validateImageFormat(promotionModel.getPoster());
 
         // Kiểm tra trùng tên
         if (promotionRepository.findByName(promotionModel.getName()).isPresent()) {
@@ -114,14 +112,5 @@ public class PromotionService {
     }
 
 
-    private void validateImageFormat(String poster) {
-        if (poster == null || poster.isEmpty()) {
-            throw new IllegalArgumentException("Định dạng hình ảnh không hợp lệ. Không tìm thấy hình ảnh.");
-        }
 
-        String extension = poster.substring(poster.lastIndexOf('.') + 1).toLowerCase();
-        if (!extension.equals("jpg") && !extension.equals("jpeg") && !extension.equals("png") && !extension.equals("gif")) {
-            throw new InvalidImageFormatException("Định dạng hình ảnh không hợp lệ. Chỉ chấp nhận JPG, PNG, hoặc GIF.");
-        }
-    }
 }

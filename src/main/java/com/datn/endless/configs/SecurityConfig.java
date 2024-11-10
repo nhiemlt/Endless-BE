@@ -117,7 +117,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/attributes/values/{valueId}").hasAuthority("delete_attribute_value")
 
                         .requestMatchers(HttpMethod.POST, "/api/brands").hasAuthority("add_new_brand")
-                        .requestMatchers(HttpMethod.GET, "/api/brands/{id}").hasAuthority("view_brand")
+                        .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/brands").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/api/brands/{id}").hasAuthority("update_brand")
                         .requestMatchers(HttpMethod.DELETE, "/api/brands/{id}").hasAuthority("delete_brand")
 
@@ -128,7 +129,7 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("add_new_product")
                         .requestMatchers(HttpMethod.GET, "/api/products/{id}").hasAuthority("view_product")
-                        .requestMatchers(HttpMethod.PUT, "/api/products/{id}").hasAuthority("update_product")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/{id}").hasAuthority("edit_product")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/{id}").hasAuthority("delete_product")
 
                         .requestMatchers(HttpMethod.POST, "/api/product-versions").hasAuthority("add_new_product_version")

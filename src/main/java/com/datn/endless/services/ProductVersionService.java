@@ -88,81 +88,6 @@ public class ProductVersionService {
 
 
 
-    // Lấy tất cả danh sách phiên bản sản phẩm theo người dùng.
-    public Page<ProductVersionDTO> getActiveProductVersions(int page, int size, String sortBy, String direction) {
-        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Page<Productversion> pageResult = productVersionRepository.findByStatusActive(pageable);
-
-        return pageResult.map(this::convertToDTO);
-    }
-
-    // Lấy danh sách ProductVersions ở trạng thái Active theo tên sản phẩm
-    public List<ProductVersionDTO> getActiveProductVersionsByProductName(String productName) {
-        // Tìm sản phẩm theo tên
-        List<Product> products = productRepository.findByNameContaining(productName);
-
-        if (products.isEmpty()) {
-            throw new ProductNotFoundException("Không tìm thấy sản phẩm với tên: " + productName);
-        }
-
-        // Lấy danh sách phiên bản sản phẩm ở trạng thái Active cho tất cả sản phẩm tìm thấy
-        List<Productversion> activeProductVersions = new ArrayList<>();
-        for (Product product : products) {
-            // Lấy các phiên bản sản phẩm active theo sản phẩm
-            List<Productversion> versions = productVersionRepository.findByProductID(product);
-            activeProductVersions.addAll(versions.stream()
-                    .filter(version -> version.getStatus().equals("Active")) // Lọc các phiên bản ở trạng thái Active
-                    .collect(Collectors.toList()));
-        }
-
-        return activeProductVersions.stream()
-                .map(this::convertToDTO) // Chuyển đổi từng Productversion sang ProductVersionDTO
-                .collect(Collectors.toList());
-    }
-
-
-    // Lấy danh sách ProductVersions theo tên category hoặc tên brand
-    public List<ProductVersionDTO> getProductVersionsByCategoryOrBrandName(String categoryName, String brandName) {
-        List<Productversion> productVersions = new ArrayList<>();
-
-        // Tìm kiếm sản phẩm theo category name
-        if (categoryName != null && !categoryName.isEmpty()) {
-            List<Product> productsByCategory = productRepository.findByCategoryNameContaining(categoryName);
-            for (Product product : productsByCategory) {
-                // Lấy các phiên bản sản phẩm theo sản phẩm và kiểm tra trạng thái 'Active'
-                List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
-                        .stream()
-                        .filter(version -> version.getStatus().equalsIgnoreCase("Active"))
-                        .collect(Collectors.toList());
-                productVersions.addAll(activeVersions);
-            }
-        }
-
-        // Tìm kiếm sản phẩm theo brand name
-        if (brandName != null && !brandName.isEmpty()) {
-            List<Product> productsByBrand = productRepository.findByBrandNameContaining(brandName);
-            for (Product product : productsByBrand) {
-                // Lấy các phiên bản sản phẩm theo sản phẩm và kiểm tra trạng thái 'Active'
-                List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
-                        .stream()
-                        .filter(version -> version.getStatus().equalsIgnoreCase("Active"))
-                        .collect(Collectors.toList());
-                productVersions.addAll(activeVersions);
-            }
-        }
-
-        // Kiểm tra xem có phiên bản nào có trạng thái Active không
-        if (productVersions.isEmpty()) {
-            throw new ProductVersionInactiveException("Tất cả phiên bản sản phẩm đã ngừng hoạt động.");
-        }
-
-        return productVersions.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
 
     public List<ProductVersionDTO> filterProductVersionsByCategoriesAndBrands(
             List<String> categoryNames,
@@ -263,21 +188,11 @@ public class ProductVersionService {
 
 
 
-    // Lấy ProductVersion theo ID
-    public ProductVersionDTO getProductVersionById(String productVersionID) {
-        Productversion productVersion = productVersionRepository.findById(productVersionID)
-                .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
-        return convertToDTO(productVersion);
-    }
-
-
     public ProductVersionDTO createProductVersion(ProductVersionModel productVersionModel) {
         Product product = productRepository.findById(productVersionModel.getProductID())
                 .orElseThrow(() -> new ProductNotFoundException("Không tìm thấy sản phẩm"));
 
-        if (!isImageFormatValid(productVersionModel.getImage())) {
-            throw new InvalidImageFormatException("Định dạng hình ảnh không hợp lệ.");
-        }
+
 
         Productversion productVersion = new Productversion();
         productVersion.setProductVersionID(UUID.randomUUID().toString());
@@ -306,9 +221,7 @@ public class ProductVersionService {
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
                 .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
 
-        if (!isImageFormatValid(productVersionModel.getImage())) {
-            throw new InvalidImageFormatException("Định dạng hình ảnh không hợp lệ.");
-        }
+
 
         existingProductVersion.setVersionName(productVersionModel.getVersionName());
         existingProductVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
@@ -347,66 +260,7 @@ public class ProductVersionService {
         productVersionRepository.delete(productVersion);
     }
 
-    // Chuyển đổi Productversion thành ProductVersionDTO
-    private ProductVersionDTO convertToDTO(Productversion productVersion) {
-        ProductForProcVersionDTO productDTO = new ProductForProcVersionDTO();
-        productDTO.setProductID(productVersion.getProductID().getProductID());
-        productDTO.setName(productVersion.getProductID().getName());
-        productDTO.setCategoryName(productVersion.getProductID().getCategoryID().getName());
-        productDTO.setBrandName(productVersion.getProductID().getBrandID().getName());
 
-        ProductVersionDTO dto = new ProductVersionDTO();
-        dto.setProductVersionID(productVersion.getProductVersionID());
-        dto.setProduct(productDTO);
-        dto.setVersionName(productVersion.getVersionName());
-        dto.setPurchasePrice(productVersion.getPurchasePrice()); // giá nhap || giá góc
-        dto.setPrice(productVersion.getPrice()); //gia ban
-        dto.setWeight(productVersion.getWeight()); //gia ban
-        dto.setHeight(productVersion.getHeight());
-        dto.setLength(productVersion.getLength());
-        dto.setWidth(productVersion.getWidth());
-
-        dto.setDiscountPercentage(calculateDiscountPercentage(productVersion.getProductVersionID())); // Tỷ lệ phần trăm giảm giá
-        dto.setQuantitySold(purchaseOrderService.getProductVersionOrderQuantity(productVersion.getProductVersionID())); // Số lượng đã bán
-        dto.setQuantityAvailable(purchaseOrderService.getProductVersionQuantity(productVersion.getProductVersionID())); // Số lượng có sẵn
-        List<RatingDTO> ratings = ratingService.getRatingsByProductVersionId(productVersion.getProductVersionID());
-        dto.setAverageRating(ratings.stream().mapToDouble(RatingDTO::getRatingValue).average().orElse(0)); // Đánh giá trung bình
-        dto.setNumberOfReviews(ratingService.getRatingCountByProductVersionId(productVersion.getProductVersionID())); // So luong danh gia cua sp
-//        dto.setStatus(productVersion.getStatus());
-        dto.setImage(productVersion.getImage());
-        // Tính toán và thêm giá khuyến mãi vào DTO
-        dto.setDiscountPrice(calculateDiscountPrice(productVersion.getProductVersionID()));
-
-        List<VersionAttributeDTO> versionAttributes = productVersion.getVersionattributes().stream()
-                .map(va -> {
-                    VersionAttributeDTO vaDTO = new VersionAttributeDTO();
-                    vaDTO.setVersionAttributeID(va.getVersionAttributeID());
-                    vaDTO.setAttributeName(va.getAttributeValueID().getAttribute().getAttributeName());
-                    vaDTO.setAttributeValue(va.getAttributeValueID().getValue());
-                    return vaDTO;
-                })
-                .collect(Collectors.toList());
-        dto.setVersionAttributes(versionAttributes);
-
-
-        List<PromotionDTO> promotions = promotionproductRepository.findByProductVersionID(productVersion.getProductVersionID())
-                .stream()
-                .map(promotionProduct -> {
-                    Promotion promotion = promotionProduct.getPromotionDetailID().getPromotionID();
-                    PromotionDTO promotionDTO = new PromotionDTO();
-                    promotionDTO.setPromotionID(promotion.getPromotionID());
-                    promotionDTO.setName(promotion.getName());
-                    promotionDTO.setStartDate(promotion.getStartDate());
-                    promotionDTO.setEndDate(promotion.getEndDate());
-                    promotionDTO.setPoster(promotion.getPoster());
-                    return promotionDTO;
-                })
-                .collect(Collectors.toList());
-        dto.setPromotions(promotions); // Đưa danh sách khuyến mãi vào DTO
-
-
-        return dto;
-    }
 
     // Tính toán giá khuyến mãi
     private BigDecimal calculateDiscountPrice(String productVersionID) {
@@ -455,6 +309,67 @@ public class ProductVersionService {
 
         return discountPercentage.doubleValue(); // Trả về giá trị giảm giá dưới dạng double
     }
+    // Chuyển đổi Productversion thành ProductVersionDTO
+    private ProductVersionDTO convertToDTO(Productversion productVersion) {
+        ProductForProcVersionDTO productDTO = new ProductForProcVersionDTO();
+        productDTO.setProductID(productVersion.getProductID().getProductID());
+        productDTO.setName(productVersion.getProductID().getName());
+        productDTO.setCategoryName(productVersion.getProductID().getCategoryID().getName());
+        productDTO.setBrandName(productVersion.getProductID().getBrandID().getName());
+
+        ProductVersionDTO dto = new ProductVersionDTO();
+        dto.setProductVersionID(productVersion.getProductVersionID());
+        dto.setProduct(productDTO);
+        dto.setVersionName(productVersion.getVersionName());
+        dto.setPurchasePrice(productVersion.getPurchasePrice()); // giá nhap || giá góc
+        dto.setPrice(productVersion.getPrice()); //gia ban
+        dto.setWeight(productVersion.getWeight()); //gia ban
+        dto.setHeight(productVersion.getHeight());
+        dto.setLength(productVersion.getLength());
+        dto.setWidth(productVersion.getWidth());
+        dto.setStatus(productVersion.getStatus());
+
+        dto.setDiscountPercentage(calculateDiscountPercentage(productVersion.getProductVersionID())); // Tỷ lệ phần trăm giảm giá
+        dto.setQuantitySold(purchaseOrderService.getProductVersionOrderQuantity(productVersion.getProductVersionID())); // Số lượng đã bán
+        dto.setQuantityAvailable(purchaseOrderService.getProductVersionQuantity(productVersion.getProductVersionID())); // Số lượng có sẵn
+        List<RatingDTO> ratings = ratingService.getRatingsByProductVersionId(productVersion.getProductVersionID());
+        dto.setAverageRating(ratings.stream().mapToDouble(RatingDTO::getRatingValue).average().orElse(0)); // Đánh giá trung bình
+        dto.setNumberOfReviews(ratingService.getRatingCountByProductVersionId(productVersion.getProductVersionID())); // So luong danh gia cua sp
+//        dto.setStatus(productVersion.getStatus());
+        dto.setImage(productVersion.getImage());
+        // Tính toán và thêm giá khuyến mãi vào DTO
+        dto.setDiscountPrice(calculateDiscountPrice(productVersion.getProductVersionID()));
+
+        List<VersionAttributeDTO> versionAttributes = productVersion.getVersionattributes().stream()
+                .map(va -> {
+                    VersionAttributeDTO vaDTO = new VersionAttributeDTO();
+                    vaDTO.setVersionAttributeID(va.getVersionAttributeID());
+                    vaDTO.setAttributeName(va.getAttributeValueID().getAttribute().getAttributeName());
+                    vaDTO.setAttributeValue(va.getAttributeValueID().getValue());
+                    return vaDTO;
+                })
+                .collect(Collectors.toList());
+        dto.setVersionAttributes(versionAttributes);
+
+
+        List<PromotionDTO> promotions = promotionproductRepository.findByProductVersionID(productVersion.getProductVersionID())
+                .stream()
+                .map(promotionProduct -> {
+                    Promotion promotion = promotionProduct.getPromotionDetailID().getPromotionID();
+                    PromotionDTO promotionDTO = new PromotionDTO();
+                    promotionDTO.setPromotionID(promotion.getPromotionID());
+                    promotionDTO.setName(promotion.getName());
+                    promotionDTO.setStartDate(promotion.getStartDate());
+                    promotionDTO.setEndDate(promotion.getEndDate());
+                    promotionDTO.setPoster(promotion.getPoster());
+                    return promotionDTO;
+                })
+                .collect(Collectors.toList());
+        dto.setPromotions(promotions); // Đưa danh sách khuyến mãi vào DTO
+
+
+        return dto;
+    }
 
     // Lưu các VersionAttribute cho ProductVersion
     private void saveVersionAttributes(List<String> attributeValueIDs, Productversion savedVersion) {
@@ -470,9 +385,7 @@ public class ProductVersionService {
         }
     }
 
-    private boolean isImageFormatValid(String imageUrl) {
-        return imageUrl != null && (imageUrl.endsWith(".jpg") || imageUrl.endsWith(".jpeg") || imageUrl.endsWith(".png") || imageUrl.endsWith(".gif"));
-    }
+
 
 
 
