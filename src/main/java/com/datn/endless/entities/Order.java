@@ -72,7 +72,7 @@ public class Order {
     @Column(name = "OrderName")
     private String orderName;
 
-    @OneToMany(mappedBy = "orderID")
+    @OneToMany(mappedBy = "orderID", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Orderdetail> orderdetails = new LinkedHashSet<>();
 
 }

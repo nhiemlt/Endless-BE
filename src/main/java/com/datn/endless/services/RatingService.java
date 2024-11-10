@@ -110,6 +110,7 @@ public class RatingService {
         ratingDTO.setUserID(rating.getUserID().getUserID());
         ratingDTO.setUsername(rating.getUserID().getUsername());
         ratingDTO.setFullname(rating.getUserID().getFullname());
+        ratingDTO.setAvatar(rating.getUserID().getAvatar());
         ratingDTO.setOrderDetailID(rating.getOrderDetailID().getOrderDetailID());
         ratingDTO.setProductVersionID(rating.getOrderDetailID().getProductVersionID().getProductVersionID());
         ratingDTO.setVersionName(rating.getOrderDetailID().getProductVersionID().getVersionName());

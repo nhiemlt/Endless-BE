@@ -93,7 +93,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/vouchers").hasAuthority("manage_voucher")
                         .requestMatchers("/api/vouchers/**").hasAuthority("manage_voucher")
 
-                        .requestMatchers(HttpMethod.POST, "/orders").hasAuthority("orders/create")
+                        .requestMatchers(HttpMethod.POST, "/orders").authenticated()
+                                .requestMatchers(HttpMethod.POST, "/orders/create-order-vnpay").authenticated()
                         .requestMatchers(HttpMethod.GET, "/orders/{id}").hasAuthority("view_all_orders")
                         .requestMatchers(HttpMethod.GET, "/orders").hasAuthority("view_all_orders")
                         .requestMatchers(HttpMethod.GET, "/orders/{id}/details").hasAuthority("orders/{id}/details")
