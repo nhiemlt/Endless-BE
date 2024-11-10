@@ -1,7 +1,5 @@
 package com.datn.endless.configs;
 
-import com.datn.endless.services.Constant;
-import com.datn.endless.services.CustomOAuth2UserService;
 import com.datn.endless.services.CustomUserDetailsService;
 import com.datn.endless.services.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +10,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -21,15 +21,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomUserDetailsService customUserDetailsService;
     private final JWTService jwtService;
 
     @Autowired
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
-                          CustomUserDetailsService customUserDetailsService,
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService,
                           JWTService jwtService) {
-        this.customOAuth2UserService = customOAuth2UserService;
         this.customUserDetailsService = customUserDetailsService;
         this.jwtService = jwtService;
     }
@@ -164,14 +161,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
-                .csrf(csrf -> csrf.disable()) // Vô hiệu hóa CSRF nếu bạn không sử dụng nó cho API
-                .logout(logout -> logout.permitAll()) // Cho phép tất cả các yêu cầu logout
-                .formLogin(form -> form.disable()) // Tắt form login nếu không sử dụng
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
-                )
+                .csrf(AbstractHttpConfigurer::disable) // Vô hiệu hóa CSRF nếu bạn không sử dụng nó cho API
+                .logout(LogoutConfigurer::permitAll) // Cho phép tất cả các yêu cầu logout
+                .formLogin(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers
                         .addHeaderWriter((request, response) -> {
                             response.setHeader("Cross-Origin-Opener-Policy", "same-origin");

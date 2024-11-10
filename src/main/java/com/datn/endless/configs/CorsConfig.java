@@ -14,7 +14,7 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Địa chỉ front-end
+        corsConfiguration.setAllowedOrigins(Arrays.asList("http://localhost", "http://endlesstechstore.id.vn", "https://endlesstechstore.id.vn"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
@@ -24,3 +24,4 @@ public class CorsConfig {
         return new CorsFilter(source);
     }
 }
+
