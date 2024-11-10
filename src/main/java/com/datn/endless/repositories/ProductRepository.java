@@ -14,23 +14,29 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     // Tìm sản phẩm theo tên chính xác
     Optional<Product> findByName(String name);
 
-    // Tìm tất cả sản phẩm
-    @Query("SELECT p FROM Product p")
-    Page<Product> findAllProducts(Pageable pageable);
+    // Tìm danh sách sản phẩm theo tên
+    @Query("SELECT p FROM Product p WHERE p.name LIKE %:name%")
+    List<Product> findByNameContaining(@Param("name") String name);
 
     Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     // Thêm phương thức tìm kiếm theo CategoryID hoặc BrandID
     Page<Product> findByCategoryIDOrBrandID(String categoryId, String brandId, Pageable pageable);
 
-    // Tìm danh sách sản phẩm theo tên
-    @Query("SELECT p FROM Product p WHERE p.name LIKE %:name%")
-    List<Product> findByNameContaining(@Param("name") String name);
-
     @Query("SELECT p FROM Product p WHERE p.categoryID.name LIKE %:name%")
     List<Product> findByCategoryNameContaining(@Param("name") String name);
 
     @Query("SELECT p FROM Product p WHERE p.brandID.name LIKE %:name%")
     List<Product> findByBrandNameContaining(@Param("name") String name);
+
+    // Phương thức tổng hợp tìm kiếm theo keyword
+    @Query("""
+           SELECT p FROM Product p 
+           WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+              OR LOWER(p.categoryID.name) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+              OR LOWER(p.brandID.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+           """)
+    Page<Product> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
 }
 

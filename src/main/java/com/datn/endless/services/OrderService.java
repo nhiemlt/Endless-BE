@@ -61,6 +61,9 @@ public class OrderService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private CartService cartService;
+
     // Tính tổng tiền
     private BigDecimal calculateTotalMoney(List<OrderDetailModel> orderDetails, Voucher voucher) {
         BigDecimal totalMoney = orderDetails.stream()
@@ -112,6 +115,7 @@ public class OrderService {
     public OrderDTO createOrder(OrderModel orderModel) {
         User currentUser = userRepository.findByUsername(userLoginInformation.getCurrentUser().getUsername());
 
+        // Kiểm tra địa chỉ
         if (orderModel.getOrderAddress() == null || orderModel.getOrderAddress().isEmpty()) {
             throw new IllegalArgumentException("Địa chỉ không được bỏ trống");
         }
@@ -121,11 +125,14 @@ public class OrderService {
             throw new AddressNotFoundException("Địa chỉ với mã " + orderModel.getOrderAddress() + " không tìm thấy");
         }
 
+        // Kiểm tra Voucher nếu có
         Voucher voucher = orderModel.getVoucherID() != null && !orderModel.getVoucherID().isEmpty()
                 ? voucherRepository.findById(orderModel.getVoucherID()).orElse(null) : null;
 
+        // Tính tổng tiền
         BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), voucher);
 
+        // Tạo mới Order
         Order order = new Order();
         order.setOrderID(UUID.randomUUID().toString());
         order.setUserID(currentUser);
@@ -142,15 +149,22 @@ public class OrderService {
         order.setVoucherDiscount(voucher != null ? calculateVoucherDiscount(voucher) : BigDecimal.ZERO);
         order.setTotalMoney(totalMoney);
 
-        for (OrderDetailModel detailModel : orderModel.getOrderDetails()) {
-            if (detailModel.getQuantity() > purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())) {
-                throw new ProductVersionQuantityException("Số lượng sản phẩm đã chọn vượt quá số lượng trong kho");
-            } else {
-                Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
-                order.getOrderdetails().add(orderDetail);
+        // Kiểm tra và thêm chi tiết đơn hàng
+        if (orderModel.getOrderDetails() != null && !orderModel.getOrderDetails().isEmpty()) {
+            for (OrderDetailModel detailModel : orderModel.getOrderDetails()) {
+                if (detailModel.getQuantity() > purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())) {
+                    throw new ProductVersionQuantityException("Số lượng sản phẩm đã chọn vượt quá số lượng trong kho");
+                } else {
+                    Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
+                    order.getOrderdetails().add(orderDetail);  // Thêm vào Set orderdetails
+                    cartService.deleteCartItem(orderDetail.getProductVersionID().getProductVersionID());
+                }
             }
+        } else {
+            throw new IllegalArgumentException("Danh sách chi tiết đơn hàng không được trống");
         }
 
+        // Lưu đơn hàng
         Order savedOrder = orderRepository.save(order);
         saveOrderStatus(savedOrder);
 
@@ -166,6 +180,79 @@ public class OrderService {
         initialStatus.setId(orderStatusId);
         initialStatus.setOrder(order);
         initialStatus.setStatusType(orderstatustypeRepository.findById(1)
+                .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy hóa đơn")));
+        initialStatus.setTime(Instant.now());
+        orderstatusRepository.save(initialStatus);
+    }
+
+    public OrderDTO createOrderVNPay(OrderModel orderModel) {
+        User currentUser = userRepository.findByUsername(userLoginInformation.getCurrentUser().getUsername());
+
+        // Kiểm tra địa chỉ
+        if (orderModel.getOrderAddress() == null || orderModel.getOrderAddress().isEmpty()) {
+            throw new IllegalArgumentException("Địa chỉ không được bỏ trống");
+        }
+
+        Useraddress userAddress = userAddressRepository.findByUserIDAndAddressID(currentUser, orderModel.getOrderAddress());
+        if (userAddress == null) {
+            throw new AddressNotFoundException("Địa chỉ với mã " + orderModel.getOrderAddress() + " không tìm thấy");
+        }
+
+        // Kiểm tra Voucher nếu có
+        Voucher voucher = orderModel.getVoucherID() != null && !orderModel.getVoucherID().isEmpty()
+                ? voucherRepository.findById(orderModel.getVoucherID()).orElse(null) : null;
+
+        // Tính tổng tiền
+        BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), voucher);
+
+        // Tạo mới Order
+        Order order = new Order();
+        order.setOrderID(UUID.randomUUID().toString());
+        order.setUserID(currentUser);
+        order.setVoucherID(voucher);
+        order.setOrderDate(LocalDateTime.now());
+        order.setOrderAddress(orderModel.getOrderAddress());
+        order.setOrderPhone(orderModel.getOrderPhone());
+        order.setOrderName(orderModel.getOrderName());
+        order.setOrderdetails(new LinkedHashSet<>());
+        order.setShipFee(orderModel.getShipFee());
+        order.setCodValue(orderModel.getCodValue());
+        order.setInsuranceValue(orderModel.getInsuranceValue());
+        order.setServiceTypeID(orderModel.getServiceTypeID());
+        order.setVoucherDiscount(voucher != null ? calculateVoucherDiscount(voucher) : BigDecimal.ZERO);
+        order.setTotalMoney(totalMoney);
+
+        // Kiểm tra và thêm chi tiết đơn hàng
+        if (orderModel.getOrderDetails() != null && !orderModel.getOrderDetails().isEmpty()) {
+            for (OrderDetailModel detailModel : orderModel.getOrderDetails()) {
+                if (detailModel.getQuantity() > purchaseOrderService.getProductVersionQuantity(detailModel.getProductVersionID())) {
+                    throw new ProductVersionQuantityException("Số lượng sản phẩm đã chọn vượt quá số lượng trong kho");
+                } else {
+                    Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
+                    order.getOrderdetails().add(orderDetail);  // Thêm vào Set orderdetails
+                    cartService.deleteCartItem(orderDetail.getProductVersionID().getProductVersionID());
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Danh sách chi tiết đơn hàng không được trống");
+        }
+
+        // Lưu đơn hàng
+        Order savedOrder = orderRepository.save(order);
+        saveOrderVNPayStatus(savedOrder);
+
+        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã " + order.getOrderID() + " đã được tạo thành công!");
+
+        return convertToOrderDTO(savedOrder);
+    }
+
+    // Phương thức lưu trạng thái của hóa đơn
+    private void saveOrderVNPayStatus(Order order) {
+        OrderstatusId orderStatusId = new OrderstatusId(order.getOrderID(), 1);
+        Orderstatus initialStatus = new Orderstatus();
+        initialStatus.setId(orderStatusId);
+        initialStatus.setOrder(order);
+        initialStatus.setStatusType(orderstatustypeRepository.findById(2)
                 .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy hóa đơn")));
         initialStatus.setTime(Instant.now());
         orderstatusRepository.save(initialStatus);
@@ -392,11 +479,11 @@ public class OrderService {
             Useraddress userAddress = userAddressRepository.findById(addressId)
                     .orElseThrow(() -> new AddressNotFoundException("Địa chỉ với ID " + addressId + " không tìm thấy"));
 
-            return String.format("%s ,%s, %s, %s, %s",
+            return String.format("%s , %s, %s, %s",
                     userAddress.getDetailAddress(),
-                    userAddress.getWardCode(),
-                    userAddress.getDistrictID(),
-                    userAddress.getProvinceID());
+                    userAddress.getWardName(),
+                    userAddress.getDistrictName(),
+                    userAddress.getProvinceName());
         } catch (AddressNotFoundException e) {
             return "Địa chỉ không tìm thấy";
         } catch (Exception e) {

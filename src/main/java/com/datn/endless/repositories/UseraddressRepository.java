@@ -23,4 +23,5 @@ public interface UseraddressRepository extends JpaRepository<Useraddress, String
     // Kiểm tra xem địa chỉ có tồn tại và thuộc về người dùng hiện tại không
     @Query("SELECT ua FROM Useraddress ua WHERE ua.addressID =:addressId and ua.userID.username =:username")
     Useraddress findByIdAndUsername(@Param("addressId") String addressId, @Param("username") String username);
-}
+
+    Optional <Useraddress> findByAddressID(String addressID);}

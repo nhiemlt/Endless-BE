@@ -14,12 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/brands")
-@CrossOrigin(origins = "*") // Hỗ trợ CORS nếu cần
 public class BrandController {
 
     @Autowired

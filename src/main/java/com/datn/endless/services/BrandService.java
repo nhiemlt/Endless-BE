@@ -25,7 +25,7 @@ public class BrandService {
     public BrandDTO createBrand(BrandModel brandModel) {
         validateBrandModel(brandModel);
 
-        if (brandRepository.findByName(brandModel.getName()).isPresent()) {
+        if (brandRepository.findByNameIgnoreCase(brandModel.getName()).isPresent()) {
             throw new IllegalArgumentException("Tên thương hiệu đã tồn tại: " + brandModel.getName());
         }
 
@@ -43,8 +43,8 @@ public class BrandService {
         Brand existingBrand = brandRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy thương hiệu có ID: " + id));
 
-        if (!existingBrand.getName().equals(brandModel.getName()) &&
-                brandRepository.findByName(brandModel.getName()).isPresent()) {
+        if (!existingBrand.getName().equalsIgnoreCase(brandModel.getName()) &&
+                brandRepository.findByNameIgnoreCase(brandModel.getName()).isPresent()) {
             throw new IllegalArgumentException("Tên thương hiệu đã tồn tại: " + brandModel.getName());
         }
 
@@ -93,15 +93,6 @@ public class BrandService {
         }
         if (!StringUtils.hasText(brandModel.getLogo())) {
             throw new IllegalArgumentException("Logo thương hiệu không được để trống.");
-        }
-
-        // Kiểm tra định dạng ảnh cho logo
-        String logo = brandModel.getLogo();
-        String fileExtension = logo.substring(logo.lastIndexOf(".") + 1).toLowerCase();
-
-        List<String> allowedExtensions = List.of("jpg", "jpeg", "png", "gif");
-        if (!allowedExtensions.contains(fileExtension)) {
-            throw new IllegalArgumentException("Định dạng ảnh không hợp lệ. Chỉ chấp nhận các định dạng: .jpg, .jpeg, .png, .gif");
         }
     }
 
