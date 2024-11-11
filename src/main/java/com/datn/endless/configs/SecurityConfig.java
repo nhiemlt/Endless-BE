@@ -94,7 +94,7 @@ public class SecurityConfig {
 
                                 .requestMatchers(HttpMethod.POST, "/orders").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/orders/create-order-vnpay").authenticated()
-                                .requestMatchers(HttpMethod.GET, "/orders/{id}").hasAuthority("view_all_orders")
+                                .requestMatchers(HttpMethod.GET, "/orders/{id}").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/orders").hasAuthority("view_all_orders")
                                 .requestMatchers(HttpMethod.GET, "/orders/{id}/details").hasAuthority("orders/{id}/details")
                                 .requestMatchers(HttpMethod.POST, "/orders/cancel").hasAuthority("orders/cancel")
