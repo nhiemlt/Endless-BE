@@ -13,9 +13,8 @@ import java.util.List;
 public class AttributeDTO {
     private String attributeID;
     private String attributeName;
-
-    // Khởi tạo danh sách rỗng
     private List<AttributeValueDTO> attributeValues = new ArrayList<>();
 
-//    private List<AttributeValueDTO> attributeValues;
+
+
 }

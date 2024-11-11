@@ -43,12 +43,49 @@ public class OrderController {
             response.put("success", false);
             response.put("error", "Phiên bản sản phẩm không tồn tại: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         } catch (Exception e) {
             response.put("success", false);
             response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+
+    @PostMapping("/create-order-vnpay")
+    public ResponseEntity<Map<String, Object>> createOrderVNPay(@RequestBody OrderModel orderModel) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            OrderDTO savedOrderDTO = orderService.createOrderVNPay(orderModel);
+            response.put("success", true);
+            response.put("data", savedOrderDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (AddressNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Địa chỉ không tồn tại: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (VoucherNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Mã giảm giá không tồn tại: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (ProductVersionNotFoundException e) {
+            response.put("success", false);
+            response.put("error", "Phiên bản sản phẩm không tồn tại: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
 
     // Lấy đơn hàng theo ID
     @GetMapping("/{id}")

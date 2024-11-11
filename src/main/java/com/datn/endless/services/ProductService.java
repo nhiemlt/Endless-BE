@@ -34,7 +34,7 @@ public class ProductService {
     @Autowired
     private BrandRepository brandRepository;
 
-    // Tạo mới sản phẩm với kiểm tra lỗi
+    // Tạo mới sản phẩm
     public ProductDTO createProduct(ProductModel productModel) {
         validateProductModel(productModel);
 
@@ -53,21 +53,20 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục."));
         Brand brand = brandRepository.findById(productModel.getBrandID())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu."));
-
         newProduct.setCategoryID(category);
         newProduct.setBrandID(brand);
 
         return convertToDTO(productRepository.save(newProduct));
     }
 
-    // Cập nhật thông tin sản phẩm với kiểm tra lỗi
+    // Cập nhật sản phẩm
     public ProductDTO updateProduct(String id, ProductModel productModel) {
         validateProductModel(productModel);
 
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với ID: " + id));
 
-        // Kiểm tra trùng tên (ngoại trừ chính sản phẩm đang được cập nhật)
+        // Kiểm tra trùng tên sản phẩm
         Optional<Product> productWithSameName = productRepository.findByName(productModel.getName());
         if (productWithSameName.isPresent() && !productWithSameName.get().getProductID().equals(id)) {
             throw new RuntimeException("Tên sản phẩm đã tồn tại: " + productModel.getName());
@@ -80,35 +79,28 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy danh mục."));
         Brand brand = brandRepository.findById(productModel.getBrandID())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy thương hiệu."));
-
         existingProduct.setCategoryID(category);
         existingProduct.setBrandID(brand);
 
         return convertToDTO(productRepository.save(existingProduct));
     }
 
-    public List<ProductDTO> getProducts(String name, String categoryId, String brandId, int page, int size) {
+    public Page<ProductDTO> getProducts(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> productPage;
 
-        // Nếu có tên sản phẩm, tìm kiếm theo tên
-        if (StringUtils.hasText(name)) {
-            productPage = productRepository.findByNameContainingIgnoreCase(name, pageable);
+        // Nếu có keyword, tìm kiếm theo keyword (bao gồm tên, danh mục và thương hiệu)
+        if (StringUtils.hasText(keyword)) {
+            productPage = productRepository.findByKeyword(keyword, pageable);
         }
-        // Nếu không có tên sản phẩm nhưng có categoryId hoặc brandId
-        else if (StringUtils.hasText(categoryId) || StringUtils.hasText(brandId)) {
-            // Tìm kiếm theo danh mục hoặc thương hiệu
-            productPage = productRepository.findByCategoryIDOrBrandID(categoryId, brandId, pageable);
-        }
-        // Nếu không có điều kiện nào, lấy tất cả sản phẩm
+        // Nếu không có keyword, lấy tất cả sản phẩm
         else {
             productPage = productRepository.findAll(pageable);
         }
 
-        return productPage.getContent().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        return productPage.map(this::convertToDTO); // Chuyển đổi các sản phẩm thành DTO
     }
+
 
 
 
@@ -130,32 +122,42 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    // Chuyển đổi từ Product entity sang ProductDTO
     private ProductDTO convertToDTO(Product product) {
         ProductDTO productDTO = new ProductDTO();
         productDTO.setProductID(product.getProductID());
         productDTO.setName(product.getName());
         productDTO.setDescription(product.getDescription());
 
-        // Chuyển đổi Category thành DTO
-        Optional.ofNullable(product.getCategoryID()).ifPresent(category -> {
-            CategoryDTO categoryDTO = new CategoryDTO();
-            categoryDTO.setCategoryID(category.getCategoryID());
-            categoryDTO.setName(category.getName());
-            productDTO.setCategoryID(categoryDTO);
-        });
+        // Chuyển đổi Category thành DTO nếu có
+        if (product.getCategoryID() != null) {
+            productDTO.setCategoryID(convertCategoryToDTO(product.getCategoryID()));
+        }
 
-        // Chuyển đổi Brand thành DTO
-        Optional.ofNullable(product.getBrandID()).ifPresent(brand -> {
-            BrandDTO brandDTO = new BrandDTO();
-            brandDTO.setBrandID(brand.getBrandID());
-            brandDTO.setBrandName(brand.getName());
-            brandDTO.setLogo(brand.getLogo());
-            productDTO.setBrandID(brandDTO);
-        });
+        // Chuyển đổi Brand thành DTO nếu có
+        if (product.getBrandID() != null) {
+            productDTO.setBrandID(convertBrandToDTO(product.getBrandID()));
+        }
 
         return productDTO;
     }
+
+    // Phương thức chuyển đổi Category
+    private CategoryDTO convertCategoryToDTO(Category category) {
+        CategoryDTO categoryDTO = new CategoryDTO();
+        categoryDTO.setCategoryID(category.getCategoryID());
+        categoryDTO.setName(category.getName());
+        return categoryDTO;
+    }
+
+    // Phương thức chuyển đổi Brand
+    private BrandDTO convertBrandToDTO(Brand brand) {
+        BrandDTO brandDTO = new BrandDTO();
+        brandDTO.setBrandID(brand.getBrandID());
+        brandDTO.setBrandName(brand.getName());
+        brandDTO.setLogo(brand.getLogo());
+        return brandDTO;
+    }
+
 
     // Kiểm tra dữ liệu đầu vào
     private void validateProductModel(ProductModel productModel) {
