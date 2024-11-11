@@ -35,6 +35,16 @@ public class CustomerController {
         return ResponseEntity.ok(customers);
     }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<CustomerDTO> getCustomerById(@PathVariable String userId) {
+        try {
+            CustomerDTO customer = customerService.getCustomerById(userId);
+            return ResponseEntity.ok(customer);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
     @GetMapping("/{userId}/addresses")
     public ResponseEntity<?> getAllUserAddresses(@PathVariable String userId) {
         try {

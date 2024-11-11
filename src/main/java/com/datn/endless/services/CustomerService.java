@@ -34,6 +34,12 @@ public class CustomerService {
     @Autowired
     MailService mailService;
 
+    public CustomerDTO getCustomerById(String userId) {
+        User user = customerRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy khách hàng với ID: " + userId));
+        return convertToCustomerDTO(user);
+    }
+
     public Page<CustomerDTO> getCustomers(String keyword, Pageable pageable) {
         Page<User> users = customerRepository.searchCustomers(keyword, pageable);
         return users.map(this::convertToCustomerDTO);

@@ -95,8 +95,8 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.POST, "/orders").hasAuthority("orders/create")
                         .requestMatchers(HttpMethod.GET, "/orders/{id}").hasAuthority("view_all_orders")
-                        .requestMatchers(HttpMethod.GET, "/orders").hasAuthority("view_all_orders")
-                        .requestMatchers(HttpMethod.GET, "/orders/{id}/details").hasAuthority("orders/{id}/details")
+                                .requestMatchers(HttpMethod.GET, "/orders").authenticated()  // Để xem tất cả đơn hàng
+                                .requestMatchers(HttpMethod.GET, "/orders/{id}/details").authenticated()  // Để xem chi tiết đơn hàng
                         .requestMatchers(HttpMethod.POST, "/orders/cancel").hasAuthority("orders/cancel")
                         .requestMatchers(HttpMethod.POST, "/orders/mark-as-paid").hasAuthority("orders/mark-as-paid")
                         .requestMatchers(HttpMethod.POST, "/orders/mark-as-shipping").hasAuthority("orders/mark-as-shipping")
