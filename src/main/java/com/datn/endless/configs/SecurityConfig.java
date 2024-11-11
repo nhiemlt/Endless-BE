@@ -143,10 +143,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/promotion-details/{id}").hasAuthority("update_promotion_detail")
                         .requestMatchers(HttpMethod.DELETE, "/api/promotion-details/{id}").hasAuthority("delete_promotion_detail")
 
-                        .requestMatchers(HttpMethod.POST, "/api/promotion-products").hasAuthority("add_new_promotion_product")
+                        .requestMatchers(HttpMethod.POST, "/api/promotion-products").hasAuthority("add_new_promotion_products")
                         .requestMatchers(HttpMethod.GET, "/api/promotion-products/{id}").hasAuthority("view_promotion_product")
-                        .requestMatchers(HttpMethod.PUT, "/api/promotion-products/{id}").hasAuthority("update_promotion_product")
-                        .requestMatchers(HttpMethod.DELETE, "/api/promotion-products/{id}").hasAuthority("delete_promotion_product")
+                        .requestMatchers(HttpMethod.PUT, "/api/promotion-products/{id}").hasAuthority("update_promotion_products")
+                        .requestMatchers(HttpMethod.DELETE, "/api/promotion-products/{id}").hasAuthority("delete_promotion_products")
 
                         .requestMatchers(HttpMethod.POST, "/api/roles/manage").hasAuthority("add_new_user_role")
                         .requestMatchers(HttpMethod.GET, "/api/roles/manage/users/{userId}/roles").hasAuthority("view_user_role")

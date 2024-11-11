@@ -4,6 +4,9 @@
     import jakarta.validation.constraints.NotNull;
     import lombok.Data;
     import java.time.LocalDate;
+    import java.util.ArrayList;
+    import java.util.List;
+
     @Data
         public class PromotionDTO {
             private String promotionID;
@@ -19,5 +22,9 @@
 
         @NotBlank(message = "URL poster không được để trống")
         private String poster;
+
+        private List<PromotionDetailDTO> promotionDetails = new ArrayList<>();
+
         }
+
 

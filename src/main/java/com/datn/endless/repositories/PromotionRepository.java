@@ -15,8 +15,6 @@ import java.util.Optional;
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, String> {
 
-
-
     @Query("SELECT p FROM Promotion p WHERE "
             + "(:name IS NULL OR p.name LIKE %:name%) AND "
             + "(:startDate IS NULL OR p.startDate >= :startDate) AND "
