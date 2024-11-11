@@ -385,6 +385,29 @@ public class ProductVersionService {
         }
     }
 
+    public List<ProductVersionDTO> getTop5BestSellingProductsByCategory(String categoryID) {
+        Pageable pageable = PageRequest.of(0, 5); // Lấy top 5 sản phẩm
+        Page<Object[]> results = orderDetailRepository.findTopSellingProductVersionsByCategory(categoryID, pageable);
+
+        // Chuyển đổi các kết quả từ `Productversion` thành `ProductVersionDTO`
+        return results.stream().map(result -> {
+            Productversion productVersion = (Productversion) result[0]; // `result[0]` là `Productversion`
+            return convertToDTO(productVersion);
+        }).collect(Collectors.toList());
+    }
+
+    public List<ProductVersionDTO> getTop5BestSellingProductsByBrand(String brandID) {
+        Pageable pageable = PageRequest.of(0, 5); // Lấy top 5 sản phẩm
+        Page<Object[]> results = orderDetailRepository.findTopSellingProductVersionsByBrand(brandID, pageable);
+
+        // Chuyển đổi các kết quả từ `Productversion` thành `ProductVersionDTO`
+        return results.stream().map(result -> {
+            Productversion productVersion = (Productversion) result[0]; // `result[0]` là `Productversion`
+            return convertToDTO(productVersion);
+        }).collect(Collectors.toList());
+    }
+
+
 
 
 
