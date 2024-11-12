@@ -741,13 +741,13 @@ SELECT PermissionID, (SELECT Role_ID FROM Roles WHERE RoleName LIKE 'SuperAdmin'
 FROM Permissions;
 
 INSERT INTO OrderStatusType (StatusID, Name) VALUES
-(-1, 'Đã hủy'),
 (1, 'Chờ xác nhận'),
 (2, 'Chờ thanh toán'),
 (3, 'Đã thanh toán'),
 (4, 'Đã xác nhận'),
 (5, 'Đang giao hàng'),
-(6, 'Đã giao hàng');
+(6, 'Đã giao hàng'),
+(7, 'Đã hủy');
 
 INSERT INTO OrderStatus (OrderID, StatusID, Time)
-SELECT OrderID, 1, NOW() FROM Orders;
+SELECT OrderID, 1, '2024-11-11 05:55:13' FROM Orders;

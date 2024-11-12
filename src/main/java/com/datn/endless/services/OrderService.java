@@ -3,7 +3,6 @@ package com.datn.endless.services;
 import com.datn.endless.dtos.*;
 import com.datn.endless.entities.*;
 import com.datn.endless.exceptions.*;
-import com.datn.endless.models.NotificationModel;
 import com.datn.endless.models.NotificationModelForUser;
 import com.datn.endless.models.OrderDetailModel;
 import com.datn.endless.models.OrderModel;
@@ -15,10 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,6 +33,9 @@ public class OrderService {
 
     @Autowired
     private VoucherRepository voucherRepository;
+
+    @Autowired
+    private UservoucherRepository uservoucherRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -146,7 +146,17 @@ public class OrderService {
         order.setCodValue(orderModel.getCodValue());
         order.setInsuranceValue(orderModel.getInsuranceValue());
         order.setServiceTypeID(orderModel.getServiceTypeID());
-        order.setVoucherDiscount(voucher != null ? calculateVoucherDiscount(voucher) : BigDecimal.ZERO);
+        if(voucher!=null){{
+            Uservoucher uservoucher = uservoucherRepository.findByUserIDAndVoucherID(currentUser, order.getVoucherID());
+            if(uservoucher==null){
+                throw new VoucherCannotBeUsedException("Không tìm thấy voucher của người dùng");
+            }
+            else{
+                order.setVoucherDiscount(calculateVoucherDiscount(voucher));
+                uservoucherRepository.delete(uservoucher);
+            }
+
+        }}
         order.setTotalMoney(totalMoney);
 
         // Kiểm tra và thêm chi tiết đơn hàng
@@ -318,7 +328,7 @@ public class OrderService {
 
         UserDetails userDetails = userLoginInformation.getCurrentUser();
 
-        if(newStatusId==-1 || newStatusId==1 || newStatusId==6){
+        if(newStatusId==7 || newStatusId==1 || newStatusId==6){
             if(!userDetails.getUsername().equals(order.getUserID().getUsername())) {
                 throw new OrderCannotBeUpdateException("Người dùng này không có quyền cập nhật đơn hàng này");
             }
@@ -348,10 +358,33 @@ public class OrderService {
         return convertToOrderStatusDTO(newStatus);
     }
 
+    // Hủy đơn hàng
+    public void autoUpdateOrderStatus(String orderId, int newStatusId, List<Integer> allowedCurrentStatusIds, String errorMessage) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Không tìm thấy đơn hàng"));
+
+        Orderstatus currentStatus = orderstatusRepository.findTopByOrderIdOrderByTimeDesc(orderId)
+                .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy trạng thái hiện tại"));
+
+        if (!allowedCurrentStatusIds.contains(currentStatus.getStatusType().getId())) {
+            throw new InvalidOrderStatusException(errorMessage);
+        }
+
+
+        OrderstatusId orderStatusId = new OrderstatusId(orderId, newStatusId);
+        Orderstatus newStatus = new Orderstatus();
+        newStatus.setId(orderStatusId);
+        newStatus.setOrder(order);
+        newStatus.setStatusType(orderstatustypeRepository.findById(newStatusId)
+                .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy loại trạng thái đơn hàng")));
+        newStatus.setTime(Instant.now());
+        orderstatusRepository.save(newStatus);
+    }
+
     public OrderStatusDTO cancelOrder(String orderId) {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
-                -1, // Trạng thái 'Hủy đơn hàng'
+                7, // Trạng thái 'Hủy đơn hàng'
                 Arrays.asList(1, 2), // Các trạng thái cho phép hủy đơn hàng
                 72, // Giới hạn thời gian 72 giờ
                 "Đơn hàng không thể hủy do đã được thanh toán hoặc đang giao"
@@ -361,12 +394,71 @@ public class OrderService {
         return updatedStatus;
     }
 
+    public void cancelOrderUnpair(String orderId) {
+        autoUpdateOrderStatus(
+                orderId,
+                7, // Trạng thái 'Hủy đơn hàng'
+                Arrays.asList(1, 2), // Các trạng thái cho phép hủy đơn hàng
+                "Đơn hàng không thể hủy do đã được thanh toán hoặc đang giao"
+        );
+
+        sendOrderStatusNotification(orderId, "Hủy đơn hàng", "Đơn hàng "+orderId+" đã bị hủy do quá hạn thanh toán");
+    }
+
+    public void cancelOrderUnconfirm(String orderId) {
+        autoUpdateOrderStatus(
+                orderId,
+                7, // Trạng thái 'Hủy đơn hàng'
+                Arrays.asList(1, 2), // Các trạng thái cho phép hủy đơn hàng
+                "Đơn hàng không thể hủy do đã được thanh toán hoặc đang giao"
+        );
+
+        sendOrderStatusNotification(orderId, "Hủy đơn hàng", "Đơn hàng "+orderId+" đã bị hủy do quá hạn xác nhận");
+    }
+
+    public void cancelUnpaidOrdersBefore() {
+        List<Order> allOrder = orderRepository.findAll();
+
+        for (Order order : allOrder) {
+            Orderstatus orderstatus = orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID())
+                    .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy trạng thái hiện tại"));
+
+            System.out.println("Trạng thái: " + orderstatus.getStatusType().getId());
+            System.out.println("Thời gian tạo đơn: " + orderstatus.getTime());
+            System.out.println("Thời gian hiện tại: " + Instant.now());
+            System.out.println("Kết quả điều kiện: " + (orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofMinutes(15)))));
+            if (orderstatus.getStatusType().getId() == 2 &&
+                    orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofMinutes(15)))) {
+                cancelOrderUnpair(order.getOrderID());
+            }
+        }
+    }
+
+    public void cancelWaitToConfirmOrdersBefore() {
+        List<Order> allOrder = orderRepository.findAll();
+
+        for (Order order : allOrder) {
+            Orderstatus orderstatus = orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID())
+                    .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy trạng thái hiện tại"));
+
+            System.out.println("Trạng thái: " + orderstatus.getStatusType().getId());
+            System.out.println("Thời gian tạo đơn: " + orderstatus.getTime());
+            System.out.println("Thời gian hiện tại: " + Instant.now());
+            System.out.println("Kết quả điều kiện: " + (orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofMinutes(15)))));
+            // Kiểm tra nếu trạng thái là 1 và thời gian tạo đơn cách đây hơn 15 phút
+            if (orderstatus.getStatusType().getId() == 1 &&
+                    orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofDays(7)))) {
+                cancelOrderUnconfirm(order.getOrderID());
+            }
+        }
+    }
+
     public OrderStatusDTO markOrderAsPaid(String orderId) {
         OrderStatusDTO updatedStatus = updateOrderStatus(
                 orderId,
                 3, // Trạng thái 'Đã thanh toán'
-                Arrays.asList(1, 2), // Trạng thái cho phép thanh toán
-                0, // Không giới hạn thời gian
+                Arrays.asList(1, 2),
+                0,
                 "Không thể đặt đơn hàng này thành đã thanh toán"
         );
 
@@ -438,7 +530,7 @@ public class OrderService {
 
 
 
-    // Chuyển đổi Order thành OrderDTO
+        // Chuyển đổi Order thành OrderDTO
     private OrderDTO convertToOrderDTO(Order order) {
         OrderDTO dto = new OrderDTO();
         dto.setOrderID(order.getOrderID());
@@ -453,6 +545,8 @@ public class OrderService {
         dto.setOrderAddress(formatAddress(order.getOrderAddress()));
         dto.setOrderPhone(order.getOrderPhone());
         dto.setOrderName(order.getOrderName());
+        dto.setInsuranceValue(order.getInsuranceValue());
+        dto.setServiceTypeID(order.getServiceTypeID());
         dto.setStatus(orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID()).get().getStatusType().getName());
         List<OrderDetailDTO> orderDetailDTOs = order.getOrderdetails() != null ?
                 order.getOrderdetails().stream().map(this::convertToOrderDetailDTO).collect(Collectors.toList()) :
@@ -464,6 +558,7 @@ public class OrderService {
         }
         BigDecimal money = totalProduct.add(order.getShipFee());
         dto.setTotalProductPrice(totalProduct);
+        dto.setCodValue(money);
         dto.setMoney(money);
 
         return dto;

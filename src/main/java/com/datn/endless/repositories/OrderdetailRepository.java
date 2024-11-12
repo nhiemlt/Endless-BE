@@ -33,4 +33,13 @@ public interface OrderdetailRepository extends JpaRepository<Orderdetail, String
             "ORDER BY totalQuantity DESC")
     Page<Object[]> findTopSellingProductVersionsAllTime(Pageable pageable);
 
+    @Query("SELECT SUM(od.quantity) " +
+            "FROM Orderdetail od " +
+            "JOIN od.orderID o " +
+            "JOIN o.orderdetails odetail " +
+            "JOIN Orderstatus os ON os.order = o " +
+            "JOIN os.statusType st " +
+            "WHERE st.id = -1 " +
+            "AND od.productVersionID.productVersionID = :productVersionID")
+    Integer countCancelledProductVersionQuantity(@Param("productVersionID") String productVersionID);
 }
