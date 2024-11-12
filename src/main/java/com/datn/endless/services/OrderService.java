@@ -436,7 +436,6 @@ public class OrderService {
         for (Order order : allOrder) {
             Orderstatus orderstatus = orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID())
                     .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy trạng thái hiện tại"));
-
             if (orderstatus.getStatusType().getId() == 1 &&
                     orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofDays(7)))) {
                 cancelOrderUnconfirm(order.getOrderID());
