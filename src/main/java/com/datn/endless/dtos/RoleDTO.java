@@ -1,19 +1,31 @@
 package com.datn.endless.dtos;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Value;
 
-import java.util.List;
+import java.io.Serializable;
+import java.util.Set;
 
+/**
+ * DTO for {@link com.datn.endless.entities.Role}
+ */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class RoleDTO {
-    private String roleId;
-    private String roleName;
-    private List<PermissionDTO> permissions;
+@AllArgsConstructor
+public class RoleDTO implements Serializable {
+    String roleId;
+    String roleName;
+    Integer employees;
+    Integer employeeActives;
+    Integer employeeInactive;
+    Set<PermissionDTO> permissions;
 
-    public RoleDTO(String roleId, String roleName, int userCount) {
+    public RoleDTO(String roleId, String roleName) {
+        this.roleId = roleId;
+        this.roleName = roleName;
     }
 }

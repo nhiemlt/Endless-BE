@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface UserroleRepository extends JpaRepository<Userrole, String> {
@@ -25,7 +26,18 @@ public interface UserroleRepository extends JpaRepository<Userrole, String> {
     @Query("SELECT COUNT(ur) FROM Userrole ur WHERE ur.role.roleId = :roleId")
     int countUsersByRole(@Param("roleId") String roleId);
 
+    @Query("SELECT COUNT(ur) FROM Userrole ur WHERE ur.role.roleId = :roleId and ur.user.active")
+    int countUsersActiveByRole(@Param("roleId") String roleId);
+
+    @Query("SELECT COUNT(ur) FROM Userrole ur WHERE ur.role.roleId = :roleId and ur.user.active = false")
+    int countUsersInactiveByRole(@Param("roleId") String roleId);
+
     List<Userrole> findByRole(Role role);
+
+    Optional<Userrole> findByUserRoleId(String userRoleId);
+
+    List<Userrole> findAllByUser_UserID(String userID);
+
 
 }
 

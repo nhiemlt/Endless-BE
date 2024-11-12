@@ -322,7 +322,7 @@ public class ProductVersionService {
         return discountPercentage.doubleValue(); // Trả về giá trị giảm giá dưới dạng double
     }
     // Chuyển đổi Productversion thành ProductVersionDTO
-    private ProductVersionDTO convertToDTO(Productversion productVersion) {
+    ProductVersionDTO convertToDTO(Productversion productVersion) {
         ProductForProcVersionDTO productDTO = new ProductForProcVersionDTO();
         productDTO.setProductID(productVersion.getProductID().getProductID());
         productDTO.setName(productVersion.getProductID().getName());
