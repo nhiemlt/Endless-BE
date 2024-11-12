@@ -12,6 +12,7 @@ public class RatingDTO {
     private String userID;
     private String username;
     private String fullname;
+    private String avatar;
     private String orderDetailID;
     private String productVersionID;
     private String versionName;

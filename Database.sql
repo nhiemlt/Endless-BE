@@ -5,27 +5,30 @@ USE EndlessEcommerce;
 -- Tạo bảng Brands
 CREATE TABLE Brands (
     BrandID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    Name VARCHAR(255) NOT NULL,
-    Logo LONGTEXT
+    Name NVARCHAR(255) NOT NULL,
+    Logo LONGTEXT,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tạo bảng Categories
 CREATE TABLE Categories (
     CategoryID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    Name VARCHAR(255) NOT NULL
+    Name NVARCHAR(255) NOT NULL,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tạo bảng Attributes
 CREATE TABLE Attributes (
     AttributeID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    AttributeName VARCHAR(255) NOT NULL
+    AttributeName NVARCHAR(255) NOT NULL,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tạo bảng AttributeValues
 CREATE TABLE AttributeValues (
     AttributeValueID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     AttributeID CHAR(36) NOT NULL,
-    Value VARCHAR(255) NOT NULL,
+    Value NVARCHAR(255) NOT NULL,
     FOREIGN KEY (AttributeID) REFERENCES Attributes(AttributeID)
 );
 
@@ -34,8 +37,9 @@ CREATE TABLE Products (
     ProductID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     CategoryID CHAR(36) NOT NULL,
     BrandID CHAR(36) NOT NULL,
-    Name VARCHAR(255) NOT NULL,
-    Description TEXT,
+    Name NVARCHAR(255) NOT NULL,
+    Description TEXT CHARACTER SET utf8mb4,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID),
     FOREIGN KEY (BrandID) REFERENCES Brands(BrandID)
 );
@@ -44,15 +48,16 @@ CREATE TABLE Products (
 CREATE TABLE ProductVersions (
     ProductVersionID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     ProductID CHAR(36) NOT NULL,
-    VersionName VARCHAR(255) NOT NULL,
+    VersionName NVARCHAR(255) NOT NULL,
     CostPrice DECIMAL(18, 2) NOT NULL,
     Price DECIMAL(18, 2) NOT NULL,
     Weight DECIMAL(18, 2) NOT NULL,
     Height DECIMAL(18, 2) NOT NULL, -- Chiều cao
     Length DECIMAL(18, 2) NOT NULL, -- Chiều dài
     Width DECIMAL(18, 2) NOT NULL,  -- Chiều rộng
-    Status VARCHAR(50) NOT NULL,
+    Status NVARCHAR(50) NOT NULL,
     Image TEXT,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
 );
 
@@ -61,6 +66,7 @@ CREATE TABLE VersionAttributes (
     VersionAttributeID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     ProductVersionID CHAR(36) NOT NULL,
     AttributeValueID CHAR(36) NOT NULL,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProductVersionID) REFERENCES ProductVersions(ProductVersionID),
     FOREIGN KEY (AttributeValueID) REFERENCES AttributeValues(AttributeValueID)
 );
@@ -68,10 +74,11 @@ CREATE TABLE VersionAttributes (
 -- Tạo bảng Promotions
 CREATE TABLE Promotions (
     PromotionID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    Name VARCHAR(255) NOT NULL,
+    Name NVARCHAR(255) NOT NULL,
     StartDate DATETIME NOT NULL,
     EndDate DATETIME NOT NULL,
-    Poster LONGTEXT
+    Poster LONGTEXT,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tạo bảng PromotionDetails
@@ -93,15 +100,16 @@ CREATE TABLE PromotionProducts (
 
 CREATE TABLE Users (
     UserID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    Username VARCHAR(255) NOT NULL,
-    Fullname VARCHAR(255),
-    Password VARCHAR(255),
-    Phone VARCHAR(11),
-    Email VARCHAR(255),
+    Username NVARCHAR(255) NOT NULL,
+    Fullname NVARCHAR(255),
+    Password NVARCHAR(255),
+    Phone NVARCHAR(11),
+    Email NVARCHAR(255),
     Avatar TEXT,
     Active BOOLEAN DEFAULT TRUE,
     ForgetPassword BOOLEAN DEFAULT FALSE,
-    Token TEXT
+    Token TEXT,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tạo bảng UserAddresses
@@ -109,25 +117,27 @@ CREATE TABLE UserAddresses (
     AddressID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     UserID CHAR(36) NOT NULL,
     ProvinceID INT NOT NULL,
-    ProvinceName VARCHAR(50) NOT NULL,
+    ProvinceName NVARCHAR(50) NOT NULL,
     DistrictID INT NOT NULL, 
-    DistrictName VARCHAR(50) NOT NULL,
+    DistrictName NVARCHAR(50) NOT NULL,
     WardCode INT NOT NULL, 
-    WardName VARCHAR(50) NOT NULL,
-    DetailAddress TEXT NOT NULL,
+    WardName NVARCHAR(50) NOT NULL,
+    DetailAddress TEXT CHARACTER SET utf8mb4 NOT NULL,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES Users(UserID)
 );
 
 -- Tạo bảng Vouchers
 CREATE TABLE Vouchers (
     VoucherID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    VoucherCode VARCHAR(50) NOT NULL UNIQUE,
+    VoucherCode NVARCHAR(50) NOT NULL UNIQUE,
     LeastBill DECIMAL(18, 2) NOT NULL,
     LeastDiscount DECIMAL(18, 2) NOT NULL,
     BiggestDiscount DECIMAL(18, 2) NOT NULL,
     DiscountLevel INT NOT NULL,
-    StartDate DATE NOT NULL,
-    EndDate DATE NOT NULL
+    StartDate DATETIME NOT NULL,
+    EndDate DATETIME NOT NULL,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tạo bảng UserVouchers
@@ -135,7 +145,7 @@ CREATE TABLE UserVouchers (
     UserVoucherID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     UserID CHAR(36) NOT NULL,
     VoucherID CHAR(36) NOT NULL,
-    Status VARCHAR(50),
+    Status BIT NOT NULL DEFAULT b'1',
     FOREIGN KEY (UserID) REFERENCES Users(UserID),
     FOREIGN KEY (VoucherID) REFERENCES Vouchers(VoucherID)
 );
@@ -152,9 +162,9 @@ CREATE TABLE Orders (
     CodValue DECIMAL(18, 2) DEFAULT 0, -- Giá trị thu hộ
     InsuranceValue DECIMAL(18, 2) DEFAULT 0, -- Giá trị bảo hiểm
     ServiceTypeID INT NOT NULL, -- Mã loại dịch vụ
-    OrderAddress TEXT,
-    OrderPhone VARCHAR(15),
-    OrderName VARCHAR(255),
+    OrderAddress TEXT CHARACTER SET utf8mb4,
+    OrderPhone NVARCHAR(15),
+    OrderName NVARCHAR(255),
     FOREIGN KEY (UserID) REFERENCES Users(UserID),
     FOREIGN KEY (VoucherID) REFERENCES Vouchers(VoucherID)
 );
@@ -177,7 +187,7 @@ CREATE TABLE Ratings (
     UserID CHAR(36) NOT NULL,
     OrderDetailID CHAR(36) NOT NULL,
     RatingValue INT CHECK (RatingValue >= 1 AND RatingValue <= 5),
-    Comment TEXT,
+    Comment TEXT CHARACTER SET utf8mb4,
     RatingDate DATETIME NOT NULL,
     FOREIGN KEY (UserID) REFERENCES Users(UserID),
     FOREIGN KEY (OrderDetailID) REFERENCES OrderDetails(OrderDetailID)
@@ -215,6 +225,7 @@ CREATE TABLE Carts (
     UserID CHAR(36) NOT NULL,
     ProductVersionID CHAR(36) NOT NULL,
     Quantity INT NOT NULL,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES Users(UserID),
     FOREIGN KEY (ProductVersionID) REFERENCES ProductVersions(ProductVersionID)
 );
@@ -222,11 +233,11 @@ CREATE TABLE Carts (
 -- Tạo bảng Notifications
 CREATE TABLE Notifications (
     NotificationID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    Title VARCHAR(255) NOT NULL,
-    Content TEXT NOT NULL,
-    Type VARCHAR(50) NOT NULL,
+    Title NVARCHAR(255) NOT NULL,
+    Content TEXT CHARACTER SET utf8mb4 NOT NULL,
+    Type NVARCHAR(50) NOT NULL,
     NotificationDate DATETIME NOT NULL,
-    Status VARCHAR(50) NOT NULL
+    Status NVARCHAR(50) NOT NULL
 );
 
 -- Tạo bảng NotificationRecipients
@@ -234,7 +245,7 @@ CREATE TABLE NotificationRecipients (
     NotificationRecipientID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     NotificationID CHAR(36) NOT NULL,
     UserID CHAR(36) NOT NULL,
-    Status VARCHAR(50) NOT NULL,
+    Status NVARCHAR(50) NOT NULL,
     FOREIGN KEY (NotificationID) REFERENCES Notifications(NotificationID),
     FOREIGN KEY (UserID) REFERENCES Users(UserID)
 );
@@ -242,7 +253,7 @@ CREATE TABLE NotificationRecipients (
 -- Tạo bảng Roles
 CREATE TABLE Roles (
     Role_ID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    RoleName VARCHAR(255) NOT NULL
+    RoleName NVARCHAR(255) NOT NULL
 );
 
 -- Tạo bảng UserRoles
@@ -257,16 +268,16 @@ CREATE TABLE UserRoles (
 -- Tạo bảng Modules
 CREATE TABLE Modules (
     ModuleID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    ModuleName VARCHAR(255) NOT NULL,
-    description VARCHAR(255)
+    ModuleName NVARCHAR(255) NOT NULL,
+    description NVARCHAR(255)
 );
 
 -- Tạo bảng Permissions
 CREATE TABLE Permissions (
     PermissionID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     ModuleID CHAR(36) NOT NULL,
-    Code VARCHAR(255) NOT NULL,
-    PermissionName VARCHAR(255) NOT NULL,
+    Code NVARCHAR(255) NOT NULL,
+    PermissionName NVARCHAR(255) NOT NULL,
     FOREIGN KEY (ModuleID) REFERENCES Modules(ModuleID)
 );
 
@@ -282,7 +293,7 @@ CREATE TABLE PermissionRole (
 -- Tạo bảng OrderStatusType 
 CREATE TABLE OrderStatusType  (
     StatusID INT PRIMARY KEY,
-    Name VARCHAR(255) NOT NULL
+    Name NVARCHAR(255) NOT NULL
 );
 
 -- Tạo bảng OrderStatus
@@ -730,13 +741,13 @@ SELECT PermissionID, (SELECT Role_ID FROM Roles WHERE RoleName LIKE 'SuperAdmin'
 FROM Permissions;
 
 INSERT INTO OrderStatusType (StatusID, Name) VALUES
-(-1, 'Đã hủy'),
 (1, 'Chờ xác nhận'),
 (2, 'Chờ thanh toán'),
 (3, 'Đã thanh toán'),
 (4, 'Đã xác nhận'),
 (5, 'Đang giao hàng'),
-(6, 'Đã giao hàng');
+(6, 'Đã giao hàng'),
+(7, 'Đã hủy');
 
 INSERT INTO OrderStatus (OrderID, StatusID, Time)
-SELECT OrderID, 1, NOW() FROM Orders;
+SELECT OrderID, 1, '2024-11-11 05:55:13' FROM Orders;

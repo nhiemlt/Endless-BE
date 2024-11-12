@@ -21,7 +21,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     User findByPhone(String phone);
 
     // Tìm người dùng theo từ khóa (tên đăng nhập hoặc email)
-    @Query("SELECT u FROM User u WHERE u.username = :keyword OR u.email = :keyword")
+    @Query("SELECT u FROM User u WHERE u.userID = :keyword OR u.username = :keyword OR u.email = :keyword")
     User findByKeyword(@Param("keyword") String keyword);
 
     // Lấy danh sách các vai trò của người dùng theo ID người dùng
@@ -36,5 +36,21 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     @Query("SELECT u FROM User u WHERE u.fullname LIKE %:keyword% or u.username like %:keyword% or u.email like %:keyword% or u.phone like %:keyword%")
     Page<User> findAllUser(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT u FROM User u JOIN FETCH u.roles WHERE :keyword is null or " +
+            "( u.username LIKE %:keyword% OR u.fullname LIKE %:keyword% or u.email like %:keyword% or u.phone like %:keyword%)")
+    Page<User> searchEmployees(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT u FROM User u WHERE u.roles IS EMPTY AND (:keyword IS NULL OR " +
+            "(u.username LIKE %:keyword% OR u.fullname LIKE %:keyword% OR u.email LIKE %:keyword% OR u.phone LIKE %:keyword%))")
+    Page<User> searchCustomers(@Param("keyword") String keyword, Pageable pageable);
+
+    boolean existsByUsername(String username);
+
+    // Kiểm tra tồn tại của phone
+    boolean existsByPhone(String phone);
+
+    // Kiểm tra tồn tại của email
+    boolean existsByEmail(String email);
 
 }

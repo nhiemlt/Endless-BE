@@ -25,11 +25,6 @@ public class PermissionroleId implements Serializable {
 
     @Size(max = 36)
     @NotNull
-    @Column(name = "Role_ID", nullable = false, length = 36)
+    @Column(name = "RoleID", nullable = false, length = 36)
     private String roleId;
-
-    public PermissionroleId(UUID permissionId, UUID roleId) {
-        this.permissionID = permissionId.toString();
-        this.roleId = roleId.toString();
-    }
 }

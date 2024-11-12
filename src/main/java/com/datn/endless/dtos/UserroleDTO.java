@@ -3,14 +3,15 @@ package com.datn.endless.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Value;
 
 import java.io.Serializable;
-import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class UserRoleDTO implements Serializable {
-    private List<String> userIds;
-    private String roleIds;
+@AllArgsConstructor
+public class UserroleDTO implements Serializable {
+    String userRoleId;
+    String userId;
+    RoleDTO role;
 }

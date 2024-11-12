@@ -1,6 +1,5 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.entities.User;
 import com.datn.endless.models.GoogleLoginModel;
 import com.datn.endless.models.LoginModel;
 import com.datn.endless.models.RegisterModel;
@@ -8,7 +7,6 @@ import com.datn.endless.services.AuthService;
 import com.datn.endless.services.UserLoginInfomation;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,8 +66,6 @@ public class AuthController {
         // Trả về phản hồi từ service mà không cần ép kiểu
         return response;  // Trả về trực tiếp ResponseEntity từ service
     }
-
-
 
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, Object>> forgotPassword(@RequestParam String email) throws MessagingException {
