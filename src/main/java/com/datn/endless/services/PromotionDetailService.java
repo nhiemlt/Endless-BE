@@ -70,7 +70,7 @@ public class PromotionDetailService {
     private PromotionDetailDTO convertToDTO(Promotiondetail detail) {
         PromotionDetailDTO dto = new PromotionDetailDTO();
         dto.setPromotionDetailID(detail.getPromotionDetailID());
-        dto.setPromotionID(detail.getPromotionID().getPromotionID()); // Lấy ID của Promotion
+//        dto.setPromotionID(detail.getPromotionID().getPromotionID()); // Lấy ID của Promotion
         dto.setPercentDiscount(detail.getPercentDiscount());
         return dto;
     }

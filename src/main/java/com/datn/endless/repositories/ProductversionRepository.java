@@ -26,6 +26,7 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
 
 
     List<Productversion> findByProductID(Product product);
+    Productversion findFirstByProductID(Product product);
 
 
 

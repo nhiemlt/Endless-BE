@@ -124,17 +124,22 @@ public class EntryService {
         return dto;
     }
 
+    Integer getProductVersionCancelQuantity(String productVersionID){
+        Integer quantity = orderdetailRepository.countCancelledProductVersionQuantity(productVersionID);
+        return quantity == null ? 0 : quantity;
+    }
+
     Integer getProductVersionEntryQuantity(String productVersionID){
         Integer quantity = entrydetailRepository.findTotalPurchasedQuantityByProductVersion(productVersionID);
         return quantity == null ? 0 : quantity;
     }
 
     Integer getProductVersionOrderQuantity(String productVersionID){
-        Integer quantity = quantity = orderdetailRepository.findTotalSoldQuantityByProductVersion(productVersionID);
+        Integer quantity = orderdetailRepository.findTotalSoldQuantityByProductVersion(productVersionID);
         return quantity == null ? 0 : quantity;
     }
 
     Integer getProductVersionQuantity(String productVersionID){
-        return getProductVersionEntryQuantity(productVersionID) - getProductVersionOrderQuantity(productVersionID);
+        return getProductVersionEntryQuantity(productVersionID) - getProductVersionOrderQuantity(productVersionID) + getProductVersionCancelQuantity(productVersionID);
     }
 }

@@ -9,6 +9,8 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -27,9 +29,6 @@ public class Promotion {
     @Column(name = "Name", nullable = false)
     private String name;
 
-//    @Size(max = 255)
-//    @Column(name = "EN_name")
-//    private String enName;
 
     @NotNull
     @Column(name = "StartDate", nullable = false)
@@ -42,9 +41,9 @@ public class Promotion {
     @Lob
     @Column(name = "Poster")
     private String poster;
-
-//    @Lob
-//    @Column(name = "EN_description")
-//    private String enDescription;
+    
+    // Quan hệ với Promotiondetail
+    @OneToMany(mappedBy = "promotionID", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Promotiondetail> promotionDetails; // Kiểu List<Promotiondetail>
 
 }
