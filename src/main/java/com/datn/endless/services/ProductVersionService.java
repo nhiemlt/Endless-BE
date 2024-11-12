@@ -202,9 +202,17 @@ public class ProductVersionService {
 
 
 
+
+
     public ProductVersionDTO createProductVersion(ProductVersionModel productVersionModel) {
         Product product = productRepository.findById(productVersionModel.getProductID())
                 .orElseThrow(() -> new ProductNotFoundException("Không tìm thấy sản phẩm"));
+
+        // Kiểm tra trùng versionName cho cùng sản phẩm
+        boolean isVersionNameExists = productVersionRepository.existsByProductIDAndVersionName(product, productVersionModel.getVersionName());
+        if (isVersionNameExists) {
+            throw new ProductVersionConflictException("Phiên bản sản phẩm với tên này đã tồn tại");
+        }
 
         Productversion productVersion = new Productversion();
         productVersion.setProductVersionID(UUID.randomUUID().toString());
@@ -228,12 +236,15 @@ public class ProductVersionService {
 
 
 
-    // Cập nhật ProductVersion
     public ProductVersionDTO updateProductVersion(String productVersionID, ProductVersionModel productVersionModel) {
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
                 .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
 
-
+        // Kiểm tra trùng versionName cho sản phẩm
+        boolean isVersionNameExists = productVersionRepository.existsByProductIDAndVersionNameAndNotId(existingProductVersion.getProductID(), productVersionModel.getVersionName(), productVersionID);
+        if (isVersionNameExists) {
+            throw new ProductVersionConflictException("Phiên bản sản phẩm với tên này đã tồn tại");
+        }
 
         existingProductVersion.setVersionName(productVersionModel.getVersionName());
         existingProductVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
@@ -251,6 +262,10 @@ public class ProductVersionService {
 
         return convertToDTO(updatedVersion);
     }
+
+
+
+
 
 
     // Cập nhật Status
