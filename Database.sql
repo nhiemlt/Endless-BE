@@ -750,4 +750,4 @@ INSERT INTO OrderStatusType (StatusID, Name) VALUES
 (7, 'Đã hủy');
 
 INSERT INTO OrderStatus (OrderID, StatusID, Time)
-SELECT OrderID, 1, '2024-11-11 05:55:13' FROM Orders;
+SELECT OrderID, 1, '2024-6-6 05:55:13' FROM Orders;

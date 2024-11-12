@@ -423,10 +423,6 @@ public class OrderService {
             Orderstatus orderstatus = orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID())
                     .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy trạng thái hiện tại"));
 
-            System.out.println("Trạng thái: " + orderstatus.getStatusType().getId());
-            System.out.println("Thời gian tạo đơn: " + orderstatus.getTime());
-            System.out.println("Thời gian hiện tại: " + Instant.now());
-            System.out.println("Kết quả điều kiện: " + (orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofMinutes(15)))));
             if (orderstatus.getStatusType().getId() == 2 &&
                     orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofMinutes(15)))) {
                 cancelOrderUnpair(order.getOrderID());
@@ -440,12 +436,6 @@ public class OrderService {
         for (Order order : allOrder) {
             Orderstatus orderstatus = orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID())
                     .orElseThrow(() -> new StatusTypeNotFoundException("Không tìm thấy trạng thái hiện tại"));
-
-            System.out.println("Trạng thái: " + orderstatus.getStatusType().getId());
-            System.out.println("Thời gian tạo đơn: " + orderstatus.getTime());
-            System.out.println("Thời gian hiện tại: " + Instant.now());
-            System.out.println("Kết quả điều kiện: " + (orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofMinutes(15)))));
-            // Kiểm tra nếu trạng thái là 1 và thời gian tạo đơn cách đây hơn 15 phút
             if (orderstatus.getStatusType().getId() == 1 &&
                     orderstatus.getTime().isBefore(Instant.now().minus(Duration.ofDays(7)))) {
                 cancelOrderUnconfirm(order.getOrderID());

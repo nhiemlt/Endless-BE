@@ -11,15 +11,13 @@ public class OrderScheduler {
     @Autowired
     private OrderService orderService;
 
-//    @Scheduled(fixedRate = 60000)
-//    public void checkAndCancelUnpaidOrders() {
-//        System.out.println("\n\nQuét hóa đơn chưa thanh toán");
-//        orderService.cancelUnpaidOrdersBefore();
-//    }
-
     @Scheduled(fixedRate = 60000)
+    public void checkAndCancelUnpaidOrders() {
+        orderService.cancelUnpaidOrdersBefore();
+    }
+
+    @Scheduled(cron = "0 55 23 * * ?")
     public void checkAndCancelConfirmOrders() {
-        System.out.println("\n\nQuét hóa đơn chưa xác nhận");
         orderService.cancelWaitToConfirmOrdersBefore();
     }
 }
