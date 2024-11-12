@@ -101,6 +101,7 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
             Uservoucher userVoucher = new Uservoucher();
             userVoucher.setUserID(user);
             userVoucher.setVoucherID(voucher);
+            userVoucher.setStatus(true);
             uservoucherRepository.save(userVoucher);
         }
 
