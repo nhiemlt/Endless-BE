@@ -453,6 +453,8 @@ public class OrderService {
         dto.setOrderAddress(formatAddress(order.getOrderAddress()));
         dto.setOrderPhone(order.getOrderPhone());
         dto.setOrderName(order.getOrderName());
+        dto.setInsuranceValue(order.getInsuranceValue());
+        dto.setServiceTypeID(order.getServiceTypeID());
         dto.setStatus(orderstatusRepository.findTopByOrderIdOrderByTimeDesc(order.getOrderID()).get().getStatusType().getName());
         List<OrderDetailDTO> orderDetailDTOs = order.getOrderdetails() != null ?
                 order.getOrderdetails().stream().map(this::convertToOrderDetailDTO).collect(Collectors.toList()) :
@@ -464,6 +466,7 @@ public class OrderService {
         }
         BigDecimal money = totalProduct.add(order.getShipFee());
         dto.setTotalProductPrice(totalProduct);
+        dto.setCodValue(money);
         dto.setMoney(money);
 
         return dto;
@@ -503,7 +506,7 @@ public class OrderService {
         dto.setProductVersionImage(orderDetail.getProductVersionID().getImage()); // Assuming you have a ProductVersion entity
         dto.setQuantity(orderDetail.getQuantity());
         dto.setPrice(orderDetail.getPrice());
-        dto.setDiscountPrice(orderDetail.getDiscountPrice());
+        dto.setDiscountPrice(orderDetail.getDiscountPrice().doubleValue() == 0 ? orderDetail.getPrice() : orderDetail.getDiscountPrice());
         return dto;
     }
 

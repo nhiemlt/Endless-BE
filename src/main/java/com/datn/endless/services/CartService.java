@@ -1,6 +1,7 @@
 package com.datn.endless.services;
 
 import com.datn.endless.dtos.CartDTO;
+import com.datn.endless.dtos.ProductVersionDTO;
 import com.datn.endless.exceptions.QuantityException;
 import com.datn.endless.models.CartModel;
 import com.datn.endless.entities.Cart;
@@ -39,6 +40,9 @@ public class CartService {
 
     @Autowired
     private EntryService entryService;
+
+    @Autowired
+    private ProductVersionService productVersionService;
 
     // Lấy danh sách giỏ hàng của người dùng hiện tại
     public List<CartDTO> getCarts() {
@@ -124,23 +128,21 @@ public class CartService {
     private CartDTO convertToCartDTO(Cart cart) {
         CartDTO dto = new CartDTO();
         dto.setCartID(cart.getCartID());
-        dto.setProductVersionID(cart.getProductVersionID().getProductVersionID());
-        dto.setProductName(cart.getProductVersionID().getProductID().getName());
-        dto.setVersionName(cart.getProductVersionID().getVersionName());
-        dto.setImage(cart.getProductVersionID().getImage());
-        dto.setPrice(cart.getProductVersionID().getPrice());
-
-        // Giả sử áp dụng giảm giá 10%
-        BigDecimal discountRate = BigDecimal.valueOf(0.10);
-        BigDecimal discountAmount = cart.getProductVersionID().getPrice().multiply(discountRate);
-        BigDecimal discountPrice = cart.getProductVersionID().getPrice().subtract(discountAmount);
-        dto.setDiscountPrice(discountPrice);
+        Productversion productVersion = productversionRepository.findById(cart.getProductVersionID().getProductVersionID())
+                .orElseThrow(() -> new ProductVersionNotFoundException("Phiên bản sản phẩm không tìm thấy"));
+        ProductVersionDTO prodvDto = productVersionService.convertToDTO(productVersion);
+        dto.setProductVersionID(prodvDto.getProductVersionID());
+        dto.setProductName(prodvDto.getProduct().getName());
+        dto.setVersionName(prodvDto.getVersionName());
+        dto.setImage(prodvDto.getImage());
+        dto.setPrice(prodvDto.getPrice());
+        dto.setDiscountPrice(prodvDto.getDiscountPrice());
 
         dto.setQuantity(cart.getQuantity());
-        dto.setWeight(cart.getProductVersionID().getWeight().intValue());
-        dto.setHeight(cart.getProductVersionID().getHeight().intValue());
-        dto.setLength(cart.getProductVersionID().getLength().intValue());
-        dto.setWidth(cart.getProductVersionID().getWidth().intValue());
+        dto.setWeight(prodvDto.getWeight().intValue());
+        dto.setHeight(prodvDto.getHeight().intValue());
+        dto.setLength(prodvDto.getLength().intValue());
+        dto.setWidth(prodvDto.getWidth().intValue());
         return dto;
     }
 
