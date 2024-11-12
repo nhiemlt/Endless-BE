@@ -647,6 +647,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm mới thuộc tính', 'add_attribute_value'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính', 'update_attribute_value'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa giá trị thuộc tính', 'delete_attribute_value'),    
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa thuộc tính mới', 'delete_attribute'),
     
     -- Quản lý thương hiệu (BRAND)
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_all_brands'),
@@ -678,6 +679,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xem tất cả phiên bản sản phẩm', 'view_all_product_versions'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Thêm phiên bản sản phẩm mới', 'add_new_product_version'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xóa phiên bản sản phẩm', 'delete_product_version'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Cập nhật phiên bản sản phẩm mới', 'update_product_version'),
     
     
     -- Quản lý khuyến mãi (PROMOTIONS)
@@ -686,6 +688,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'update_promotion'),
 	((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Thêm mới khuyến mãi', 'add_new_promotion'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'search_promotions'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xóa khuyến mãi', 'delete_promotion'),
     
     -- Quản lý chi tiết khuyến mãi (PROMOTION DETAILS)
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add_new_promotion_details'),
