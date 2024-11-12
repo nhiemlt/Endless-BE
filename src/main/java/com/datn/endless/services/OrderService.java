@@ -598,7 +598,7 @@ public class OrderService {
         dto.setProductVersionImage(orderDetail.getProductVersionID().getImage()); // Assuming you have a ProductVersion entity
         dto.setQuantity(orderDetail.getQuantity());
         dto.setPrice(orderDetail.getPrice());
-        dto.setDiscountPrice(orderDetail.getDiscountPrice());
+        dto.setDiscountPrice(orderDetail.getDiscountPrice().doubleValue() == 0 ? orderDetail.getPrice() : orderDetail.getDiscountPrice());
         return dto;
     }
 
