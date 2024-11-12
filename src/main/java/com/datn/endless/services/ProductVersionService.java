@@ -97,53 +97,67 @@ public class ProductVersionService {
 
         List<Productversion> productVersions = new ArrayList<>();
 
-        // Lọc theo danh sách category names
-        if (categoryNames != null && !categoryNames.isEmpty()) {
-            for (String categoryName : categoryNames) {
-                List<Product> productsByCategory = productRepository.findByCategoryNameContaining(categoryName);
-                if (brandNames != null && !brandNames.isEmpty()) {
-                    for (String brandName : brandNames) {
-                        List<Product> productsByBrand = productRepository.findByBrandNameContaining(brandName);
-                        for (Product product : productsByCategory) {
-                            if (productsByBrand.contains(product)) {
-                                // Lọc các phiên bản có trạng thái 'Active' và nằm trong khoảng giá
-                                List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
-                                        .stream()
-                                        .filter(version -> version.getStatus().equalsIgnoreCase("Active") &&
-                                                version.getPrice().compareTo(minPrice) >= 0 &&
-                                                version.getPrice().compareTo(maxPrice) <= 0)
-                                        .collect(Collectors.toList());
-                                productVersions.addAll(activeVersions);
+        // Kiểm tra nếu không có categoryNames và brandNames, chỉ lọc theo giá
+        if ((categoryNames == null || categoryNames.isEmpty()) && (brandNames == null || brandNames.isEmpty())) {
+            // Lọc các phiên bản sản phẩm theo giá
+            List<Productversion> activeVersions = productVersionRepository.findAll()
+                    .stream()
+                    .filter(version -> version.getStatus().equalsIgnoreCase("Active") &&
+                            (minPrice == null || version.getPrice().compareTo(minPrice) >= 0) &&
+                            (maxPrice == null || version.getPrice().compareTo(maxPrice) <= 0))
+                    .collect(Collectors.toList());
+            productVersions.addAll(activeVersions);
+        }
+
+        // Nếu có categoryNames hoặc brandNames, lọc theo các tiêu chí này
+        else {
+            // Lọc theo danh sách category names
+            if (categoryNames != null && !categoryNames.isEmpty()) {
+                for (String categoryName : categoryNames) {
+                    List<Product> productsByCategory = productRepository.findByCategoryNameContaining(categoryName);
+                    if (brandNames != null && !brandNames.isEmpty()) {
+                        for (String brandName : brandNames) {
+                            List<Product> productsByBrand = productRepository.findByBrandNameContaining(brandName);
+                            for (Product product : productsByCategory) {
+                                if (productsByBrand.contains(product)) {
+                                    List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
+                                            .stream()
+                                            .filter(version -> version.getStatus().equalsIgnoreCase("Active") &&
+                                                    (minPrice == null || version.getPrice().compareTo(minPrice) >= 0) &&
+                                                    (maxPrice == null || version.getPrice().compareTo(maxPrice) <= 0))
+                                            .collect(Collectors.toList());
+                                    productVersions.addAll(activeVersions);
+                                }
                             }
                         }
-                    }
-                } else {
-                    // Nếu không có brand names, lọc theo category và giá
-                    for (Product product : productsByCategory) {
-                        List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
-                                .stream()
-                                .filter(version -> version.getStatus().equalsIgnoreCase("Active") &&
-                                        version.getPrice().compareTo(minPrice) >= 0 &&
-                                        version.getPrice().compareTo(maxPrice) <= 0)
-                                .collect(Collectors.toList());
-                        productVersions.addAll(activeVersions);
+                    } else {
+                        // Nếu không có brand names, lọc theo category và giá
+                        for (Product product : productsByCategory) {
+                            List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
+                                    .stream()
+                                    .filter(version -> version.getStatus().equalsIgnoreCase("Active") &&
+                                            (minPrice == null || version.getPrice().compareTo(minPrice) >= 0) &&
+                                            (maxPrice == null || version.getPrice().compareTo(maxPrice) <= 0))
+                                    .collect(Collectors.toList());
+                            productVersions.addAll(activeVersions);
+                        }
                     }
                 }
             }
-        }
 
-        // Lọc theo danh sách brand names nếu không có category names
-        if (brandNames != null && !brandNames.isEmpty() && (categoryNames == null || categoryNames.isEmpty())) {
-            for (String brandName : brandNames) {
-                List<Product> productsByBrand = productRepository.findByBrandNameContaining(brandName);
-                for (Product product : productsByBrand) {
-                    List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
-                            .stream()
-                            .filter(version -> version.getStatus().equalsIgnoreCase("Active") &&
-                                    version.getPrice().compareTo(minPrice) >= 0 &&
-                                    version.getPrice().compareTo(maxPrice) <= 0)
-                            .collect(Collectors.toList());
-                    productVersions.addAll(activeVersions);
+            // Lọc theo danh sách brand names nếu không có category names
+            if (brandNames != null && !brandNames.isEmpty() && (categoryNames == null || categoryNames.isEmpty())) {
+                for (String brandName : brandNames) {
+                    List<Product> productsByBrand = productRepository.findByBrandNameContaining(brandName);
+                    for (Product product : productsByBrand) {
+                        List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
+                                .stream()
+                                .filter(version -> version.getStatus().equalsIgnoreCase("Active") &&
+                                        (minPrice == null || version.getPrice().compareTo(minPrice) >= 0) &&
+                                        (maxPrice == null || version.getPrice().compareTo(maxPrice) <= 0))
+                                .collect(Collectors.toList());
+                        productVersions.addAll(activeVersions);
+                    }
                 }
             }
         }
@@ -191,8 +205,6 @@ public class ProductVersionService {
     public ProductVersionDTO createProductVersion(ProductVersionModel productVersionModel) {
         Product product = productRepository.findById(productVersionModel.getProductID())
                 .orElseThrow(() -> new ProductNotFoundException("Không tìm thấy sản phẩm"));
-
-
 
         Productversion productVersion = new Productversion();
         productVersion.setProductVersionID(UUID.randomUUID().toString());
