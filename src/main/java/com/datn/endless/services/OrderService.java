@@ -131,6 +131,7 @@ public class OrderService {
 
         // Tính tổng tiền
         BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), voucher);
+        totalMoney.add(orderModel.getShipFee());
 
         // Tạo mới Order
         Order order = new Order();
@@ -214,6 +215,7 @@ public class OrderService {
 
         // Tính tổng tiền
         BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), voucher);
+        totalMoney.add(orderModel.getShipFee());
 
         // Tạo mới Order
         Order order = new Order();
@@ -528,7 +530,7 @@ public class OrderService {
         // Handle potential null values
         dto.setCustomer(order.getUserID() != null ? convertUserToDTO(order.getUserID()) : null);
         dto.setVoucher(order.getVoucherID()!=null ? order.getVoucherID().getVoucherCode() : null);
-        dto.setVoucherDiscount(order.getVoucherDiscount());
+        dto.setVoucherDiscount(order.getVoucherDiscount()==null ? BigDecimal.ZERO : order.getVoucherDiscount());
         dto.setOrderDate(order.getOrderDate());
         dto.setShipFee(order.getShipFee());
         dto.setTotalMoney(order.getTotalMoney());
@@ -546,9 +548,9 @@ public class OrderService {
         for (OrderDetailDTO detail : orderDetailDTOs) {
             totalProduct = totalProduct.add(detail.getDiscountPrice() == null ? detail.getPrice() : detail.getDiscountPrice());
         }
-        BigDecimal money = totalProduct.add(order.getShipFee());
         dto.setTotalProductPrice(totalProduct);
-        dto.setCodValue(money);
+        dto.setCodValue(order.getCodValue());
+        BigDecimal money = totalProduct.add(order.getShipFee());
         dto.setMoney(money);
 
         return dto;
