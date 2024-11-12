@@ -5,6 +5,7 @@ import com.datn.endless.dtos.ProductVersionDTO;
 import com.datn.endless.entities.Productversion;
 import com.datn.endless.exceptions.ProductVersionInactiveException;
 import com.datn.endless.models.ProductVersionModel;
+import com.datn.endless.services.ProductService;
 import com.datn.endless.services.ProductVersionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ public class ProductVersionController {
 
     @Autowired
     private ProductVersionService productVersionService;
+    @Autowired
+    private ProductService productService;
 
     @GetMapping("/get-user")
     public ResponseEntity<Page<ProductVersionDTO>> searchProductVersions(
@@ -75,6 +78,21 @@ public class ProductVersionController {
         return productVersionService.getTop5BestSellingProductVersionsAllTime(pageable);
     }
 
+    // Lấy top 5 sản phẩm bán chạy nhất theo danh mục
+    @GetMapping("/top5ByCategory/{categoryID}")
+    public ResponseEntity<List<ProductVersionDTO>> getTop5BestSellingProductsByCategory(
+            @PathVariable String categoryID) {
+        List<ProductVersionDTO> topProducts = productVersionService.getTop5BestSellingProductsByCategory(categoryID);
+        return ResponseEntity.ok(topProducts);
+    }
+
+    // Lấy top 5 sản phẩm bán chạy nhất theo thương hiệu
+    @GetMapping("/top5ByBrand/{brandID}")
+    public ResponseEntity<List<ProductVersionDTO>> getTop5BestSellingProductsByBrand(
+            @PathVariable String brandID) {
+        List<ProductVersionDTO> topProducts = productVersionService.getTop5BestSellingProductsByBrand(brandID);
+        return ResponseEntity.ok(topProducts);
+    }
 
 
     @GetMapping

@@ -4,6 +4,9 @@ import com.datn.endless.dtos.PromotionproductDTO;
 import com.datn.endless.models.PromotionProductModel;
 import com.datn.endless.services.PromotionProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,41 +20,39 @@ public class PromotionProductController {
     @Autowired
     private PromotionProductService promotionProductService;
 
-    // Tạo mới một PromotionProduct
-    @PostMapping
-    public ResponseEntity<PromotionproductDTO> createPromotionProduct(@RequestParam String promotionDetailID, @RequestParam String productVersionID) {
-        PromotionProductModel promotionProductModel = new PromotionProductModel();
-        promotionProductModel.setPromotionDetailID(promotionDetailID);
-        promotionProductModel.setProductVersionID(productVersionID);
-        PromotionproductDTO createdProduct = promotionProductService.createPromotionProduct(promotionProductModel);
-        return ResponseEntity.ok(createdProduct);
-    }
 
+    @PostMapping
+    public ResponseEntity<List<PromotionproductDTO>> createPromotionProduct(
+            @RequestBody PromotionProductModel request) {
+
+        List<PromotionproductDTO> createdProducts = promotionProductService.createPromotionProduct(
+                request.getPromotionDetailID(),
+                request.getProductVersionIDs()
+        );
+
+        return ResponseEntity.ok(createdProducts);
+    }
+    // Cập nhật PromotionProduct theo ID
     @PutMapping("/{id}")
     public ResponseEntity<PromotionproductDTO> updatePromotionProduct(
             @PathVariable String id,
-            @RequestParam String promotionDetailID,
-            @RequestParam String productVersionID) {
-        PromotionProductModel promotionProductModel = new PromotionProductModel();
-        promotionProductModel.setPromotionDetailID(promotionDetailID);
-        promotionProductModel.setProductVersionID(productVersionID);
+            @RequestBody PromotionProductModel promotionProductModel) {
         PromotionproductDTO updatedProduct = promotionProductService.updatePromotionProduct(id, promotionProductModel);
         return ResponseEntity.ok(updatedProduct);
     }
-
-    // Lấy tất cả PromotionProducts
+    // Lấy tất cả PromotionProducts với phân trang và lọc theo percentDiscount
     @GetMapping
-    public ResponseEntity<List<PromotionproductDTO>> getAllPromotionProducts() {
-        List<PromotionproductDTO> products = promotionProductService.getAllPromotionProducts();
-        return ResponseEntity.ok(products);
+    public ResponseEntity<Page<PromotionproductDTO>> getAllPromotionProducts(
+            @RequestParam(defaultValue = "0") int page,  // Trang hiện tại
+            @RequestParam(defaultValue = "10") int size, // Kích thước trang
+            @RequestParam(required = false) Double percentDiscount) { // Phần trăm giảm giá (tùy chọn)
+
+        Pageable pageable = PageRequest.of(page, size);  // Tạo đối tượng Pageable
+        Page<PromotionproductDTO> promotionproductDTOs = promotionProductService.getAllPromotionProducts(pageable, percentDiscount);
+
+        return ResponseEntity.ok(promotionproductDTOs);
     }
 
-    // Lấy PromotionProduct theo ID
-    @GetMapping("/{id}")
-    public ResponseEntity<PromotionproductDTO> getPromotionProductById(@PathVariable String id) {
-        Optional<PromotionproductDTO> product = promotionProductService.getPromotionProductById(id);
-        return product.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
 
     // Xóa PromotionProduct theo ID
     @DeleteMapping("/{id}")

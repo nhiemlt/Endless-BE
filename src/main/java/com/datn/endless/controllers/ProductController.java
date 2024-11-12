@@ -40,8 +40,6 @@ public class ProductController {
         }
     }
 
-
-
     // Endpoint: Tạo mới sản phẩm
     @PostMapping
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductModel productModel) {

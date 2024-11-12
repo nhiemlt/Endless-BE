@@ -12,5 +12,4 @@ public class AttributeValueDTO {
     private String attributeName;
     private String attributeValueID;
     private String attributeValue;
-//    private String attributeEnValue;
 }

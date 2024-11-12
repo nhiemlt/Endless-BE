@@ -32,6 +32,20 @@ public interface OrderdetailRepository extends JpaRepository<Orderdetail, String
             "GROUP BY od.productVersionID.productVersionID " +
             "ORDER BY totalQuantity DESC")
     Page<Object[]> findTopSellingProductVersionsAllTime(Pageable pageable);
+  
+      @Query("SELECT pv, SUM(od.quantity) as totalQuantity " +
+            "FROM Orderdetail od JOIN od.productVersionID pv " +
+            "WHERE pv.productID.categoryID.categoryID = :categoryID " +
+            "GROUP BY pv " +
+            "ORDER BY totalQuantity DESC")
+    Page<Object[]> findTopSellingProductVersionsByCategory(@Param("categoryID") String categoryID, Pageable pageable);
+
+    @Query("SELECT pv, SUM(od.quantity) as totalQuantity " +
+            "FROM Orderdetail od JOIN od.productVersionID pv " +
+            "WHERE pv.productID.brandID.brandID = :brandID " +
+            "GROUP BY pv " +
+            "ORDER BY totalQuantity DESC")
+    Page<Object[]> findTopSellingProductVersionsByBrand(@Param("brandID") String brandID, Pageable pageable);
 
     @Query("SELECT SUM(od.quantity) " +
             "FROM Orderdetail od " +
