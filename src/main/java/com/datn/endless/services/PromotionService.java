@@ -1,26 +1,27 @@
 package com.datn.endless.services;
 
+import com.datn.endless.dtos.ProductversionPromotionDTO;
 import com.datn.endless.dtos.PromotionDTO;
-import com.datn.endless.dtos.PromotionDetailDTO;
+import com.datn.endless.dtos.PromotionproductDTO;
+import com.datn.endless.entities.Productversion;
 import com.datn.endless.entities.Promotion;
-import com.datn.endless.entities.Promotiondetail;
-import com.datn.endless.exceptions.PromotionNotFoundException;
+import com.datn.endless.entities.Promotionproduct;
+import com.datn.endless.exceptions.ProductVersionNotFoundException;
 import com.datn.endless.exceptions.PromotionAlreadyExistsException;
-import com.datn.endless.exceptions.DuplicateDiscountException;
-import com.datn.endless.exceptions.InvalidDiscountException;
-import com.datn.endless.models.PromotionModel;
+import com.datn.endless.exceptions.PromotionNotFoundException;
+import com.datn.endless.repositories.ProductversionRepository;
 import com.datn.endless.repositories.PromotionRepository;
-import com.datn.endless.repositories.PromotiondetailRepository;
+import com.datn.endless.repositories.PromotionproductRepository;
+import com.datn.endless.models.PromotionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,169 +31,176 @@ public class PromotionService {
 
     @Autowired
     private PromotionRepository promotionRepository;
+
     @Autowired
-    private PromotiondetailRepository promotiondetailRepository;
+    private PromotionproductRepository promotionproductRepository;
 
-    public PromotionDTO createPromotion(PromotionDTO promotionDTO) {
-        PromotionModel promotionModel = toModel(promotionDTO);
-        validatePromotionModel(promotionModel);
+    @Autowired
+    private ProductversionRepository productversionRepository;
 
-        // Chuyển đổi PromotionDTO sang Entity
-        Promotion promotion = toEntity(promotionModel);
-
-        // Lưu khuyến mãi vào cơ sở dữ liệu
-        promotionRepository.save(promotion);
-
-        // Lưu các chi tiết khuyến mãi
-        savePromotionDetails(promotion, promotionDTO.getPromotionDetails());
-
-        return toDTOWithDetails(promotion);
-    }
-
-    private void validatePromotionModel(PromotionModel promotionModel) {
-        // Kiểm tra trùng tên chỉ nếu tên thay đổi
-        if (promotionRepository.findByName(promotionModel.getName()).isPresent() &&
-                !promotionRepository.findByName(promotionModel.getName()).get().getPromotionID().equals(promotionModel.getPromotionID())) {
-            throw new PromotionAlreadyExistsException("Tên khuyến mãi đã tồn tại.");
+    // Lấy tất cả khuyến mãi với các tham số lọc khoảng thời gian, phân trang và sắp xếp
+    public Page<PromotionDTO> getAllPromotions(String keyword, Pageable pageable) {
+        // Nếu keyword không null, tìm kiếm theo tên
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return promotionRepository.findByNameContainingIgnoreCase(keyword, pageable)
+                    .map(this::convertToDTO);
         }
 
-        // Kiểm tra trùng thời gian chỉ với các khuyến mãi khác, không phải chính nó
-        List<Promotion> existingPromotions = promotionRepository.findAll();
-        for (Promotion existingPromotion : existingPromotions) {
-            if (!existingPromotion.getPromotionID().equals(promotionModel.getPromotionID()) && isOverlapping(existingPromotion, promotionModel)) {
-                throw new IllegalArgumentException("Khoảng thời gian khuyến mãi không hợp lệ.");
-            }
-        }
+        // Nếu không có keyword, trả về tất cả
+        return promotionRepository.findAll(pageable)
+                .map(this::convertToDTO);
     }
 
-    private boolean isOverlapping(Promotion existingPromotion, PromotionModel newPromotion) {
-        return !newPromotion.getStartDate().isAfter(existingPromotion.getEndDate()) &&
-                !newPromotion.getEndDate().isBefore(existingPromotion.getStartDate());
+    // Lấy khuyến mãi theo ID
+    public PromotionDTO getPromotionById(String promotionID) {
+        Optional<Promotion> promotion = promotionRepository.findById(promotionID);
+        return promotion.map(this::convertToDTO).orElse(null);
     }
 
-    @Transactional
-    public PromotionDTO updatePromotion(String id, PromotionDTO promotionDTO) {
-        // Tìm khuyến mãi cũ
-        Promotion promotion = promotionRepository.findById(id)
-                .orElseThrow(() -> new PromotionNotFoundException("Khuyến mãi không tồn tại."));
+    public PromotionDTO createPromotion(PromotionModel promotionModel) {
+        // Kiểm tra xem sản phẩm đã có khuyến mãi trong khoảng thời gian này chưa
+        for (String productVersionId : promotionModel.getProductVersionIds()) {
+            Productversion productVersion = productversionRepository.findById(productVersionId)
+                    .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
 
-        // Cập nhật khuyến mãi chính
-        promotion.setName(promotionDTO.getName());
-        promotion.setStartDate(promotionDTO.getStartDate());
-        promotion.setEndDate(promotionDTO.getEndDate());
-        promotion.setPoster(promotionDTO.getPoster());
-
-        // Nếu mảng promotionDetails là rỗng, xóa tất cả các chi tiết khuyến mãi cũ
-        if (promotionDTO.getPromotionDetails().isEmpty()) {
-            promotiondetailRepository.deleteByPromotionID(promotion);
-        } else {
-            // Cập nhật các chi tiết khuyến mãi mới
-            savePromotionDetails(promotion, promotionDTO.getPromotionDetails());
-        }
-
-        // Lưu lại khuyến mãi
-        promotionRepository.save(promotion);
-
-        return toDTOWithDetails(promotion);
-    }
-
-
-    private void savePromotionDetails(Promotion promotion, List<PromotionDetailDTO> promotionDetailsDTO) {
-        // Nếu promotionDetailsDTO là null, khởi tạo nó là danh sách rỗng
-        if (promotionDetailsDTO == null) {
-            promotionDetailsDTO = new ArrayList<>();
-        }
-
-        // Kiểm tra trùng lặp giảm giá trong promotionDetailsDTO
-        Set<Integer> discountSet = new HashSet<>();
-        for (PromotionDetailDTO detailDTO : promotionDetailsDTO) {
-            if (!discountSet.add(detailDTO.getPercentDiscount())) {
-                throw new DuplicateDiscountException("Giảm giá trùng lặp trong một khuyến mãi.");
-            }
-
-            // Kiểm tra giá trị percentDiscount có hợp lệ không (từ 0 đến 100)
-            if (detailDTO.getPercentDiscount() < 0 || detailDTO.getPercentDiscount() > 100) {
-                throw new InvalidDiscountException("Giảm giá phải nằm trong khoảng từ 0 đến 100.");
+            // Kiểm tra xem sản phẩm đã tham gia khuyến mãi nào chưa trong khoảng thời gian này
+            boolean isOverlapping = promotionRepository.existsByProductVersionAndTimeOverlap(productVersion.getProductVersionID(), promotionModel.getStartDate(), promotionModel.getEndDate());
+            if (isOverlapping) {
+                throw new PromotionAlreadyExistsException("Sản phẩm đã có khuyến mãi trong khoảng thời gian này");
             }
         }
 
-        // Lưu hoặc cập nhật PromotionDetails
-        List<Promotiondetail> promotionDetails = promotionDetailsDTO.stream()
-                .map(dto -> {
-                    Promotiondetail detail = new Promotiondetail();
-                    detail.setPromotionID(promotion);
-                    detail.setPercentDiscount(dto.getPercentDiscount());
-                    return detail;
-                })
-                .collect(Collectors.toList());
-
-        // Lưu tất cả chi tiết khuyến mãi
-        promotiondetailRepository.saveAll(promotionDetails);
-    }
-
-
-
-    public void deletePromotion(String id) {
-        Promotion promotion = promotionRepository.findById(id)
-                .orElseThrow(() -> new PromotionNotFoundException("Promotion không tồn tại với ID: " + id));
-
-        // Xóa tất cả các chi tiết khuyến mãi liên quan
-        promotiondetailRepository.deleteAll(promotion.getPromotionDetails());
-
-        // Xóa khuyến mãi
-        promotionRepository.deleteById(id);
-    }
-
-    public Page<PromotionDTO> findPromotionsByCriteria(String name, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        // Lấy các khuyến mãi theo tiêu chí
-        Page<Promotion> promotions = promotionRepository.findByCriteria(name, startDate, endDate, pageable);
-        // Chuyển đổi thành PromotionDTO và bổ sung PromotionDetails
-        return promotions.map(this::toDTOWithDetails);
-    }
-
-    private PromotionDTO toDTOWithDetails(Promotion promotion) {
-        PromotionDTO dto = new PromotionDTO();
-        dto.setPromotionID(promotion.getPromotionID());
-        dto.setName(promotion.getName());
-        dto.setStartDate(promotion.getStartDate());
-        dto.setEndDate(promotion.getEndDate());
-        dto.setPoster(promotion.getPoster());
-
-        // Kiểm tra và khởi tạo danh sách promotionDetails nếu null
-        List<PromotionDetailDTO> detailDTOs = Optional.ofNullable(promotion.getPromotionDetails())
-                .orElse(new ArrayList<>()) // Nếu promotionDetails là null, tạo một danh sách rỗng
-                .stream() // Chuyển sang stream
-                .map(this::toPromotionDetailDTO) // Sử dụng phương thức toPromotionDetailDTO
-                .collect(Collectors.toList());
-
-        dto.setPromotionDetails(detailDTOs);
-
-        return dto;
-    }
-
-    private PromotionDetailDTO toPromotionDetailDTO(Promotiondetail promotiondetail) {
-        PromotionDetailDTO dto = new PromotionDetailDTO();
-        dto.setPromotionDetailID(promotiondetail.getPromotionDetailID());
-        dto.setPromotionID(promotiondetail.getPromotionID().getPromotionID()); // Lấy PromotionID từ liên kết
-        dto.setPercentDiscount(promotiondetail.getPercentDiscount());
-        return dto;
-    }
-
-    private PromotionModel toModel(PromotionDTO dto) {
-        PromotionModel model = new PromotionModel();
-        model.setName(dto.getName());
-        model.setStartDate(dto.getStartDate());
-        model.setEndDate(dto.getEndDate());
-        model.setPoster(dto.getPoster());
-        return model;
-    }
-
-    private Promotion toEntity(PromotionModel model) {
+        // Tạo mới Promotion
         Promotion promotion = new Promotion();
-        promotion.setName(model.getName());
-        promotion.setStartDate(model.getStartDate());
-        promotion.setEndDate(model.getEndDate());
-        promotion.setPoster(model.getPoster());
-        return promotion;
+        promotion.setName(promotionModel.getName());
+        promotion.setStartDate(promotionModel.getStartDate());
+        promotion.setEndDate(promotionModel.getEndDate());
+        promotion.setPercentDiscount(promotionModel.getPercentDiscount());
+        promotion.setPoster(promotionModel.getPoster());
+        promotion.setActive(true);
+        promotion.setCreateDate(Instant.now());
+
+        Set<Promotionproduct> promotionproducts = new LinkedHashSet<>();
+        for (String productVersionId : promotionModel.getProductVersionIds()) {
+            Productversion productVersion = productversionRepository.findById(productVersionId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy phiên bản sản phẩm"));
+
+            Promotionproduct promotionproduct = new Promotionproduct();
+            promotionproduct.setPromotionID(promotion);
+            promotionproduct.setProductVersionID(productVersion);
+
+            promotionproducts.add(promotionproduct);
+        }
+
+        promotion.setPromotionproducts(promotionproducts);
+
+        Promotion savedPromotion = promotionRepository.save(promotion);
+
+        return convertToDTO(savedPromotion);
+    }
+
+    // Cập nhật khuyến mãi từ PromotionModel
+    public PromotionDTO updatePromotion(String promotionID, PromotionModel promotionModel) {
+        // Kiểm tra xem Promotion có tồn tại hay không
+        Promotion existingPromotion = promotionRepository.findById(promotionID)
+                .orElseThrow(() -> new PromotionNotFoundException("Không tìm thấy khuyến mãi"));
+
+        // Kiểm tra xem sản phẩm có trùng khuyến mãi trong thời gian cập nhật không
+        for (String productVersionId : promotionModel.getProductVersionIds()) {
+            Productversion productVersion = productversionRepository.findById(productVersionId)
+                    .orElseThrow(() -> new PromotionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
+
+            boolean isOverlapping = promotionRepository.existsByProductVersionAndTimeOverlap(productVersion.getProductVersionID(), promotionModel.getStartDate(), promotionModel.getEndDate());
+            if (isOverlapping) {
+                throw new PromotionAlreadyExistsException("Sản phẩm đã có khuyến mãi trong khoảng thời gian này");
+            }
+        }
+
+        // Cập nhật thông tin khuyến mãi
+        existingPromotion.setName(promotionModel.getName());
+        existingPromotion.setStartDate(promotionModel.getStartDate());
+        existingPromotion.setEndDate(promotionModel.getEndDate());
+        existingPromotion.setPercentDiscount(promotionModel.getPercentDiscount());
+        existingPromotion.setPoster(promotionModel.getPoster());
+        existingPromotion.setCreateDate(Instant.now());
+
+        // Xử lý Promotionproduct
+        Set<String> newProductVersionIds = promotionModel.getProductVersionIds();
+        Set<Promotionproduct> promotionproductsToRemove = new LinkedHashSet<>();
+        for (Promotionproduct promotionproduct : existingPromotion.getPromotionproducts()) {
+            if (!newProductVersionIds.contains(promotionproduct.getProductVersionID().getProductVersionID())) {
+                promotionproductsToRemove.add(promotionproduct);
+            }
+        }
+        existingPromotion.getPromotionproducts().removeAll(promotionproductsToRemove);
+        promotionproductRepository.deleteAll(promotionproductsToRemove);
+
+        Set<Promotionproduct> promotionproducts = existingPromotion.getPromotionproducts();
+        for (String productVersionId : newProductVersionIds) {
+            Productversion productVersion = productversionRepository.findById(productVersionId)
+                    .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
+
+            boolean alreadyExists = promotionproducts.stream()
+                    .anyMatch(p -> p.getProductVersionID().getProductVersionID().equals(productVersionId));
+
+            if (!alreadyExists) {
+                Promotionproduct promotionproduct = new Promotionproduct();
+                promotionproduct.setPromotionID(existingPromotion);
+                promotionproduct.setProductVersionID(productVersion);
+                promotionproducts.add(promotionproduct);
+            }
+        }
+
+        Promotion updatedPromotion = promotionRepository.save(existingPromotion);
+        return convertToDTO(updatedPromotion);
+    }
+
+    public PromotionDTO toggleActive(String promotionID) {
+        Promotion promotion = promotionRepository.findById(promotionID)
+                .orElseThrow(() -> new PromotionNotFoundException("Không tìm thấy khuyến mãi"));
+        promotion.setActive(!promotion.getActive());  // Nếu đang true thì thành false, và ngược lại
+        Promotion updatedPromotion = promotionRepository.save(promotion);
+
+        return convertToDTO(updatedPromotion);
+    }
+
+    // Xóa khuyến mãi
+    public void deletePromotion(String promotionID) {
+        Promotion promotion = promotionRepository.findById(promotionID)
+                .orElseThrow(() -> new PromotionNotFoundException("Không tìm thấy khuyến mãi"));
+            promotionRepository.delete(promotion);
+    }
+
+    private PromotionDTO convertToDTO(Promotion promotion) {
+        return new PromotionDTO(
+                promotion.getPromotionID(),
+                promotion.getName(),
+                promotion.getStartDate(),
+                promotion.getEndDate(),
+                promotion.getPercentDiscount(),
+                promotion.getPoster(),
+                promotion.getActive(),
+                promotion.getCreateDate(),
+                promotion.getPromotionproducts()
+                        .stream()
+                        .map(this::convertToPromotionProductDTO)
+                        .collect(Collectors.toSet())
+        );
+    }
+
+    // Chuyển đổi Promotionproduct sang PromotionproductDTO
+    private PromotionproductDTO convertToPromotionProductDTO(Promotionproduct promotionproduct) {
+        return new PromotionproductDTO(
+                promotionproduct.getPromotionProductID(),
+                new ProductversionPromotionDTO(
+                        promotionproduct.getProductVersionID().getProductVersionID(),
+                        promotionproduct.getProductVersionID().getProductID().getName(),
+                        promotionproduct.getProductVersionID().getVersionName(),
+                        promotionproduct.getProductVersionID().getPurchasePrice(),
+                        promotionproduct.getProductVersionID().getPrice(),
+                        promotionproduct.getProductVersionID().getStatus(),
+                        promotionproduct.getProductVersionID().getImage()
+                )
+        );
     }
 }

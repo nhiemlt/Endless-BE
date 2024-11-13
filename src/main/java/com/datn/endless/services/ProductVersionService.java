@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -85,8 +87,6 @@ public class ProductVersionService {
         // Chuyển đổi các kết quả tìm kiếm thành DTOs
         return pageResult.map(this::convertToDTO);
     }
-
-
 
 
     public List<ProductVersionDTO> filterProductVersionsByCategoriesAndBrands(
@@ -265,9 +265,6 @@ public class ProductVersionService {
 
 
 
-
-
-
     // Cập nhật Status
     public ProductVersionDTO updateProductVersionStatus(String productVersionID, String status) {
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
@@ -291,30 +288,49 @@ public class ProductVersionService {
 
     // Tính toán giá khuyến mãi
     private BigDecimal calculateDiscountPrice(String productVersionID) {
-        BigDecimal price = productVersionRepository.findById(productVersionID)
-                .orElseThrow(() -> new ProductVersionNotFoundException("Product Version not found"))
-                .getPrice();
+        // Bước 1: Lấy thông tin của phiên bản sản phẩm từ database
+        Productversion productVersion = productVersionRepository.findById(productVersionID)
+                .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
 
-        BigDecimal discountPricePerUnit = price;
-        LocalDate now = LocalDate.now();
+        // Bước 2: Lấy thông tin khuyến mãi áp dụng cho sản phẩm này trong thời gian hiện tại
+        List<Promotionproduct> promotionproducts = promotionproductRepository.findByProductVersionIDAndPromotionStartDateBeforeAndPromotionEndDateAfter(
+                productVersion.getProductVersionID(), Instant.now());
 
-        List<Promotionproduct> promotionProducts = promotionproductRepository.findByProductVersionID(productVersionID);
-        boolean hasValidPromotion = false;
+        if (promotionproducts.isEmpty()) {
+            return productVersion.getPrice();  // Không có khuyến mãi, trả về giá gốc
+        }
 
-        for (Promotionproduct promotionProduct : promotionProducts) {
-            Promotiondetail promotionDetail = promotionProduct.getPromotionDetailID();
-            Promotion promotion = promotionDetail.getPromotionID();
+        // Bước 3: Lấy khuyến mãi hợp lệ đầu tiên
+        Promotion validPromotion = null;
+        for (Promotionproduct promotionproduct : promotionproducts) {
+            Promotion promotion = promotionproduct.getPromotionID();
 
-            LocalDate startDate = promotion.getStartDate();
-            LocalDate endDate = promotion.getEndDate();
-            if (!now.isBefore(startDate) && !now.isAfter(endDate)) {
-                BigDecimal percentDiscount = BigDecimal.valueOf(promotionDetail.getPercentDiscount()).divide(BigDecimal.valueOf(100));
-                discountPricePerUnit = discountPricePerUnit.subtract(percentDiscount.multiply(price));
-                hasValidPromotion = true;
+            // Kiểm tra xem khuyến mãi có đang trong thời gian hiệu lực hay không
+            if (isPromotionActive(promotion)) {
+                validPromotion = promotion;
+                break;  // Dừng lại khi tìm thấy khuyến mãi hợp lệ đầu tiên
             }
         }
 
-        return hasValidPromotion ? discountPricePerUnit.max(BigDecimal.ZERO) : price;
+        // Nếu không có khuyến mãi hợp lệ, trả về giá gốc
+        if (validPromotion == null) {
+            return productVersion.getPrice();
+        }
+
+        // Bước 4: Tính toán giá sau khi giảm
+        BigDecimal originalPrice = productVersion.getPrice();  // Lấy giá gốc của sản phẩm
+        BigDecimal discountPercent = BigDecimal.valueOf(validPromotion.getPercentDiscount());
+        BigDecimal discountAmount = originalPrice.multiply(discountPercent).divide(BigDecimal.valueOf(100));
+        BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
+
+        // Bước 5: Trả về giá sau giảm
+        return discountedPrice.setScale(2, RoundingMode.HALF_UP);  // Làm tròn đến 2 chữ số thập phân
+    }
+
+    // Hàm kiểm tra xem khuyến mãi có đang trong thời gian hiệu lực hay không
+    private boolean isPromotionActive(Promotion promotion) {
+        Instant now = Instant.now();
+        return !promotion.getStartDate().isAfter(now) && !promotion.getEndDate().isBefore(now);
     }
 
     // Tính toán tỷ lệ phần trăm giảm giá cho ProductVersion
@@ -336,6 +352,7 @@ public class ProductVersionService {
 
         return discountPercentage.doubleValue(); // Trả về giá trị giảm giá dưới dạng double
     }
+
     // Chuyển đổi Productversion thành ProductVersionDTO
     ProductVersionDTO convertToDTO(Productversion productVersion) {
         ProductForProcVersionDTO productDTO = new ProductForProcVersionDTO();
@@ -382,7 +399,7 @@ public class ProductVersionService {
         List<PromotionDTO> promotions = promotionproductRepository.findByProductVersionID(productVersion.getProductVersionID())
                 .stream()
                 .map(promotionProduct -> {
-                    Promotion promotion = promotionProduct.getPromotionDetailID().getPromotionID();
+                    Promotion promotion = promotionProduct.getPromotionID();
                     PromotionDTO promotionDTO = new PromotionDTO();
                     promotionDTO.setPromotionID(promotion.getPromotionID());
                     promotionDTO.setName(promotion.getName());
