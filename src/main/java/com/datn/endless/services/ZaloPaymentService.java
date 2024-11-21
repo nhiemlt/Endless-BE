@@ -190,40 +190,37 @@ public class ZaloPaymentService {
     }
 
     public String handleZaloPayCallback(Map<String, String> payload) throws Exception {
-        // Lấy dữ liệu từ callback
-        String callbackData = payload.get("data");  // Dữ liệu của đơn hàng từ ZaloPay
-        String callbackMac = payload.get("mac");    // MAC từ ZaloPay để xác thực dữ liệu
+        // Lấy các tham số từ query string
+        String appid = payload.get("appid");               // ID ứng dụng
+        String apptransid = payload.get("apptransid");     // Mã giao dịch của đơn hàng
+        String amount = payload.get("amount");             // Số tiền thanh toán
+        String status = payload.get("status");             // Trạng thái giao dịch
+        String checksum = payload.get("checksum");         // MAC checksum
+        String bankcode = payload.get("bankcode");         // Mã ngân hàng (nếu có)
+        String discountamount = payload.get("discountamount"); // Số tiền giảm giá
 
-        // Chuyển dữ liệu callback thành đối tượng JSON để dễ xử lý
-        JSONObject dataJson = new JSONObject(callbackData);
-        String apptransid = dataJson.getString("apptransid");  // Mã giao dịch của đơn hàng
-        String zptransid = dataJson.getString("zptransid");    // Mã giao dịch của ZaloPay
-        String responseCode = dataJson.getString("returncode"); // Mã phản hồi
-        long amount = dataJson.getLong("amount");  // Số tiền ứng dụng nhận được
-        long userFeeAmount = dataJson.getLong("userfeeamount");  // Số tiền phí
-        long discountAmount = dataJson.getLong("discountamount"); // Số tiền giảm giá
+        // Tạo dữ liệu để tính MAC
+        String callbackData = String.format("appid=%s&apptransid=%s&amount=%s&status=%s&discountamount=%s",
+                appid, apptransid, amount, status, discountamount);
 
-        // Xác minh MAC để đảm bảo tính toàn vẹn
+        // Xác minh MAC để đảm bảo tính toàn vẹn của dữ liệu
         String calculatedMac = calculateZaloPayMac(callbackData);
-        if (!callbackMac.equals(calculatedMac)) {
+        if (!checksum.equals(calculatedMac)) {
             return "Invalid MAC"; // Nếu MAC không hợp lệ, trả về lỗi
         }
 
         // Kiểm tra trạng thái giao dịch
-        if ("00".equals(responseCode)) {
-            // Thanh toán thành công, cập nhật trạng thái đơn hàng
-            processSuccessfulTransaction(apptransid); // Cập nhật trạng thái thanh toán của đơn hàng
+        if ("0".equals(status)) {  // Nếu trạng thái là "0", tức là giao dịch thành công
+            processSuccessfulTransaction(apptransid); // Cập nhật trạng thái đơn hàng là thành công
             return "Transaction successful";
         } else {
-            // Thanh toán thất bại, xử lý giao dịch thất bại
-            processFailedTransaction(apptransid, responseCode);
+            processFailedTransaction(apptransid, status); // Nếu không thành công, xử lý thất bại
             return "Transaction failed";
         }
     }
 
     // Hàm tính MAC để xác thực callback từ ZaloPay
     private String calculateZaloPayMac(String callbackData) throws Exception {
-        // Sử dụng Key2 và HMACSHA256 để tính toán MAC
         String key2 = ZaloPayConfig.KEY2; // Đảm bảo KEY2 được cấu hình chính xác
         return HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, key2, callbackData);
     }
@@ -238,6 +235,7 @@ public class ZaloPaymentService {
     private void processFailedTransaction(String apptransid, String responseCode) {
         System.out.println("Transaction failed with apptransid: " + apptransid + " and response code: " + responseCode);
     }
+
 
     public String generateHtml(String title, String message, String content) {
         return "<!DOCTYPE html>" +

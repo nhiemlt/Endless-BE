@@ -1,5 +1,6 @@
 package com.datn.endless.controllers;
 
+import com.datn.endless.configs.ZaloPayConfig;
 import com.datn.endless.services.ZaloPaymentService;
 import com.datn.endless.exceptions.DuplicateResourceException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,9 +44,8 @@ public class ZaloPaymentController {
         }
     }
 
-    // Xử lý callback từ ZaloPay
-    @PostMapping("/callback")
-    public ResponseEntity<String> handleZaloPayCallback(@RequestBody Map<String, String> payload) {
+    @RequestMapping("/callback")
+    public ResponseEntity<String> handleZaloPayCallback(@RequestParam Map<String, String> payload) {
         try {
             // Xử lý callback từ ZaloPay
             String response = zaloPaymentService.handleZaloPayCallback(payload);
