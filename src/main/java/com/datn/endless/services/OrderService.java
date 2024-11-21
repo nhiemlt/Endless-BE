@@ -201,7 +201,12 @@ public class OrderService {
                 } else {
                     Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
                     order.getOrderdetails().add(orderDetail);  // Thêm vào Set orderdetails
-                    cartService.deleteCartItem(orderDetail.getProductVersionID().getProductVersionID());
+                    try{
+                        cartService.deleteCartItem(orderDetail.getProductVersionID().getProductVersionID());
+                    }
+                    catch(Exception e) {
+                        System.out.println("");
+                    }
                 }
             }
         } else {
@@ -275,7 +280,12 @@ public class OrderService {
                 } else {
                     Orderdetail orderDetail = convertToOrderDetailEntity(detailModel, order);
                     order.getOrderdetails().add(orderDetail);  // Thêm vào Set orderdetails
-                    cartService.deleteCartItem(orderDetail.getProductVersionID().getProductVersionID());
+                    try{
+                        cartService.deleteCartItem(orderDetail.getProductVersionID().getProductVersionID());
+                    }
+                    catch(Exception e) {
+                        System.out.println("");
+                    }
                 }
             }
         } else {
