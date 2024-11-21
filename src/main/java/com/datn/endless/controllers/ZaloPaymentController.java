@@ -1,6 +1,5 @@
 package com.datn.endless.controllers;
 
-import com.datn.endless.configs.ZaloPayConfig;
 import com.datn.endless.services.ZaloPaymentService;
 import com.datn.endless.exceptions.DuplicateResourceException;
 import org.springframework.beans.factory.annotation.Autowired;

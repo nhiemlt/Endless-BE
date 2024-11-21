@@ -62,7 +62,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/ratings/productVersion/{productVersionID}").permitAll()
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers("/api/permission/**").permitAll()
-                                .requestMatchers("/api/zalopay/**").permitAll()
+                                .requestMatchers("/api/payment/**").permitAll()
 
                                 // Các API yêu cầu đăng nhập
                                 .requestMatchers("/logout").authenticated()  // Sử dụng quyền logout
