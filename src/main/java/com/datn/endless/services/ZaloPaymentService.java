@@ -44,7 +44,7 @@ public class ZaloPaymentService {
 
         Map<String, Object> zalopayParams = new HashMap<>();
         zalopayParams.put("appid", ZaloPayConfig.APP_ID);
-        zalopayParams.put("apptransid", getCurrentTimeString("yyMMdd") + "_" + new Date().getTime());
+        zalopayParams.put("apptransid", order.getOrderID());
         long unixTimestampInMilliseconds = order.getOrderDate()
                 .atZone(ZoneId.systemDefault()) // Chuyển sang ZonedDateTime dựa trên múi giờ hệ thống
                 .toInstant()                   // Chuyển sang Instant
