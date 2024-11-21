@@ -8,23 +8,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, String> {
 
-    @Query("SELECT p FROM Promotion p WHERE "
-            + "(:name IS NULL OR p.name LIKE %:name%) AND "
-            + "(:startDate IS NULL OR p.startDate >= :startDate) AND "
-            + "(:endDate IS NULL OR p.endDate <= :endDate)")
-    Page<Promotion> findByCriteria(
-            @Param("name") String name,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            Pageable pageable);
+    @Query("SELECT p FROM Promotion p WHERE :keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<Promotion> findByNameContainingIgnoreCase(@Param("keyword") String keyword, Pageable pageable);
 
-    // Tìm khuyến mãi theo tên
-    Optional<Promotion> findByName(String name);
+    @Query("SELECT COUNT(p) > 0 FROM Promotion p JOIN p.promotionproducts pp " +
+            "WHERE pp.productVersionID.productVersionID = :productVersionID " +
+            "AND ((p.startDate BETWEEN :startDate AND :endDate) " +
+            "OR (p.endDate BETWEEN :startDate AND :endDate))")
+    boolean existsByProductVersionAndTimeOverlap(@Param("productVersionID") String productVersionID,
+                                                 @Param("startDate") Instant startDate,
+                                                 @Param("endDate") Instant endDate);
+
 }

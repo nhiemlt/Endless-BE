@@ -29,6 +29,19 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
     Productversion findFirstByProductID(Product product);
 
 
+    // Kiểm tra xem đã có versionName cho sản phẩm chưa
+    boolean existsByProductIDAndVersionName(Product product, String versionName);
+
+
+
+    // Kiểm tra trùng versionName với productID và loại trừ phiên bản hiện tại (để không kiểm tra trùng chính nó)
+    @Query("SELECT CASE WHEN COUNT(pv) > 0 THEN true ELSE false END " +
+            "FROM Productversion pv WHERE pv.productID = :product AND pv.versionName = :versionName AND pv.productVersionID <> :productVersionID")
+    boolean existsByProductIDAndVersionNameAndNotId(@Param("product") Product product,
+                                                    @Param("versionName") String versionName,
+                                                    @Param("productVersionID") String productVersionID);
+
+
 
 
 

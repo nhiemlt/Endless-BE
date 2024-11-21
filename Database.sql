@@ -1,5 +1,6 @@
+DROP DATABASE IF EXISTS EndlessEcommerce;
 -- Tạo cơ sở dữ liệu EndlessEcommerce
-CREATE DATABASE IF NOT EXISTS EndlessEcommerce;
+CREATE DATABASE EndlessEcommerce;
 USE EndlessEcommerce;
 
 -- Tạo bảng Brands
@@ -77,25 +78,19 @@ CREATE TABLE Promotions (
     Name NVARCHAR(255) NOT NULL,
     StartDate DATETIME NOT NULL,
     EndDate DATETIME NOT NULL,
-    Poster LONGTEXT,
-    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- Tạo bảng PromotionDetails
-CREATE TABLE PromotionDetails (
-    PromotionDetailID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    PromotionID CHAR(36) NOT NULL,
     PercentDiscount INT NOT NULL,
-    FOREIGN KEY (PromotionID) REFERENCES Promotions(PromotionID)
+    Poster LONGTEXT,
+    Active BOOLEAN DEFAULT TRUE,
+    CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tạo bảng PromotionProducts
 CREATE TABLE PromotionProducts (
     PromotionProductID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    PromotionDetailID CHAR(36) NOT NULL,
+    PromotionID CHAR(36) NOT NULL,
     ProductVersionID CHAR(36) NOT NULL,
-    FOREIGN KEY (PromotionDetailID) REFERENCES PromotionDetails(PromotionDetailID),
-    FOREIGN KEY (ProductVersionID) REFERENCES ProductVersions(ProductVersionID)
+    FOREIGN KEY (ProductVersionID) REFERENCES ProductVersions(ProductVersionID),
+    FOREIGN KEY (PromotionID) REFERENCES Promotions(PromotionID)
 );
 
 CREATE TABLE Users (
@@ -402,45 +397,61 @@ JOIN AttributeValues av ON (av.Value = '128GB' AND pv.VersionName = '128GB - Đe
 
 
 -- Thêm dữ liệu mẫu cho bảng Promotions
-INSERT INTO Promotions (Name,StartDate, EndDate, Poster) VALUES
-('Giảm giá mùa hè', '2024-06-01', '2024-06-30', 'https://example.com/posters/summer_sale.png'),
-('Black Friday', '2024-11-25', '2024-11-28', 'https://example.com/posters/black_friday.png'),
-('Tết Nguyên Đán', '2024-01-15', '2024-02-15', 'https://example.com/posters/lunar_new_year.png'),
-('Giảm giá Noel', '2024-12-20', '2024-12-25', 'https://example.com/posters/christmas_sale.png'),
-('Ngày của Mẹ', '2024-05-10', '2024-05-14', 'https://example.com/posters/mothers_day.png'),
-('Ngày Quốc Khánh', '2024-09-01', '2024-09-03', 'https://example.com/posters/national_day.png'),
-('Mùa tựu trường', '2024-08-15', '2024-09-15', 'https://example.com/posters/back_to_school.png'),
-('Cyber Monday', '2024-11-29', '2024-11-29', 'https://example.com/posters/cyber_monday.png'),
-('Valentine\'s Day', '2024-02-10', '2024-02-14', 'https://example.com/posters/valentines_day.png'),
-('Ngày Quốc tế Phụ nữ', '2024-03-07', '2024-03-08', 'https://example.com/posters/womens_day.png');
-
--- Thêm dữ liệu mẫu cho bảng PromotionDetails
-INSERT INTO PromotionDetails (PromotionID, PercentDiscount) VALUES
-((SELECT PromotionID FROM Promotions WHERE Name = 'Giảm giá mùa hè'), 10),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Black Friday'), 20),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Tết Nguyên Đán'), 15),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Giảm giá Noel'), 25),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Ngày của Mẹ'), 5),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Ngày Quốc Khánh'), 10),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Mùa tựu trường'), 15),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Cyber Monday'), 30),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Valentine\'s Day'), 20),
-((SELECT PromotionID FROM Promotions WHERE Name = 'Ngày Quốc tế Phụ nữ'), 15);
+INSERT INTO Promotions (Name, StartDate, EndDate, PercentDiscount) VALUES
+('Giảm giá mùa hè', '2024-06-01', '2024-06-30', 10),
+('Black Friday', '2024-11-29', '2024-11-29', 20),
+('Tết Nguyên Đán', '2025-01-01', '2025-01-31', 15),
+('Giảm giá Noel', '2024-12-24', '2024-12-25', 25),
+('Ngày của Mẹ', '2024-05-12', '2024-05-12', 5),
+('Ngày Quốc Khánh', '2024-09-02', '2024-09-02', 10),
+('Mùa tựu trường', '2024-08-01', '2024-08-31', 15),
+('Cyber Monday', '2024-12-02', '2024-12-02', 30),
+('Valentine\'s Day', '2024-02-14', '2024-02-14', 20),
+('Ngày Quốc tế Phụ nữ', '2024-03-08', '2024-03-08', 15);
 
 -- Thêm dữ liệu mẫu cho bảng PromotionProducts
-INSERT INTO PromotionProducts (PromotionDetailID, ProductVersionID)
-SELECT pd.PromotionDetailID, pv.ProductVersionID
-FROM PromotionDetails pd
-JOIN ProductVersions pv ON (pv.VersionName = '128GB - Đen' AND pd.PercentDiscount = 10) OR
-                           (pv.VersionName = '256GB - Trắng' AND pd.PercentDiscount = 20) OR
-                           (pv.VersionName = '16GB RAM - 512GB SSD' AND pd.PercentDiscount = 15) OR
-                           (pv.VersionName = '16GB RAM - 1TB SSD' AND pd.PercentDiscount = 25) OR
-                           (pv.VersionName = '128GB - Xám' AND pd.PercentDiscount = 5) OR
-                           (pv.VersionName = 'AirPods Pro' AND pd.PercentDiscount = 10) OR
-                           (pv.VersionName = 'Surface Pen' AND pd.PercentDiscount = 15) OR
-                           (pv.VersionName = 'Apple Watch Series 7' AND pd.PercentDiscount = 30) OR
-                           (pv.VersionName = 'Samsung QLED 55' AND pd.PercentDiscount = 20) OR
-                           (pv.VersionName = 'Asus RT-AX88U' AND pd.PercentDiscount = 15);
+INSERT INTO PromotionProducts (PromotionID, ProductVersionID)
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Giảm giá mùa hè') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Đen') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Black Friday') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '256GB - Trắng') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Tết Nguyên Đán') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 512GB SSD') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Giảm giá Noel') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '16GB RAM - 1TB SSD') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Ngày của Mẹ') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '128GB - Xám') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Ngày Quốc Khánh') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = 'AirPods Pro') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Mùa tựu trường') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = 'Bút cảm ứng - Đen') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Cyber Monday') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = '44mm - Xanh') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Valentine''s Day') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = 'QLED 55 inch') AS ProductVersionID
+UNION ALL
+SELECT 
+    (SELECT PromotionID FROM Promotions WHERE Name = 'Ngày Quốc tế Phụ nữ') AS PromotionID,
+    (SELECT ProductVersionID FROM ProductVersions WHERE VersionName = 'Router Wi-Fi 6') AS ProductVersionID;
+
+
 
 -- Thêm dữ liệu mẫu cho bảng Users
 INSERT INTO Users (Username, Fullname, Password, Phone, Email, Avatar, active, forgetPassword) VALUES
@@ -647,6 +658,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm mới thuộc tính', 'add_attribute_value'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính', 'update_attribute_value'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa giá trị thuộc tính', 'delete_attribute_value'),    
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa thuộc tính mới', 'delete_attribute'),
     
     -- Quản lý thương hiệu (BRAND)
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_all_brands'),
@@ -678,6 +690,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xem tất cả phiên bản sản phẩm', 'view_all_product_versions'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Thêm phiên bản sản phẩm mới', 'add_new_product_version'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xóa phiên bản sản phẩm', 'delete_product_version'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Cập nhật phiên bản sản phẩm mới', 'update_product_version'),
     
     
     -- Quản lý khuyến mãi (PROMOTIONS)
@@ -686,6 +699,7 @@ INSERT INTO Permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'update_promotion'),
 	((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Thêm mới khuyến mãi', 'add_new_promotion'),
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'search_promotions'),
+    ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xóa khuyến mãi', 'delete_promotion'),
     
     -- Quản lý chi tiết khuyến mãi (PROMOTION DETAILS)
     ((SELECT ModuleID FROM Modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add_new_promotion_details'),
@@ -750,4 +764,4 @@ INSERT INTO OrderStatusType (StatusID, Name) VALUES
 (7, 'Đã hủy');
 
 INSERT INTO OrderStatus (OrderID, StatusID, Time)
-SELECT OrderID, 1, '2024-11-11 05:55:13' FROM Orders;
+SELECT OrderID, 1, '2024-6-6 05:55:13' FROM Orders;

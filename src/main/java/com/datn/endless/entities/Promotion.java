@@ -6,11 +6,10 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.GenericGenerator;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -18,32 +17,41 @@ import java.util.List;
 @Table(name = "promotions")
 public class Promotion {
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+    @Size(max = 36)
+    @ColumnDefault("(uuid())")
     @Column(name = "PromotionID", nullable = false, length = 36)
     private String promotionID;
-
 
     @Size(max = 255)
     @NotNull
     @Column(name = "Name", nullable = false)
     private String name;
 
-
     @NotNull
     @Column(name = "StartDate", nullable = false)
-    private LocalDate startDate;
+    private Instant startDate;
 
     @NotNull
     @Column(name = "EndDate", nullable = false)
-    private LocalDate endDate;
+    private Instant endDate;
+
+    @NotNull
+    @Column(name = "PercentDiscount", nullable = false)
+    private Integer percentDiscount;
 
     @Lob
     @Column(name = "Poster")
     private String poster;
-    
-    // Quan hệ với Promotiondetail
-    @OneToMany(mappedBy = "promotionID", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Promotiondetail> promotionDetails; // Kiểu List<Promotiondetail>
+
+    @ColumnDefault("1")
+    @Column(name = "Active")
+    private Boolean active;
+
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "CreateDate")
+    private Instant createDate;
+
+    @OneToMany(mappedBy = "promotionID", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Promotionproduct> promotionproducts = new LinkedHashSet<>();
 
 }

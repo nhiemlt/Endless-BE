@@ -1,14 +1,11 @@
 package com.datn.endless.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
-
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -19,18 +16,15 @@ public class Promotionproduct {
     @Size(max = 36)
     @ColumnDefault("(uuid())")
     @Column(name = "PromotionProductID", nullable = false, length = 36)
-    private String promotionProductID = UUID.randomUUID().toString(); // Tự sinh UUID
+    private String promotionProductID;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "PromotionDetailID", nullable = false)
-    @JsonIgnore // Ignore this property during serialization
-    private Promotiondetail promotionDetailID;
+    @JoinColumn(name = "PromotionID", nullable = false)
+    private Promotion promotionID;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ProductVersionID", nullable = false)
-    @JsonIgnore // Ignore this property during serialization
     private Productversion productVersionID;
-
 }
