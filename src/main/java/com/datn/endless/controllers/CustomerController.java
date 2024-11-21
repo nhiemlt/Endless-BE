@@ -117,4 +117,37 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    // Thêm địa chỉ cho khách hàng
+    @PostMapping("/{userId}/addresses")
+    public ResponseEntity<UseraddressDTO> addAddress(
+            @PathVariable("userId") String userId,
+            @RequestBody UseraddressDTO userAddressDTO) {
+        try {
+            UseraddressDTO createdAddress = customerService.addUserAddress(userId, userAddressDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdAddress);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (DuplicateResourceException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
+    // Xóa địa chỉ của khách hàng
+    @DeleteMapping("/{userId}/addresses/{addressId}")
+    public ResponseEntity<String> removeAddress(
+            @PathVariable("userId") String userId,
+            @PathVariable("addressId") String addressId) {
+        try {
+            customerService.deleteUserAddress(addressId);
+            return ResponseEntity.ok("Address removed successfully");
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Address not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error removing address");
+        }
+    }
 }
