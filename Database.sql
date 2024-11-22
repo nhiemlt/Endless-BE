@@ -147,7 +147,7 @@ CREATE TABLE UserVouchers (
 
 -- Tạo bảng Orders
 CREATE TABLE Orders (
-    OrderID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
+    OrderID CHAR(32) PRIMARY KEY DEFAULT (REPLACE(UUID(), '-', '')),
     UserID CHAR(36) NOT NULL,
     VoucherID CHAR(36),
     OrderDate DATETIME NOT NULL,
@@ -167,7 +167,7 @@ CREATE TABLE Orders (
 -- Tạo bảng OrderDetails
 CREATE TABLE OrderDetails (
     OrderDetailID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
-    OrderID CHAR(36) NOT NULL,
+    OrderID CHAR(32) NOT NULL,
     ProductVersionID CHAR(36) NOT NULL,
     Quantity INT NOT NULL,
     Price DECIMAL(18, 2) NOT NULL,
@@ -293,7 +293,7 @@ CREATE TABLE OrderStatusType  (
 
 -- Tạo bảng OrderStatus
 CREATE TABLE OrderStatus (
-    OrderID CHAR(36) NOT NULL,
+    OrderID CHAR(32) NOT NULL,
     StatusID INT NOT NULL,
     Time DATETIME NOT NULL,
     PRIMARY KEY (OrderID, StatusID),

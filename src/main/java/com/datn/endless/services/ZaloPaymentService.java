@@ -5,6 +5,7 @@ import com.datn.endless.dtos.OrderDetailDTO;
 import com.datn.endless.entities.Order;
 import com.datn.endless.exceptions.DuplicateResourceException;
 import com.datn.endless.repositories.OrderRepository;
+import com.datn.endless.utils.UUIDUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.datn.endless.configs.ZaloPayConfig;
@@ -27,12 +28,12 @@ public class ZaloPaymentService {
     @Autowired
     OrderRepository orderRepository;
 
-    // Hàm lấy thời gian hiện tại theo định dạng
-    public String getCurrentTimeString(String format) {
+    public String getCurrentTimeString() {
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
-        SimpleDateFormat fmt = new SimpleDateFormat(format);
+        SimpleDateFormat fmt = new SimpleDateFormat("HHmmss");
         fmt.setCalendar(cal);
-        return fmt.format(cal.getTimeInMillis());
+
+        return fmt.format(cal.getTime());
     }
 
     // Tạo đơn hàng thanh toán
@@ -44,7 +45,7 @@ public class ZaloPaymentService {
 
         Map<String, Object> zalopayParams = new HashMap<>();
         zalopayParams.put("appid", ZaloPayConfig.APP_ID);
-        zalopayParams.put("apptransid", order.getOrderID());
+        zalopayParams.put("apptransid", getCurrentTimeString() + "_" + UUIDUtils.modifyUUID(order.getOrderID()));
         long unixTimestampInMilliseconds = order.getOrderDate()
                 .atZone(ZoneId.systemDefault()) // Chuyển sang ZonedDateTime dựa trên múi giờ hệ thống
                 .toInstant()                   // Chuyển sang Instant
@@ -104,14 +105,21 @@ public class ZaloPaymentService {
 
     // Lấy trạng thái đơn hàng
     public Map<String, Object> getStatusByApptransid(String apptransid) throws Exception {
+        // Nếu apptransid chứa UUID có dấu '-', chúng ta cần loại bỏ dấu '-'
+        String cleanedApptransid = UUIDUtils.modifyUUID(apptransid);  // Hàm này sẽ loại bỏ dấu '-'
+
+        // Lấy thông tin từ cấu hình
         String appid = ZaloPayConfig.APP_ID;
         String key1 = ZaloPayConfig.KEY1;
-        String data = appid + "|" + apptransid + "|" + key1; // appid|apptransid|key1
+
+        // Tạo dữ liệu cho việc tính toán MAC
+        String data = appid + "|" + cleanedApptransid + "|" + key1;  // Sử dụng cleanedApptransid đã loại bỏ dấu '-'
         String mac = HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, key1, data);
 
+        // Tạo map cho các tham số gửi yêu cầu
         Map<String, String> params = new HashMap<>();
         params.put("appid", appid);
-        params.put("apptransid", apptransid);
+        params.put("apptransid", cleanedApptransid);  // Sử dụng cleanedApptransid
         params.put("mac", mac);
 
         // Gửi yêu cầu GET
@@ -191,50 +199,31 @@ public class ZaloPaymentService {
 
     public String handleZaloPayCallback(Map<String, String> payload) throws Exception {
         // Lấy các tham số từ query string
-        String appid = payload.get("appid");               // ID ứng dụng
-        String apptransid = payload.get("apptransid");     // Mã giao dịch của đơn hàng
-        String amount = payload.get("amount");             // Số tiền thanh toán
-        String status = payload.get("status");             // Trạng thái giao dịch
-        String checksum = payload.get("checksum");         // MAC checksum
-        String bankcode = payload.get("bankcode");         // Mã ngân hàng (nếu có)
-        String discountamount = payload.get("discountamount"); // Số tiền giảm giá
+        String apptransid = payload.get("apptransid");
+        String status = payload.get("status");
+        String modifiedUUID = apptransid.substring(apptransid.indexOf('_') + 1);
+        String orderID = UUIDUtils.decodeModifiedUUID(modifiedUUID);
+        System.out.println("\n\n\n\n\n\n\n\n"+apptransid);
+        System.out.println(orderID);
 
-        // Tạo dữ liệu để tính MAC
-        String callbackData = String.format("appid=%s&apptransid=%s&amount=%s&status=%s&discountamount=%s",
-                appid, apptransid, amount, status, discountamount);
-
-        // Xác minh MAC để đảm bảo tính toàn vẹn của dữ liệu
-        String calculatedMac = calculateZaloPayMac(callbackData);
-        if (!checksum.equals(calculatedMac)) {
-            return "Invalid MAC"; // Nếu MAC không hợp lệ, trả về lỗi
-        }
 
         // Kiểm tra trạng thái giao dịch
-        if ("0".equals(status)) {  // Nếu trạng thái là "0", tức là giao dịch thành công
-            processSuccessfulTransaction(apptransid); // Cập nhật trạng thái đơn hàng là thành công
+        if ("1".equals(status)) {
+            processSuccessfulTransaction(orderID);
             return "Transaction successful";
         } else {
-            processFailedTransaction(apptransid, status); // Nếu không thành công, xử lý thất bại
             return "Transaction failed";
         }
     }
 
-    // Hàm tính MAC để xác thực callback từ ZaloPay
     private String calculateZaloPayMac(String callbackData) throws Exception {
-        String key2 = ZaloPayConfig.KEY2; // Đảm bảo KEY2 được cấu hình chính xác
-        return HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, key2, callbackData);
+        return HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, ZaloPayConfig.KEY1, callbackData);
     }
 
-    // Hàm xử lý giao dịch thành công và cập nhật trạng thái đơn hàng
     private void processSuccessfulTransaction(String apptransid) {
-        orderService.markOrderAsPaid(apptransid);
-        System.out.println("Order " + apptransid + " marked as paid.");
+        orderService.autoMarkOrderAsPaid(apptransid);
     }
 
-    // Hàm xử lý giao dịch thất bại
-    private void processFailedTransaction(String apptransid, String responseCode) {
-        System.out.println("Transaction failed with apptransid: " + apptransid + " and response code: " + responseCode);
-    }
 
 
     public String generateHtml(String title, String message, String content) {

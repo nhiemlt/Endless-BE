@@ -164,7 +164,7 @@ public class OrderService {
 
         // Tính tổng tiền
         BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), voucher);
-        totalMoney.add(orderModel.getShipFee());
+        totalMoney = totalMoney.add(orderModel.getShipFee());
 
         // Tạo mới Order
         Order order = new Order();
@@ -205,7 +205,7 @@ public class OrderService {
                         cartService.deleteCartItem(orderDetail.getProductVersionID().getProductVersionID());
                     }
                     catch(Exception e) {
-                        System.out.println("");
+                        System.out.print("");
                     }
                 }
             }
@@ -253,7 +253,7 @@ public class OrderService {
 
         // Tính tổng tiền
         BigDecimal totalMoney = calculateTotalMoney(orderModel.getOrderDetails(), voucher);
-        totalMoney.add(orderModel.getShipFee());
+        totalMoney = totalMoney.add(orderModel.getShipFee());
 
         // Tạo mới Order
         Order order = new Order();
@@ -284,7 +284,7 @@ public class OrderService {
                         cartService.deleteCartItem(orderDetail.getProductVersionID().getProductVersionID());
                     }
                     catch(Exception e) {
-                        System.out.println("");
+                        System.out.print("");
                     }
                 }
             }
@@ -363,7 +363,6 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    // Hủy đơn hàng
     public OrderStatusDTO updateOrderStatus(String orderId, int newStatusId, List<Integer> allowedCurrentStatusIds, int timeLimitInHours, String errorMessage) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Không tìm thấy đơn hàng"));
@@ -499,6 +498,17 @@ public class OrderService {
 
         sendOrderStatusNotification(orderId, "Đã thanh toán", "Đơn hàng "+orderId+" đã được thanh toán.");
         return updatedStatus;
+    }
+
+    public void autoMarkOrderAsPaid(String orderId) {
+        autoUpdateOrderStatus(
+                orderId,
+                3, // Trạng thái 'Đã thanh toán'
+                Arrays.asList(1, 2),
+                "Không thể đặt đơn hàng này thành đã thanh toán"
+        );
+
+        sendOrderStatusNotification(orderId, "Đã thanh toán", "Đơn hàng "+orderId+" đã được thanh toán.");
     }
 
     public OrderStatusDTO markOrderAsShipping(String orderId) {
