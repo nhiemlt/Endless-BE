@@ -150,4 +150,17 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error removing address");
         }
     }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<String> deleteCustomer(@PathVariable String userId) {
+        try {
+            customerService.deleteCustomer(userId);
+            return ResponseEntity.ok("Customer deleted successfully");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting customer");
+        }
+    }
+
 }

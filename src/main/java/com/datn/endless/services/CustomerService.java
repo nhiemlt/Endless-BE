@@ -137,6 +137,17 @@ public class CustomerService {
         userAddressRepository.delete(userAddress);
     }
 
+    public void deleteCustomer(String userId) {
+        User user = customerRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy khách hàng với ID: " + userId));
+
+        if (!user.getRoles().isEmpty()) {
+            throw new DuplicateResourceException("Đây là nhân viên chứ không phải khách hàng");
+        }
+
+        customerRepository.delete(user);
+    }
+
     public String createRandomPassword(String username, String email) {
         String newPassword = RandomUtil.generateComplexRandomString();
         String passwordEndcode = Encode.hashCode(newPassword);
