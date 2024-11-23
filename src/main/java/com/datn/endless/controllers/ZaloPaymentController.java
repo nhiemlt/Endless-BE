@@ -56,19 +56,31 @@ public class ZaloPaymentController {
                         "Cảm ơn bạn đã thanh toán.",
                         "Đơn hàng của bạn đã được thanh toán thành công.");
                 return new ResponseEntity<>(htmlResponse, HttpStatus.OK);
-            } else {
+            }
+            else if(response.equals("Invalid MAC")) {
+                String htmlResponse = zaloPaymentService.generateHtml("Thanh toán thất bại",
+                        "Xảy ra lỗi trong quá trình thanh toán.",
+                        "Lỗi dữ liệu gọi về");
+                return new ResponseEntity<>(htmlResponse, HttpStatus.OK);
+            }else {
                 // Thanh toán thất bại
+                String errorCode = payload.get("status");  // Lấy mã lỗi từ callback
+
+                // Tạo thông điệp lỗi chi tiết
                 String htmlResponse = zaloPaymentService.generateHtml("Thanh toán thất bại",
                         "Giao dịch không thành công.",
-                        "Xin lỗi, có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại sau.");
+                        "Mã lỗi: " + errorCode + "<br/>" +
+                                "Reponse: " + response + "<br/>"+
+                                "Xin lỗi, có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại sau.");
                 return new ResponseEntity<>(htmlResponse, HttpStatus.OK);
             }
         } catch (Exception e) {
             // Xử lý lỗi khi nhận callback
             String htmlResponse = zaloPaymentService.generateHtml("Có lỗi xảy ra",
-                    "Có lỗi xảy ra khi xử lý giao dịch.",
+                    e.getMessage(),
                     "Vui lòng liên hệ với chúng tôi để biết thêm chi tiết.");
             return new ResponseEntity<>(htmlResponse, HttpStatus.BAD_REQUEST);
         }
     }
+
 }

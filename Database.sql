@@ -145,7 +145,7 @@ CREATE TABLE UserVouchers (
     FOREIGN KEY (VoucherID) REFERENCES Vouchers(VoucherID)
 );
 
--- Tạo bảng Orders
+-- Tạo bảng Orderss
 CREATE TABLE Orders (
     OrderID CHAR(36) PRIMARY KEY DEFAULT (UUID()),
     UserID CHAR(36) NOT NULL,
