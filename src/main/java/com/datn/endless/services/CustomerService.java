@@ -34,6 +34,12 @@ public class CustomerService {
     @Autowired
     MailService mailService;
 
+    public CustomerDTO getCustomerById(String userId) {
+        User user = customerRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy khách hàng với ID: " + userId));
+        return convertToCustomerDTO(user);
+    }
+
     public Page<CustomerDTO> getCustomers(String keyword, Pageable pageable) {
         Page<User> users = customerRepository.searchCustomers(keyword, pageable);
         return users.map(this::convertToCustomerDTO);
@@ -129,6 +135,17 @@ public class CustomerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy địa chỉ với ID: " + addressId));
 
         userAddressRepository.delete(userAddress);
+    }
+
+    public void deleteCustomer(String userId) {
+        User user = customerRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy khách hàng với ID: " + userId));
+
+        if (!user.getRoles().isEmpty()) {
+            throw new DuplicateResourceException("Đây là nhân viên chứ không phải khách hàng");
+        }
+
+        customerRepository.delete(user);
     }
 
     public String createRandomPassword(String username, String email) {
