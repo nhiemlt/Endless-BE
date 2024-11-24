@@ -44,6 +44,7 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
 
 
 
+    public List<Productversion> findByProductID_BrandID_Name(String brandName);
 
 
 

@@ -8,4 +8,5 @@ public class ProductForProcVersionDTO {
     private String name;
     private String CategoryName;
     private String brandName;
+    private String description;
 }

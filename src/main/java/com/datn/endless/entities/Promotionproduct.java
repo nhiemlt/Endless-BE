@@ -15,6 +15,7 @@ public class Promotionproduct {
     @Id
     @Size(max = 36)
     @ColumnDefault("(uuid())")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "PromotionProductID", nullable = false, length = 36)
     private String promotionProductID;
 

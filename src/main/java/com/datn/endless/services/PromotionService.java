@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,9 +70,14 @@ public class PromotionService {
                 throw new PromotionAlreadyExistsException("Sản phẩm đã có khuyến mãi trong khoảng thời gian này");
             }
         }
-
+// Kiểm tra trùng tên khuyến mãi
+        boolean isPromotionNameExist = promotionRepository.existsByName(promotionModel.getName());
+        if (isPromotionNameExist) {
+            throw new PromotionAlreadyExistsException("Tên khuyến mãi đã tồn tại");
+        }
         // Tạo mới Promotion
         Promotion promotion = new Promotion();
+        promotion.setPromotionID(UUID.randomUUID().toString());
         promotion.setName(promotionModel.getName());
         promotion.setStartDate(promotionModel.getStartDate());
         promotion.setEndDate(promotionModel.getEndDate());
@@ -105,16 +111,30 @@ public class PromotionService {
         Promotion existingPromotion = promotionRepository.findById(promotionID)
                 .orElseThrow(() -> new PromotionNotFoundException("Không tìm thấy khuyến mãi"));
 
-        // Kiểm tra xem sản phẩm có trùng khuyến mãi trong thời gian cập nhật không
-        for (String productVersionId : promotionModel.getProductVersionIds()) {
-            Productversion productVersion = productversionRepository.findById(productVersionId)
-                    .orElseThrow(() -> new PromotionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
+        // Lấy danh sách các ProductVersionID hiện tại trong khuyến mãi
+        Set<String> currentProductVersionIds = existingPromotion.getPromotionproducts().stream()
+                .map(p -> p.getProductVersionID().getProductVersionID())
+                .collect(Collectors.toSet());
 
-            boolean isOverlapping = promotionRepository.existsByProductVersionAndTimeOverlap(productVersion.getProductVersionID(), promotionModel.getStartDate(), promotionModel.getEndDate());
-            if (isOverlapping) {
-                throw new PromotionAlreadyExistsException("Sản phẩm đã có khuyến mãi trong khoảng thời gian này");
+        // Kiểm tra trùng lặp chỉ với các sản phẩm mới
+        for (String productVersionId : promotionModel.getProductVersionIds()) {
+            if (!currentProductVersionIds.contains(productVersionId)) {
+                Productversion productVersion = productversionRepository.findById(productVersionId)
+                        .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
+
+                // Kiểm tra trùng khuyến mãi trong khoảng thời gian này
+                boolean isOverlapping = promotionRepository.existsByProductVersionAndTimeOverlap(productVersion.getProductVersionID(), promotionModel.getStartDate(), promotionModel.getEndDate());
+                if (isOverlapping) {
+                    throw new PromotionAlreadyExistsException("Sản phẩm đã có khuyến mãi trong khoảng thời gian này");
+                }
             }
         }
+        // Kiểm tra trùng tên khuyến mãi
+        boolean isPromotionNameExist = promotionRepository.existsByNameAndPromotionIDNot(promotionModel.getName(), promotionID);
+        if (isPromotionNameExist) {
+            throw new PromotionAlreadyExistsException("Tên khuyến mãi đã tồn tại");
+        }
+
 
         // Cập nhật thông tin khuyến mãi
         existingPromotion.setName(promotionModel.getName());
@@ -145,8 +165,10 @@ public class PromotionService {
 
             if (!alreadyExists) {
                 Promotionproduct promotionproduct = new Promotionproduct();
+                promotionproduct.setPromotionProductID(UUID.randomUUID().toString());
                 promotionproduct.setPromotionID(existingPromotion);
                 promotionproduct.setProductVersionID(productVersion);
+
                 promotionproducts.add(promotionproduct);
             }
         }
@@ -187,7 +209,6 @@ public class PromotionService {
                         .collect(Collectors.toSet())
         );
     }
-
     // Chuyển đổi Promotionproduct sang PromotionproductDTO
     private PromotionproductDTO convertToPromotionProductDTO(Promotionproduct promotionproduct) {
         return new PromotionproductDTO(
