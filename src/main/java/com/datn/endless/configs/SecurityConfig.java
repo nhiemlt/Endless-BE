@@ -163,6 +163,13 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasAuthority("view_all_users")
                                 .requestMatchers(HttpMethod.PUT, "/api/users/{id}").hasAuthority("update_user")
                                 .requestMatchers(HttpMethod.POST, "/api/users/get-infor").hasAuthority("add_new_user")
+
+                                .requestMatchers("/api/customers/**").hasAuthority("add_new_user")
+                                .requestMatchers("/api/employees/**").hasAuthority("add_new_user")
+
+
+
+
                                 .anyRequest().authenticated()
                 )
 
