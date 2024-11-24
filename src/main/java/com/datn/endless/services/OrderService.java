@@ -296,7 +296,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         saveOrderVNPayStatus(savedOrder);
 
-        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã " + order.getOrderID() + " đã được tạo thành công!");
+        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã " + order.getOrderID() + " đã được tạo thành công");
 
         return convertToOrderDTO(savedOrder);
     }
