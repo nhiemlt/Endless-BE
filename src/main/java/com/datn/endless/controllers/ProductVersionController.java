@@ -155,5 +155,13 @@ public class ProductVersionController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+
+    // Endpoint lấy tất cả phiên bản sản phẩm theo thương hiệu
+    @GetMapping("/brand/{brandName}")
+    public ResponseEntity<List<ProductVersionDTO>> getProductVersionsByBrand(@PathVariable String brandName) {
+        List<ProductVersionDTO> productVersions = productVersionService.getProductVersionsByBrand(brandName);
+        return ResponseEntity.ok(productVersions);
+    }
+
 }
 

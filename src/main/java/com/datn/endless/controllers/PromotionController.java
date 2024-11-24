@@ -63,6 +63,8 @@ public class PromotionController {
         }
     }
 
+
+
     @PostMapping()
     public ResponseEntity<?> createPromotion(@Valid @RequestBody PromotionModel promotionModel, BindingResult result) {
         if (result.hasErrors()) {
@@ -82,6 +84,7 @@ public class PromotionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
         }
     }
+
 
     @PutMapping("/{promotionID}")
     public ResponseEntity<?> updatePromotion(@PathVariable String promotionID, @Valid @RequestBody PromotionModel promotionModel, BindingResult result) {

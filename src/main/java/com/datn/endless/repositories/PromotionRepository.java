@@ -24,4 +24,10 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
                                                  @Param("startDate") Instant startDate,
                                                  @Param("endDate") Instant endDate);
 
+    // Kiểm tra xem tên khuyến mãi đã tồn tại hay chưa
+    @Query("SELECT COUNT(p) > 0 FROM Promotion p WHERE LOWER(p.name) = LOWER(:name)")
+    boolean existsByName(@Param("name") String name);
+
+    public boolean existsByNameAndPromotionIDNot(String name, String promotionID);
+
 }

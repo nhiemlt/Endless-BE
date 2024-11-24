@@ -20,4 +20,6 @@ public interface PromotionproductRepository extends JpaRepository<Promotionprodu
     List<Promotionproduct> findByProductVersionIDAndPromotionStartDateBeforeAndPromotionEndDateAfter(
             @Param("productVersionID") String productVersionID,
             @Param("currentTime") Instant currentTime);
+
+
 }
