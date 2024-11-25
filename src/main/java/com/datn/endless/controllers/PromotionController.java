@@ -106,7 +106,7 @@ public class PromotionController {
         }
     }
 
-    @RequestMapping("/{promotionID}/toggle")
+    @PostMapping("/{promotionID}/toggle")
     public ResponseEntity<?> toggleActive(@PathVariable String promotionID) {
         try {
             PromotionDTO updatedPromotion = promotionService.toggleActive(promotionID);
