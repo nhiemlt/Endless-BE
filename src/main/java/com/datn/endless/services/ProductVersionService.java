@@ -6,10 +6,7 @@ import com.datn.endless.exceptions.*;
 import com.datn.endless.models.ProductVersionModel;
 import com.datn.endless.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 
@@ -19,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,6 +47,12 @@ public class ProductVersionService {
 
     @Autowired
     private OrderdetailRepository orderDetailRepository;
+    @Autowired
+    private RatingRepository ratingRepository;
+    @Autowired
+    private OrderdetailRepository orderdetailRepository;
+    @Autowired
+    private ProductversionRepository productversionRepository;
 
 
     // Tìm kiếm ProductVersion theo ID
@@ -75,15 +79,16 @@ public class ProductVersionService {
     }
 
     public Page<ProductVersionDTO> getProductVersionsByKeyword(int page, int size, String sortBy, String direction, String keyword) {
+        // Tạo đối tượng Pageable với thông tin phân trang và sắp xếp
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        // Tìm kiếm ProductVersion theo từ khóa
-        Page<Productversion> pageResult = (keyword != null && !keyword.isEmpty())
-                ? productVersionRepository.findByVersionNameContaining(keyword, pageable)
-                : productVersionRepository.findByStatusActive(pageable);
+        // Lọc danh sách ProductVersion theo từ khóa nếu có
+        Page<Productversion> pageResult = (keyword != null && !keyword.isEmpty()) ?
+                productversionRepository.findByVersionNameContaining(keyword, pageable) :
+                productversionRepository.findByStatusActive(pageable);
 
-        // Chuyển đổi các kết quả tìm kiếm thành DTOs
+        // Chuyển đổi danh sách ProductVersion thành DTOs
         return pageResult.map(this::convertToDTO);
     }
 
@@ -366,8 +371,8 @@ public class ProductVersionService {
         dto.setQuantitySold(purchaseOrderService.getProductVersionOrderQuantity(productVersion.getProductVersionID())); // Số lượng đã bán
         dto.setQuantityAvailable(purchaseOrderService.getProductVersionQuantity(productVersion.getProductVersionID())); // Số lượng có sẵn
         List<RatingDTO> ratings = ratingService.getRatingsByProductVersionId(productVersion.getProductVersionID());
-        dto.setAverageRating(ratings.stream().mapToDouble(RatingDTO::getRatingValue).average().orElse(0)); // Đánh giá trung bình
         dto.setNumberOfReviews(ratingService.getRatingCountByProductVersionId(productVersion.getProductVersionID())); // So luong danh gia cua sp
+        dto.setAverageRating(ratings.stream().mapToDouble(RatingDTO::getRatingValue).average().orElse(0)); // Đánh giá trung bình
 //        dto.setStatus(productVersion.getStatus());
         dto.setImage(productVersion.getImage());
         // Tính toán và thêm giá khuyến mãi vào DTO
@@ -452,6 +457,65 @@ public class ProductVersionService {
         // Chuyển đổi tất cả các Productversion thành ProductVersionDTO
         return productVersions.stream()
                 .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    public long countProducts() {
+        return productRepository.countProducts();
+    }
+
+    public long countBrands() {
+        return productRepository.countBrands();
+    }
+
+
+    // Đếm số lượng đánh giá
+    public long getRatingCountByProductVersionId(String productVersionID) {
+        return ratingRepository.countByOrderDetailID_ProductVersionID_ProductVersionID(productVersionID);
+    }
+
+    // Số lượng đã bán
+    public Integer getProductVersionOrderQuantity(String productVersionID) {
+        Integer quantity = orderdetailRepository.findTotalSoldQuantityByProductVersion(productVersionID);
+        return quantity == null ? 0 : quantity;
+    }
+
+
+    // Lấy danh sách sản phẩm có sắp xếp theo tiêu chí và chiều, chỉ lấy sản phẩm có trạng thái active
+    public List<ProductVersionDTO> getSortedProductVersions(String sortBy, String direction) {
+        // Lọc các sản phẩm có trạng thái active
+        List<Productversion> productVersions = productversionRepository.findByStatus("Active");
+
+        // Ánh xạ danh sách ProductVersion thành DTO
+        List<ProductVersionDTO> productVersionDTOs = productVersions.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        // Sắp xếp danh sách dựa trên tiêu chí
+        Comparator<ProductVersionDTO> comparator;
+        switch (sortBy) {
+            case "numberOfReviews":
+                comparator = Comparator.comparing(ProductVersionDTO::getNumberOfReviews);
+                break;
+            case "discountPrice":
+                comparator = Comparator.comparing(ProductVersionDTO::getDiscountPrice);
+                break;
+            case "quantitySold":
+                comparator = Comparator.comparing(ProductVersionDTO::getQuantitySold);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid sortBy parameter: " + sortBy);
+        }
+
+        // Áp dụng chiều sắp xếp
+        if ("desc".equalsIgnoreCase(direction)) {
+            comparator = comparator.reversed();
+        }
+
+        // Sắp xếp danh sách
+        return productVersionDTOs.stream()
+                .sorted(comparator)
                 .collect(Collectors.toList());
     }
 

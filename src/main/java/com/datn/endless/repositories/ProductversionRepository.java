@@ -21,6 +21,9 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
     @Query("SELECT pv FROM Productversion pv WHERE pv.status = 'Active'")
     Page<Productversion> findByStatusActive(Pageable pageable);
 
+    // Lọc các sản phẩm có trạng thái active
+    List<Productversion> findByStatus(String status);
+
     @Query("SELECT pv FROM Productversion pv WHERE pv.versionName LIKE %:keyword% or pv.productID.name LIKE %:keyword% ")
     Page<Productversion> findByVersionNameContaining2(@Param("keyword") String keyword, Pageable pageable);
 
@@ -45,6 +48,8 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
 
 
     public List<Productversion> findByProductID_BrandID_Name(String brandName);
+
+
 
 
 

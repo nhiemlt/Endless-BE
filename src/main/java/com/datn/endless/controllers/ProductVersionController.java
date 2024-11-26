@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/product-versions")
@@ -37,9 +39,18 @@ public class ProductVersionController {
             @RequestParam(defaultValue = "ASC") String direction,
             @RequestParam(required = false) String keyword) {
 
+        // Danh sách các thuộc tính hỗ trợ sắp xếp
+        List<String> sortableFields = List.of("versionName", "numberOfReviews", "discountPrice", "quantitySold");
+
+        // Kiểm tra sortBy hợp lệ
+        if (!sortableFields.contains(sortBy)) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
         Page<ProductVersionDTO> productVersions = productVersionService.getProductVersionsByKeyword(page, size, sortBy, direction, keyword);
         return ResponseEntity.ok(productVersions);
     }
+
 
     // API tìm kiếm ProductVersion theo ID
     @GetMapping("/{id}")
@@ -161,6 +172,35 @@ public class ProductVersionController {
     public ResponseEntity<List<ProductVersionDTO>> getProductVersionsByBrand(@PathVariable String brandName) {
         List<ProductVersionDTO> productVersions = productVersionService.getProductVersionsByBrand(brandName);
         return ResponseEntity.ok(productVersions);
+    }
+
+    // Đếm số lượng sản phẩm
+    @GetMapping("/count-products")
+    public ResponseEntity<String> countProducts() {
+        long productCount = productVersionService.countProducts();
+        String message = "Tổng số lượng sản phẩm hiện có: " + productCount;
+        return ResponseEntity.ok(message);
+    }
+
+    // Đếm số lượng brand
+    @GetMapping("/count-brands")
+    public ResponseEntity<String> countBrands() {
+        long brandCount = productVersionService.countBrands();
+        String message = "Tổng số lượng thương hiệu hiện có: " + brandCount;
+        return ResponseEntity.ok(message);
+    }
+
+
+    @GetMapping("/sorted")
+    public ResponseEntity<List<ProductVersionDTO>> getSortedProductVersions(
+            @RequestParam String sortBy,
+            @RequestParam String direction) {
+        try {
+            List<ProductVersionDTO> sortedProductVersions = productVersionService.getSortedProductVersions(sortBy, direction);
+            return ResponseEntity.ok(sortedProductVersions);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
 }
