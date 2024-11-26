@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -296,7 +297,12 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         saveOrderVNPayStatus(savedOrder);
 
-        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã " + order.getOrderID() + " đã được tạo thành công");
+        LocalDateTime now = LocalDateTime.now();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy:HH-mm-ss");
+
+        String formattedDate = now.format(formatter);
+        sendOrderStatusNotification(order.getOrderID(), "Hóa đơn mới", "Một hóa đơn mới mã đã được tạo thành công vào"+formattedDate);
 
         return convertToOrderDTO(savedOrder);
     }
