@@ -80,7 +80,6 @@ public class AuthController {
                 .body(htmlResponse);
     }
 
-
     @PostMapping("/token/validate")
     public ResponseEntity<Map<String, Object>> validateToken(@RequestParam String token) {
         return authService.validateToken(token);
