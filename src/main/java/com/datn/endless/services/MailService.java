@@ -26,51 +26,49 @@ public class MailService {
     }
 
     public void sendCancelOrder(String username, long orderID, String to) throws MessagingException {
-        String subject = "Order Cancellation Confirmation";
-        String htmlBody = "<p>Dear "+username+",</p>"
-                + "<p>We regret to inform you that your order with order ID <strong>" + orderID + "</strong> has been canceled successfully.</p>"
-                + "<p>If you have any questions or concerns regarding this cancellation, please feel free to contact our customer support team.</p>"
-                + "<p>Thank you for your understanding.</p>"
-                + "<p>Best regards,<br> Endless</p>";
+        String subject = "Xác Nhận Hủy Đơn Hàng";
+        String htmlBody = "<p>Chào " + username + ",</p>"
+                + "<p>Chúng tôi xin thông báo rằng đơn hàng của bạn với mã đơn hàng <strong>" + orderID + "</strong> đã được hủy thành công.</p>"
+                + "<p>Nếu bạn có bất kỳ câu hỏi hay thắc mắc nào liên quan đến việc hủy đơn hàng, vui lòng liên hệ với bộ phận hỗ trợ khách hàng của chúng tôi.</p>"
+                + "<p>Cảm ơn bạn đã hiểu và thông cảm.</p>"
+                + "<p>Trân trọng,<br> Endless</p>";
 
         sendHtmlMail(to, subject, htmlBody);
     }
 
     public void sendForgotPasswordMail(String username, String to, String resetLink) throws MessagingException {
-        String subject = "Password Reset Request";
-
-
-        String htmlBody = "<p>Dear "+username+",</p>"
-                + "<p>We received a request to reset the password for your account.</p>"
-                + "<p>If you made this request, please click the link below to receive a temporary password:</p>"
-                + "<p><a href=" + resetLink + ">Reset Password</a></p>"
-                + "<p>If you did not request a password reset, please ignore this email or contact our support team.</p>"
-                + "<p>Thank you for your attention.</p>"
-                + "<p>Best regards,<br> Endless</p>";
+        String subject = "Yêu Cầu Đặt Lại Mật Khẩu";
+        String htmlBody = "<p>Chào " + username + ",</p>"
+                + "<p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>"
+                + "<p>Nếu bạn đã yêu cầu, vui lòng nhấp vào liên kết dưới đây để nhận mật khẩu tạm thời:</p>"
+                + "<p><a href=\"" + resetLink + "\">Đặt lại mật khẩu</a></p>"
+                + "<p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này hoặc liên hệ với bộ phận hỗ trợ của chúng tôi.</p>"
+                + "<p>Cảm ơn bạn đã chú ý.</p>"
+                + "<p>Trân trọng,<br> Endless</p>";
 
         sendHtmlMail(to, subject, htmlBody);
     }
 
     public void sendTemporaryPasswordMail(String username, String to, String temporaryPassword) throws MessagingException {
-        String subject = "Your Temporary Password";
-        String htmlBody = "<p>Dear "+username+",</p>"
-                + "<p>As requested, we have generated a temporary password for your account:</p>"
+        String subject = "Mật Khẩu Tạm Thời Của Bạn";
+        String htmlBody = "<p>Chào " + username + ",</p>"
+                + "<p>Như yêu cầu, chúng tôi đã tạo mật khẩu tạm thời cho tài khoản của bạn:</p>"
                 + "<p><strong>" + temporaryPassword + "</strong></p>"
-                + "<p>Please use this password to log in and reset your password immediately.</p>"
-                + "<p>If you did not request this, please contact our support team as soon as possible.</p>"
-                + "<p>Thank you for your attention.</p>"
-                + "<p>Best regards,<br> Endless</p>";
+                + "<p>Vui lòng sử dụng mật khẩu này để đăng nhập và thay đổi mật khẩu ngay lập tức.</p>"
+                + "<p>Nếu bạn không yêu cầu mật khẩu tạm thời này, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi ngay lập tức.</p>"
+                + "<p>Cảm ơn bạn đã chú ý.</p>"
+                + "<p>Trân trọng,<br> Endless</p>";
 
         sendHtmlMail(to, subject, htmlBody);
     }
 
     public void sendVerificationUpdateMail(String username, String to, String verificationLink) throws MessagingException {
-        String subject = "Xác Minh thay đổi email";
+        String subject = "Xác Minh Thay Đổi Email";
         String htmlBody = "<p>Chào " + username + ",</p>"
                 + "<p>Cảm ơn bạn đã sử dụng dịch vụ của Endless.</p>"
                 + "<p>Vui lòng nhấp vào liên kết dưới đây để xác minh địa chỉ email của bạn:</p>"
                 + "<p><a href=\"" + verificationLink + "\">Xác nhận thay đổi email của bạn</a></p>"
-                + "<p>Nếu bạn không yêu cầu đổi email, vui lòng bỏ qua email.</p>"
+                + "<p>Nếu bạn không yêu cầu thay đổi email, vui lòng bỏ qua email này.</p>"
                 + "<p>Cảm ơn bạn đã chú ý.</p>"
                 + "<p>Trân trọng,<br> Endless</p>";
 
@@ -91,14 +89,14 @@ public class MailService {
     }
 
     public void sendResetPasswordMail(String username, String to, String resetLink) throws MessagingException {
-        String subject = "Password Reset Request";
-        String htmlBody = "<p>Dear " + username + ",</p>"
-                + "<p>We received a request to reset the password for your account.</p>"
-                + "<p>If you made this request, please click the link below to reset your password:</p>"
-                + "<p><a href=\"" + resetLink + "\">Reset Password</a></p>"
-                + "<p>If you did not request a password reset, please ignore this email or contact our support team.</p>"
-                + "<p>Thank you for your attention.</p>"
-                + "<p>Best regards,<br> Endless</p>";
+        String subject = "Yêu Cầu Đặt Lại Mật Khẩu";
+        String htmlBody = "<p>Chào " + username + ",</p>"
+                + "<p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn.</p>"
+                + "<p>Nếu bạn đã yêu cầu, vui lòng nhấp vào liên kết dưới đây để đặt lại mật khẩu:</p>"
+                + "<p><a href=\"" + resetLink + "\">Đặt lại mật khẩu</a></p>"
+                + "<p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này hoặc liên hệ với bộ phận hỗ trợ của chúng tôi.</p>"
+                + "<p>Cảm ơn bạn đã chú ý.</p>"
+                + "<p>Trân trọng,<br> Endless</p>";
 
         sendHtmlMail(to, subject, htmlBody);
     }

@@ -28,8 +28,12 @@ public class RoleService {
 
     @Autowired
     private PermissionRepository permissionRepository;
+
     @Autowired
     private UserroleRepository userroleRepository;
+
+    @Autowired
+    private UserLoginInfomation userLoginInfomation;
 
     // Lấy tất cả roles với phân trang, tìm kiếm theo keyword và sắp xếp
     public Page<RoleDTO> getAllRoles(String keyword, Pageable pageable) {
@@ -37,6 +41,18 @@ public class RoleService {
             return roleRepository.findByRoleNameContainingIgnoreCase(keyword, pageable).map(this::toDTO);
         }
         return roleRepository.findAll(pageable).map(this::toDTO);
+    }
+
+    // Lấy vai trò của người dùng hiện tại
+    public Set<RoleDTO> getCurrentUserRoles() {
+        // Lấy thông tin tên người dùng hiện tại thông qua UserLoginInfomation
+        String currentUsername = userLoginInfomation.getCurrentUsername();
+
+        // Truy vấn danh sách vai trò của người dùng
+        List<Role> roles = userroleRepository.findRolesByUsername(currentUsername);
+
+        // Chuyển đổi từ Role sang RoleDTO
+        return roles.stream().map(this::toDTO).collect(Collectors.toSet());
     }
 
     // Lấy role theo ID và danh sách permissions

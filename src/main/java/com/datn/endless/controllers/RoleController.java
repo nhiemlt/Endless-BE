@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/roles")
@@ -39,6 +40,12 @@ public class RoleController {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<RoleDTO> roles = roleService.getAllRoles(keyword, pageable);
         return ResponseEntity.ok(roles);
+    }
+
+    @GetMapping("/current")
+    public ResponseEntity<Set<RoleDTO>> getCurrentUserRoles() {
+        Set<RoleDTO> currentUserRoles = roleService.getCurrentUserRoles();
+        return ResponseEntity.ok(currentUserRoles);
     }
 
     // Lấy role theo ID và kèm danh sách permissions

@@ -38,5 +38,13 @@ public interface ProductRepository extends JpaRepository<Product, String> {
            """)
     Page<Product> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
+
+    // Đếm số lượng sản phẩm
+    @Query("SELECT COUNT(p) FROM Product p")
+    long countProducts();
+
+    // Đếm số lượng brand
+    @Query("SELECT COUNT(DISTINCT p.brandID) FROM Product p")
+    long countBrands();
 }
 
