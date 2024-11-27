@@ -106,4 +106,16 @@ public class EmployeeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<?> deleteEmployee(@PathVariable String userId) {
+        try {
+            employeeService.deleteEmployee(userId);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Nhân viên đã được xóa thành công.");
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (DuplicateResourceException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        }
+    }
 }

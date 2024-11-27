@@ -37,12 +37,14 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u WHERE u.fullname LIKE %:keyword% or u.username like %:keyword% or u.email like %:keyword% or u.phone like %:keyword%")
     Page<User> findAllUser(@Param("keyword") String keyword, Pageable pageable);
 
-    @Query("SELECT u FROM User u JOIN FETCH u.roles WHERE :keyword is null or " +
-            "( u.username LIKE %:keyword% OR u.fullname LIKE %:keyword% or u.email like %:keyword% or u.phone like %:keyword%)")
+    @Query("SELECT u FROM User u JOIN FETCH u.roles WHERE :keyword IS NULL OR " +
+            "(u.username LIKE %:keyword% OR u.fullname LIKE %:keyword% OR u.email LIKE %:keyword% OR u.phone LIKE %:keyword%) " +
+            "ORDER BY u.createDate DESC")
     Page<User> searchEmployees(@Param("keyword") String keyword, Pageable pageable);
 
     @Query("SELECT u FROM User u WHERE u.roles IS EMPTY AND (:keyword IS NULL OR " +
-            "(u.username LIKE %:keyword% OR u.fullname LIKE %:keyword% OR u.email LIKE %:keyword% OR u.phone LIKE %:keyword%))")
+            "(u.username LIKE %:keyword% OR u.fullname LIKE %:keyword% OR u.email LIKE %:keyword% OR u.phone LIKE %:keyword%)) " +
+            "ORDER BY u.createDate DESC")
     Page<User> searchCustomers(@Param("keyword") String keyword, Pageable pageable);
 
     boolean existsByUsername(String username);
