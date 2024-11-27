@@ -87,11 +87,22 @@ public class PromotionController {
 
 
     @PutMapping("/{promotionID}")
-    public ResponseEntity<?> updatePromotion(@PathVariable String promotionID, @Valid @RequestBody PromotionModel promotionModel, BindingResult result) {
+    public ResponseEntity<?> updatePromotion(@PathVariable String promotionID,
+                                             @Valid @RequestBody PromotionModel promotionModel,
+                                             BindingResult result) {
+        // Xử lý lỗi BindingResult, bỏ qua lỗi FutureOrPresent
         if (result.hasErrors()) {
             StringBuilder errorMessage = new StringBuilder("Dữ liệu đầu vào không hợp lệ: ");
-            result.getAllErrors().forEach(error -> errorMessage.append(error.getDefaultMessage()).append("; "));
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage.toString());
+            result.getAllErrors().forEach(error -> {
+                // Bỏ qua lỗi FutureOrPresent
+                if (!error.getDefaultMessage().contains("phải là hiện tại hoặc tương lai")) {
+                    errorMessage.append(error.getDefaultMessage()).append("; ");
+                }
+            });
+            // Nếu vẫn còn lỗi khác, trả về thông báo lỗi
+            if (errorMessage.length() > 30) { // "Dữ liệu đầu vào không hợp lệ: " dài 30 ký tự
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage.toString());
+            }
         }
 
         try {
@@ -105,6 +116,7 @@ public class PromotionController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
         }
     }
+
 
     @PostMapping("/{promotionID}/toggle")
     public ResponseEntity<?> toggleActive(@PathVariable String promotionID) {
