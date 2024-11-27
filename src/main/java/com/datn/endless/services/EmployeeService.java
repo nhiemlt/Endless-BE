@@ -163,6 +163,24 @@ public class EmployeeService {
         return passwordEndcode;
     }
 
+    public void deleteEmployee(String userId) {
+        User user = employeeRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Không tìm thấy nhân viên với ID: " + userId));
+
+        // Kiểm tra xem người dùng có vai trò quan trọng như "SuperAdmin" hay không
+        for (Role role : user.getRoles()) {
+            if (role.getRoleName().equals("SuperAdmin")) {
+                throw new DuplicateResourceException("Bạn không thể xóa tài khoản với vai trò SuperAdmin.");
+            }
+        }
+
+        // Xóa các mối quan hệ với Userrole trước khi xóa User
+        List<Userrole> userRoles = employeeRoleRepository.findAllByUser_UserID(userId);
+        employeeRoleRepository.deleteAll(userRoles);
+
+        // Xóa nhân viên khỏi cơ sở dữ liệu
+        employeeRepository.delete(user);
+    }
 
     public List<Userrole> updateUserrole(String userId, List<String> roleIds) {
         // Lấy thông tin người dùng hiện tại

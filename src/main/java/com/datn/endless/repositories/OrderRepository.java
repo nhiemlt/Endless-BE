@@ -15,7 +15,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             "(:userID IS NULL OR o.userID.userID LIKE %:userID%) AND " +
             "(:orderAddress IS NULL OR o.orderAddress LIKE %:orderAddress%) AND " +
             "(:orderPhone IS NULL OR o.orderPhone LIKE %:orderPhone%) AND " +
-            "(:orderName IS NULL OR o.orderName LIKE %:orderName%)")
+            "(:orderName IS NULL OR o.orderName LIKE %:orderName%)"+
+            "ORDER BY o.orderDate DESC")
     Page<Order> findAllByUserIDContainingAndOrderAddressContainingAndOrderPhoneContainingAndOrderNameContaining(
             @Param("userID") String userID,
             @Param("orderAddress") String orderAddress,
