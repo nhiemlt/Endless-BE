@@ -135,8 +135,8 @@ public class OrderService {
         if (voucher.getLeastBill().compareTo(totalMoney) > 0) {
             throw new VoucherCannotBeUsedException("Tổng tiền hóa đơn chưa đủ để sử dụng voucher!");
         }
-        if (voucher.getStartDate().isAfter(LocalDate.now()) || voucher.getEndDate().isBefore(LocalDate.now())) {
-            throw new VoucherCannotBeUsedException("Voucher này đã hết hạn");
+        if (voucher.getStartDate().isAfter(LocalDateTime.now()) || voucher.getEndDate().isBefore(LocalDateTime.now())) {
+            throw new VoucherCannotBeUsedException("Voucher" + voucher.getVoucherCode() +" này đã hết hạn " + "Ngày Bắt đầu: " + voucher.getStartDate() + " Ngày Kết thúc: " + voucher.getEndDate() + " Ngày hiện tại: " + LocalDateTime.now());
         }
     }
 

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface UservoucherRepository extends JpaRepository<Uservoucher, String> {
@@ -17,6 +18,10 @@ public interface UservoucherRepository extends JpaRepository<Uservoucher, String
     Uservoucher findByUserIDAndVoucherID(User userID, Voucher voucherID);
     // Tìm tất cả UserVoucher của một User
     List<Uservoucher> findByUserID(User userID);
+
+    @Query("SELECT v FROM Voucher v JOIN Uservoucher uv ON uv.voucherID = v WHERE uv.userID.username = :username")
+    List<Voucher> findByUsername(@Param("username") String username);
+
 
     @Modifying
     @Transactional

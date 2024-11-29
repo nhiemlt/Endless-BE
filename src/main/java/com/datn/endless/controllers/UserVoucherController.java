@@ -41,7 +41,7 @@ public class UserVoucherController {
         String username = userDetails.getUsername();
 
         // Gọi service để lấy danh sách voucher còn hạn sử dụng
-        List<VoucherDTO> result = userVoucherService.getValidUserVouchers(username);
+        List<VoucherDTO> result = userVoucherService.getValidUserVouchers();
         if (result.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Không có voucher còn hạn sử dụng.");
         }

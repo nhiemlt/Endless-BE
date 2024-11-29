@@ -10,6 +10,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -47,11 +48,11 @@ public class Voucher {
 
     @NotNull
     @Column(name = "StartDate", nullable = false)
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     @NotNull
     @Column(name = "EndDate", nullable = false)
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
 
 }

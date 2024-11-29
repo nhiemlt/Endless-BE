@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class VoucherDTO {
@@ -13,6 +14,6 @@ public class VoucherDTO {
     private BigDecimal leastDiscount;
     private BigDecimal biggestDiscount;
     private Integer discountLevel;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
 }
