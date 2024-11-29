@@ -235,7 +235,7 @@ public class OrderService {
         orderstatusRepository.save(initialStatus);
     }
 
-    public OrderDTO createOrderVNPay(OrderModel orderModel) {
+    public OrderDTO createOrderOnline(OrderModel orderModel) {
         User currentUser = userRepository.findByUsername(userLoginInformation.getCurrentUser().getUsername());
 
         // Kiểm tra địa chỉ
