@@ -55,11 +55,11 @@ public class OrderController {
     }
 
 
-    @PostMapping("/create-order-vnpay")
+    @PostMapping("/create-order-online")
     public ResponseEntity<Map<String, Object>> createOrderVNPay(@RequestBody OrderModel orderModel) {
         Map<String, Object> response = new HashMap<>();
         try {
-            OrderDTO savedOrderDTO = orderService.createOrderVNPay(orderModel);
+            OrderDTO savedOrderDTO = orderService.createOrderOnline(orderModel);
             response.put("success", true);
             response.put("data", savedOrderDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
