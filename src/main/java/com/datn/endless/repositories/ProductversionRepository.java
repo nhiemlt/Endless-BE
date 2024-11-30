@@ -29,7 +29,6 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
 
 
     List<Productversion> findByProductID(Product product);
-    Productversion findFirstByProductID(Product product);
 
 
     // Kiểm tra xem đã có versionName cho sản phẩm chưa
@@ -43,8 +42,6 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
     boolean existsByProductIDAndVersionNameAndNotId(@Param("product") Product product,
                                                     @Param("versionName") String versionName,
                                                     @Param("productVersionID") String productVersionID);
-
-
 
 
     public List<Productversion> findByProductID_BrandID_Name(String brandName);

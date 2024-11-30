@@ -68,8 +68,8 @@ public class ProductVersionController {
             @RequestBody FilterRequest filterRequest) {
 
         List<ProductVersionDTO> productVersions = productVersionService.filterProductVersionsByCategoriesAndBrands(
-                filterRequest.getCategoryNames(),
-                filterRequest.getBrandNames(),
+                filterRequest.getCategoryIDs(),
+                filterRequest.getBrandIDs(),
                 filterRequest.getMinPrice(),
                 filterRequest.getMaxPrice());
 

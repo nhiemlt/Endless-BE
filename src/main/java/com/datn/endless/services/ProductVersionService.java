@@ -94,16 +94,14 @@ public class ProductVersionService {
 
 
     public List<ProductVersionDTO> filterProductVersionsByCategoriesAndBrands(
-            List<String> categoryNames,
-            List<String> brandNames,
+            List<String> categoryIDs,
+            List<String> brandIDs,
             BigDecimal minPrice,
             BigDecimal maxPrice) {
 
         List<Productversion> productVersions = new ArrayList<>();
 
-        // Kiểm tra nếu không có categoryNames và brandNames, chỉ lọc theo giá
-        if ((categoryNames == null || categoryNames.isEmpty()) && (brandNames == null || brandNames.isEmpty())) {
-            // Lọc các phiên bản sản phẩm theo giá
+        if ((categoryIDs == null || categoryIDs.isEmpty()) && (brandIDs == null || brandIDs.isEmpty())) {
             List<Productversion> activeVersions = productVersionRepository.findAll()
                     .stream()
                     .filter(version -> version.getStatus().equalsIgnoreCase("Active") &&
@@ -113,15 +111,14 @@ public class ProductVersionService {
             productVersions.addAll(activeVersions);
         }
 
-        // Nếu có categoryNames hoặc brandNames, lọc theo các tiêu chí này
+        // Lọc theo categoryIDs và brandIDs
         else {
-            // Lọc theo danh sách category names
-            if (categoryNames != null && !categoryNames.isEmpty()) {
-                for (String categoryName : categoryNames) {
-                    List<Product> productsByCategory = productRepository.findByCategoryNameContaining(categoryName);
-                    if (brandNames != null && !brandNames.isEmpty()) {
-                        for (String brandName : brandNames) {
-                            List<Product> productsByBrand = productRepository.findByBrandNameContaining(brandName);
+            if (categoryIDs != null && !categoryIDs.isEmpty()) {
+                for (String categoryID : categoryIDs) {
+                    List<Product> productsByCategory = productRepository.findByCategoryID(categoryID);
+                    if (brandIDs != null && !brandIDs.isEmpty()) {
+                        for (String brandID : brandIDs) {
+                            List<Product> productsByBrand = productRepository.findByBrandID(brandID);
                             for (Product product : productsByCategory) {
                                 if (productsByBrand.contains(product)) {
                                     List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
@@ -135,7 +132,6 @@ public class ProductVersionService {
                             }
                         }
                     } else {
-                        // Nếu không có brand names, lọc theo category và giá
                         for (Product product : productsByCategory) {
                             List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
                                     .stream()
@@ -149,10 +145,9 @@ public class ProductVersionService {
                 }
             }
 
-            // Lọc theo danh sách brand names nếu không có category names
-            if (brandNames != null && !brandNames.isEmpty() && (categoryNames == null || categoryNames.isEmpty())) {
-                for (String brandName : brandNames) {
-                    List<Product> productsByBrand = productRepository.findByBrandNameContaining(brandName);
+            if (brandIDs != null && !brandIDs.isEmpty() && (categoryIDs == null || categoryIDs.isEmpty())) {
+                for (String brandID : brandIDs) {
+                    List<Product> productsByBrand = productRepository.findByBrandID(brandID);
                     for (Product product : productsByBrand) {
                         List<Productversion> activeVersions = productVersionRepository.findByProductID(product)
                                 .stream()
@@ -166,7 +161,6 @@ public class ProductVersionService {
             }
         }
 
-        // Kiểm tra và thông báo nếu không có phiên bản sản phẩm nào thỏa mãn tiêu chí lọc
         if (productVersions.isEmpty()) {
             throw new ProductVersionInactiveException("Không có phiên bản sản phẩm nào hoạt động hoặc trong khoảng giá được chọn.");
         }
@@ -175,6 +169,7 @@ public class ProductVersionService {
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
+
 
     public Page<ProductVersionDTO> getTop5BestSellingProductVersionsThisMonth(Pageable pageable) {
         LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();

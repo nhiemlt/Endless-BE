@@ -15,19 +15,18 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     Optional<Product> findByName(String name);
 
     // Tìm danh sách sản phẩm theo tên
-    @Query("SELECT p FROM Product p WHERE p.name LIKE %:name%")
-    List<Product> findByNameContaining(@Param("name") String name);
 
-    Page<Product> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE p.categoryID.categoryID = :categoryID")
+    List<Product> findByCategoryID(@Param("categoryID") String categoryID);
 
-    // Thêm phương thức tìm kiếm theo CategoryID hoặc BrandID
-    Page<Product> findByCategoryIDOrBrandID(String categoryId, String brandId, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE p.brandID.brandID = :brandID")
+    List<Product> findByBrandID(@Param("brandID") String brandID);
 
-    @Query("SELECT p FROM Product p WHERE p.categoryID.name LIKE %:name%")
-    List<Product> findByCategoryNameContaining(@Param("name") String name);
-
-    @Query("SELECT p FROM Product p WHERE p.brandID.name LIKE %:name%")
-    List<Product> findByBrandNameContaining(@Param("name") String name);
+//    @Query("SELECT p FROM Product p WHERE p.categoryID.name LIKE %:name%")
+//    List<Product> findByCategoryNameContaining(@Param("name") String name);
+//
+//    @Query("SELECT p FROM Product p WHERE p.brandID.name LIKE %:name%")
+//    List<Product> findByBrandNameContaining(@Param("name") String name);
 
     // Phương thức tổng hợp tìm kiếm theo keyword
     @Query("""
