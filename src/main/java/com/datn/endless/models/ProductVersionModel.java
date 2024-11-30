@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 public class ProductVersionModel {
 
+    @NotBlank(message = "Mã sản phẩm không được để trống.")
     private String productID;
 
     @NotNull(message = "Tên phiên bản không được để trống.")
@@ -21,6 +22,11 @@ public class ProductVersionModel {
     @NotNull(message = "Giá bán không được để trống.")
     @DecimalMin(value = "0.0", inclusive = false, message = "Giá bán phải lớn hơn 0.")
     private BigDecimal price;
+
+    @AssertTrue(message = "Giá bán phải lớn hơn hoặc bằng giá nhập.")
+    private boolean isPriceValid() {
+        return price == null || purchasePrice == null || price.compareTo(purchasePrice) >= 0;
+    }
 
     @NotNull(message = "Trọng lượng không được để trống.")
     @DecimalMin(value = "0.0", inclusive = false, message = "Trọng lượng phải lớn hơn 0.")
@@ -43,5 +49,7 @@ public class ProductVersionModel {
     @Size(max = 500, message = "URL image phải ít hơn 500 ký tự")
     private String image;
 
+    @NotNull(message = "Danh sách giá trị thuộc tính không được để trống.")
+    @Size(min = 1, message = "Danh sách giá trị thuộc tính phải có ít nhất 1 phần tử.")
     private List<String> attributeValueID;
 }

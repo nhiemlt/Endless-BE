@@ -204,18 +204,20 @@ public class ProductVersionService {
     }
 
     public ProductVersionDTO createProductVersion(ProductVersionModel productVersionModel) {
+        // Kiểm tra sự tồn tại của sản phẩm
         Product product = productRepository.findById(productVersionModel.getProductID())
-                .orElseThrow(() -> new ProductNotFoundException("Không tìm thấy sản phẩm"));
+                .orElseThrow(() -> new ProductNotFoundException("Không tìm thấy sản phẩm với ID: " + productVersionModel.getProductID()));
 
-        // Kiểm tra trùng versionName cho cùng sản phẩm
+        // Kiểm tra trùng tên phiên bản sản phẩm cho cùng sản phẩm
         boolean isVersionNameExists = productVersionRepository.existsByProductIDAndVersionName(product, productVersionModel.getVersionName());
         if (isVersionNameExists) {
-            throw new ProductVersionConflictException("Phiên bản sản phẩm với tên này đã tồn tại");
+            throw new ProductVersionConflictException("Phiên bản sản phẩm với tên này đã tồn tại cho sản phẩm: " + productVersionModel.getVersionName());
         }
 
+        // Tạo mới đối tượng phiên bản sản phẩm
         Productversion productVersion = new Productversion();
-        productVersion.setProductVersionID(UUID.randomUUID().toString());
-        productVersion.setProductID(product);
+        productVersion.setProductVersionID(UUID.randomUUID().toString()); // Tạo ID phiên bản sản phẩm mới
+        productVersion.setProductID(product); // Liên kết với sản phẩm
         productVersion.setVersionName(productVersionModel.getVersionName());
         productVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
         productVersion.setPrice(productVersionModel.getPrice());
@@ -224,16 +226,21 @@ public class ProductVersionService {
         productVersion.setLength(productVersionModel.getLength());
         productVersion.setWidth(productVersionModel.getWidth());
         productVersion.setImage(productVersionModel.getImage());
-        productVersion.setStatus("Active");
+        productVersion.setStatus("Active"); // Mặc định trạng thái là Active
 
-        // Lưu phiên bản sản phẩm
+        // Lưu phiên bản sản phẩm vào cơ sở dữ liệu
         Productversion savedVersion = productVersionRepository.save(productVersion);
+
+        // Lưu thông tin thuộc tính cho phiên bản sản phẩm
         saveVersionAttributes(productVersionModel.getAttributeValueID(), savedVersion);
 
+        // Chuyển đổi thành DTO và trả về
         return convertToDTO(savedVersion);
     }
 
+
     public ProductVersionDTO updateProductVersion(String productVersionID, ProductVersionModel productVersionModel) {
+        // Tìm kiếm phiên bản sản phẩm hiện tại
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
                 .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
 
@@ -243,6 +250,7 @@ public class ProductVersionService {
             throw new ProductVersionConflictException("Phiên bản sản phẩm với tên này đã tồn tại");
         }
 
+        // Cập nhật thông tin phiên bản sản phẩm
         existingProductVersion.setVersionName(productVersionModel.getVersionName());
         existingProductVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
         existingProductVersion.setPrice(productVersionModel.getPrice());
@@ -252,13 +260,18 @@ public class ProductVersionService {
         existingProductVersion.setWidth(productVersionModel.getWidth());
         existingProductVersion.setImage(productVersionModel.getImage());
 
-        // Cập nhật thông tin
+        // Lưu lại thông tin phiên bản sản phẩm đã cập nhật
         Productversion updatedVersion = productVersionRepository.save(existingProductVersion);
+
+        // Xử lý VersionAttributes (Xoá những thuộc tính không còn liên quan và cập nhật các thuộc tính mới)
         versionAttributeRepository.deleteByProductVersionID(productVersionID);
+
+        // Lưu lại các thuộc tính mới cho phiên bản sản phẩm
         saveVersionAttributes(productVersionModel.getAttributeValueID(), updatedVersion);
 
         return convertToDTO(updatedVersion);
     }
+
 
     // Cập nhật Status
     public ProductVersionDTO updateProductVersionStatus(String productVersionID, String status) {
@@ -373,7 +386,6 @@ public class ProductVersionService {
         List<RatingDTO> ratings = ratingService.getRatingsByProductVersionId(productVersion.getProductVersionID());
         dto.setNumberOfReviews(ratingService.getRatingCountByProductVersionId(productVersion.getProductVersionID())); // So luong danh gia cua sp
         dto.setAverageRating(ratings.stream().mapToDouble(RatingDTO::getRatingValue).average().orElse(0)); // Đánh giá trung bình
-//        dto.setStatus(productVersion.getStatus());
         dto.setImage(productVersion.getImage());
         // Tính toán và thêm giá khuyến mãi vào DTO
         dto.setDiscountPrice(calculateDiscountPrice(productVersion.getProductVersionID()));
@@ -413,7 +425,7 @@ public class ProductVersionService {
     private void saveVersionAttributes(List<String> attributeValueIDs, Productversion savedVersion) {
         for (String attributeValueID : attributeValueIDs) {
             Attributevalue attributeValue = attributeValueRepository.findById(attributeValueID)
-                    .orElseThrow(() -> new AttributeValueNotFoundException("Attribute Value not found"));
+                    .orElseThrow(() -> new AttributeValueNotFoundException("Giá trị thuộc tính không tồn tại."));
 
             Versionattribute versionAttribute = new Versionattribute();
             versionAttribute.setVersionAttributeID(UUID.randomUUID().toString());
