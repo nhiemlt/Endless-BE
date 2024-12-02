@@ -242,7 +242,8 @@ CREATE TABLE Carts (
     Quantity INT NOT NULL,
     CreateDate DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (ProductVersionID) REFERENCES ProductVersions(ProductVersionID)
+    FOREIGN KEY (ProductVersionID) REFERENCES ProductVersions(ProductVersionID),
+    UNIQUE (UserID, ProductVersionID) -- Đảm bảo cặp UserID và ProductVersionID là duy nhất
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Tạo bảng Roles

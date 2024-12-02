@@ -16,7 +16,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.DateTimeException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +37,7 @@ public class VoucherService {
     @Autowired
     NotificationService notificationService;
 
-    private VoucherDTO convertToDTO(Voucher voucher) {
+    VoucherDTO convertToDTO(Voucher voucher) {
         VoucherDTO dto = new VoucherDTO();
         dto.setVoucherID(voucher.getVoucherID());
         dto.setVoucherCode(voucher.getVoucherCode());
@@ -50,21 +54,17 @@ public class VoucherService {
         Page<Voucher> vouchers = voucherRepository.findByFilters(voucherCode, leastBill, leastDiscount, pageable);
         return vouchers.map(this::convertToDTO);
     }
-public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
-    return voucherRepository.findById(id)
-        .map(this::convertToDTO) // Chuyển đổi Voucher sang VoucherDTO
-        .orElseThrow(() -> new VoucherNotFoundException("Voucher not found with ID: " + id)); // Ném ngoại lệ nếu không tìm thấy
-}
+
+    public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
+        return voucherRepository.findById(id)
+                .map(this::convertToDTO) // Chuyển đổi Voucher sang VoucherDTO
+                .orElseThrow(() -> new VoucherNotFoundException("Voucher not found with ID: " + id)); // Ném ngoại lệ nếu không tìm thấy
+    }
 
     public void addVoucherAllUser(VoucherModel voucherModel) {
         // Kiểm tra mã voucher có tồn tại không
         if (voucherRepository.findByVoucherCode(voucherModel.getVoucherCode()).isPresent()) {
             throw new RuntimeException("Mã voucher đã tồn tại");
-        }
-
-        // Kiểm tra startDate phải trước endDate
-        if (!voucherModel.getStartDate().isBefore(voucherModel.getEndDate())) {
-            throw new RuntimeException("Ngày bắt đầu phải trước ngày kết thúc");
         }
 
         // Kiểm tra biggestDiscount phải lớn hơn leastDiscount và nhỏ hơn leastBill
@@ -74,6 +74,26 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
 
         if (voucherModel.getBiggestDiscount().compareTo(voucherModel.getLeastBill()) >= 0) {
             throw new RuntimeException("Giảm tối đa phải nhỏ hơn hóa đơn tối thiểu");
+        }
+
+        // Kiểm tra ngày kết thúc có thể >= ngày hiện tại
+        LocalDateTime now = LocalDateTime.now();
+        if (voucherModel.getEndDate().isBefore(now)) {
+            throw new RuntimeException("Ngày kết thúc phải lớn hơn hoặc bằng ngày hiện tại");
+        }
+
+        // Kiểm tra ngày bắt đầu có thể >= ngày hiện tại
+        if (voucherModel.getStartDate().isBefore(now)) {
+            throw new RuntimeException("Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại");
+        }
+
+        // Kiểm tra giờ của ngày bắt đầu và ngày kết thúc phải là giờ hiện tại và trong tương lai
+        if (voucherModel.getStartDate().toLocalTime().isBefore(now.toLocalTime())) {
+            throw new RuntimeException("Giờ bắt đầu phải sau giờ hiện tại");
+        }
+
+        if (voucherModel.getEndDate().toLocalTime().isBefore(now.toLocalTime())) {
+            throw new RuntimeException("Giờ kết thúc phải sau giờ hiện tại");
         }
 
         // Tạo đối tượng voucher
@@ -114,8 +134,6 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
         notificationService.sendNotificationForAll(notification);
     }
 
-
-
     public void addVoucherForUser(VoucherModel2 voucherModel) {
         // Chuyển mã voucher thành chữ in hoa và loại bỏ khoảng trắng
         String voucherCode = voucherModel.getVoucherCode().trim().toUpperCase();
@@ -125,11 +143,6 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
             throw new RuntimeException("Mã voucher đã tồn tại");
         }
 
-        // Kiểm tra startDate phải trước endDate
-        if (!voucherModel.getStartDate().isBefore(voucherModel.getEndDate())) {
-            throw new RuntimeException("Ngày bắt đầu phải trước ngày kết thúc");
-        }
-
         // Kiểm tra biggestDiscount phải lớn hơn leastDiscount và nhỏ hơn leastBill
         if (voucherModel.getBiggestDiscount().compareTo(voucherModel.getLeastDiscount()) <= 0) {
             throw new RuntimeException("Giảm tối đa phải lớn hơn giảm tối thiểu");
@@ -137,6 +150,29 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
 
         if (voucherModel.getBiggestDiscount().compareTo(voucherModel.getLeastBill()) >= 0) {
             throw new RuntimeException("Giảm tối đa phải nhỏ hơn hóa đơn tối thiểu");
+        }
+
+        // Lấy ngày hiện tại (LocalDateTime)
+        LocalDateTime now = LocalDateTime.now();
+
+        // Kiểm tra ngày kết thúc phải >= ngày hiện tại
+        if (voucherModel.getEndDate().isBefore(now)) {
+            throw new RuntimeException("Ngày kết thúc phải sau hoặc bằng ngày hiện tại");
+        }
+
+        // Kiểm tra ngày bắt đầu phải >= ngày hiện tại
+        if (voucherModel.getStartDate().isBefore(now)) {
+            throw new RuntimeException("Ngày bắt đầu phải sau hoặc bằng ngày hiện tại");
+        }
+
+        // Kiểm tra giờ của ngày bắt đầu phải là giờ hiện tại hoặc trong tương lai
+        if (voucherModel.getStartDate().isBefore(now.withSecond(0).withNano(0))) {
+            throw new RuntimeException("Giờ của ngày bắt đầu phải là giờ hiện tại hoặc trong tương lai");
+        }
+
+        // Kiểm tra giờ của ngày kết thúc phải là giờ hiện tại hoặc trong tương lai
+        if (voucherModel.getEndDate().isBefore(now.withSecond(0).withNano(0))) {
+            throw new RuntimeException("Giờ của ngày kết thúc phải là giờ hiện tại hoặc trong tương lai");
         }
 
         // Tạo đối tượng voucher
@@ -153,6 +189,7 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
         Voucher saveVoucher = voucherRepository.save(voucher);
         List<User> users = new ArrayList<>();
 
+        // Duyệt qua các user và cấp voucher cho từng user
         for (String id : voucherModel.getUserIds()) {
             User user = userRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + id));
@@ -174,9 +211,6 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
         }
     }
 
-
-
-
     public void updateVoucher(String id, VoucherModel updatedVoucher) {
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);
         if (optionalVoucher.isEmpty()) {
@@ -185,29 +219,32 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
 
         Voucher voucher = optionalVoucher.get();
 
-        // Chuyển mã voucher thành chữ in hoa và loại bỏ khoảng trắng
-        String updatedVoucherCode = updatedVoucher.getVoucherCode().trim().toUpperCase();
+        // Kiểm tra ngày kết thúc và ngày bắt đầu
+        LocalDateTime now = LocalDateTime.now();
+        if (updatedVoucher.getEndDate().isBefore(now)) {
+            throw new RuntimeException("Ngày kết thúc phải lớn hơn hoặc bằng ngày hiện tại");
+        }
 
-        // Nếu voucherCode được cập nhật và khác với voucher hiện tại, kiểm tra trùng lặp
+        if (updatedVoucher.getStartDate().isBefore(now)) {
+            throw new RuntimeException("Ngày bắt đầu phải lớn hơn hoặc bằng ngày hiện tại");
+        }
+
+        // Kiểm tra giờ của ngày bắt đầu và ngày kết thúc
+        if (updatedVoucher.getStartDate().toLocalTime().isBefore(now.toLocalTime())) {
+            throw new RuntimeException("Giờ bắt đầu phải sau giờ hiện tại");
+        }
+
+        if (updatedVoucher.getEndDate().toLocalTime().isBefore(now.toLocalTime())) {
+            throw new RuntimeException("Giờ kết thúc phải sau giờ hiện tại");
+        }
+
+        // Cập nhật mã voucher nếu cần
+        String updatedVoucherCode = updatedVoucher.getVoucherCode().trim().toUpperCase();
         if (!voucher.getVoucherCode().equals(updatedVoucherCode)) {
             if (voucherRepository.findByVoucherCode(updatedVoucherCode).isPresent()) {
                 throw new RuntimeException("Mã voucher đã tồn tại");
             }
             voucher.setVoucherCode(updatedVoucherCode);
-        }
-
-        // Kiểm tra startDate phải trước endDate
-        if (!updatedVoucher.getStartDate().isBefore(updatedVoucher.getEndDate())) {
-            throw new RuntimeException("Ngày bắt đầu phải trước ngày kết thúc");
-        }
-
-        // Kiểm tra biggestDiscount phải lớn hơn leastDiscount và nhỏ hơn leastBill
-        if (updatedVoucher.getBiggestDiscount().compareTo(updatedVoucher.getLeastDiscount()) <= 0) {
-            throw new RuntimeException("Giảm tối đa phải lớn hơn giảm tối thiểu");
-        }
-
-        if (updatedVoucher.getBiggestDiscount().compareTo(updatedVoucher.getLeastBill()) >= 0) {
-            throw new RuntimeException("Giảm tối đa phải nhỏ hơn hóa đơn tối thiểu");
         }
 
         // Cập nhật các thuộc tính của voucher
@@ -221,7 +258,6 @@ public VoucherDTO getVoucherById(String id) throws VoucherNotFoundException {
         // Lưu voucher đã cập nhật vào database
         voucherRepository.save(voucher);
     }
-
 
     public void deleteVoucher(String id) {
         Optional<Voucher> optionalVoucher = voucherRepository.findById(id);

@@ -10,45 +10,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class UserVoucherService {
+
     @Autowired
     private UservoucherRepository userVoucherRepository;
 
     @Autowired
     private UserRepository userRepository;
 
-    public List<VoucherDTO> getValidUserVouchers(String username) {
-        // Tìm người dùng dựa trên tên đăng nhập
-        User user = userRepository.findByUsername(username);
+    @Autowired
+    UserLoginInfomation userLoginInfomation;
 
-        // Tìm tất cả các Uservoucher của người dùng
-        List<Uservoucher> userVouchers = userVoucherRepository.findByUserID(user);
+    @Autowired
+    VoucherService voucherService;
 
-        // Lọc và chỉ giữ lại những voucher còn hạn sử dụng
-        LocalDate today = LocalDate.now();
-        return userVouchers.stream()
-                .map(uv -> {
-                    Voucher voucher = uv.getVoucherID();
-                    if (voucher != null && (voucher.getEndDate() == null || voucher.getEndDate().isAfter(today))) {
-                        // Tạo VoucherDTO
-                        VoucherDTO voucherDTO = new VoucherDTO();
-                        voucherDTO.setVoucherID(voucher.getVoucherID());
-                        voucherDTO.setVoucherCode(voucher.getVoucherCode());
-                        voucherDTO.setLeastBill(voucher.getLeastBill());
-                        voucherDTO.setLeastDiscount(voucher.getLeastDiscount());
-                        voucherDTO.setBiggestDiscount(voucher.getBiggestDiscount());
-                        voucherDTO.setDiscountLevel(voucher.getDiscountLevel());
-                        voucherDTO.setStartDate(voucher.getStartDate());
-                        voucherDTO.setEndDate(voucher.getEndDate());
-                        return voucherDTO;
-                    }
-                    return null;
-                })
-                .filter(voucherDTO -> voucherDTO != null)  // Bỏ qua các voucher không hợp lệ
+    public List<VoucherDTO> getValidUserVouchers() {
+        String username = userLoginInfomation.getCurrentUsername();
+        List<Voucher> vouchers = userVoucherRepository.findByUsername(username);
+
+        // Chỉ lọc voucher còn hiệu lực
+        return vouchers.stream()
+                .filter(voucher -> voucher.getEndDate().isAfter(LocalDateTime.now()))
+                .map(voucherService::convertToDTO)
                 .collect(Collectors.toList());
     }
+
 }

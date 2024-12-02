@@ -9,6 +9,7 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -35,10 +36,10 @@ public class VoucherModel2 {
     private Integer discountLevel;
 
     @NotNull(message = "Ngày bắt đầu không được để trống")
-    private LocalDate startDate;
+    private LocalDateTime startDate;
 
     @NotNull(message = "Ngày kết thúc không được để trống")
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     @NotNull(message = "Danh sách người dùng không được để trống")
     private List<String> userIds;
