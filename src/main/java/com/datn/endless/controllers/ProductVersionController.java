@@ -3,7 +3,7 @@ package com.datn.endless.controllers;
 import com.datn.endless.dtos.FilterRequest;
 import com.datn.endless.dtos.ProductVersionDTO;
 import com.datn.endless.entities.Productversion;
-import com.datn.endless.exceptions.ProductVersionInactiveException;
+import com.datn.endless.exceptions.*;
 import com.datn.endless.models.ProductVersionModel;
 import com.datn.endless.services.ProductService;
 import com.datn.endless.services.ProductVersionService;
@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -67,8 +68,8 @@ public class ProductVersionController {
             @RequestBody FilterRequest filterRequest) {
 
         List<ProductVersionDTO> productVersions = productVersionService.filterProductVersionsByCategoriesAndBrands(
-                filterRequest.getCategoryNames(),
-                filterRequest.getBrandNames(),
+                filterRequest.getCategoryIDs(),
+                filterRequest.getBrandIDs(),
                 filterRequest.getMinPrice(),
                 filterRequest.getMaxPrice());
 
@@ -122,21 +123,68 @@ public class ProductVersionController {
     }
 
     @PostMapping
-    public ResponseEntity<ProductVersionDTO> createProductVersion(
-            @Valid @RequestBody ProductVersionModel model) {
+    public ResponseEntity<?> createProductVersion(
+            @Valid @RequestBody ProductVersionModel model,
+            BindingResult result) {
 
-        ProductVersionDTO createdProductVersion = productVersionService.createProductVersion(model);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdProductVersion);
+        // Kiểm tra lỗi đầu vào
+        if (result.hasErrors()) {
+            StringBuilder errorMessage = new StringBuilder("Dữ liệu đầu vào không hợp lệ: ");
+            result.getAllErrors().forEach(error -> errorMessage.append(error.getDefaultMessage()).append(". "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage.toString());
+        }
+
+        try {
+            // Gọi service để tạo mới phiên bản sản phẩm
+            ProductVersionDTO createdProductVersion = productVersionService.createProductVersion(model);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdProductVersion);
+        } catch (ProductNotFoundException e) {
+            // Trả về lỗi nếu không tìm thấy sản phẩm
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sản phẩm không tồn tại: " + e.getMessage());
+        } catch (ProductVersionConflictException e) {
+            // Trả về lỗi nếu phiên bản sản phẩm đã tồn tại
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Xung đột phiên bản: " + e.getMessage());
+        } catch (Exception e) {
+            // Trả về lỗi hệ thống nếu có sự cố bất thường
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
+        }
     }
+
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductVersionDTO> updateProductVersion(
+    public ResponseEntity<?> updateProductVersion(
             @PathVariable("id") String productVersionID,
-            @Valid @RequestBody ProductVersionModel model) {
+            @Valid @RequestBody ProductVersionModel model,
+            BindingResult result) {
 
-        ProductVersionDTO updatedProductVersion = productVersionService.updateProductVersion(productVersionID, model);
-        return ResponseEntity.ok(updatedProductVersion);
+        // Kiểm tra lỗi đầu vào từ client (nếu có)
+        if (result.hasErrors()) {
+            StringBuilder errorMessage = new StringBuilder("Dữ liệu đầu vào không hợp lệ: ");
+            result.getAllErrors().forEach(error -> errorMessage.append(error.getDefaultMessage()).append("; "));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage.toString());
+        }
+
+        try {
+            // Cập nhật phiên bản sản phẩm thông qua service
+            ProductVersionDTO updatedProductVersion = productVersionService.updateProductVersion(productVersionID, model);
+            return ResponseEntity.ok(updatedProductVersion); // Trả về phiên bản sản phẩm đã được cập nhật
+
+        } catch (ProductVersionNotFoundException e) {
+            // Trường hợp không tìm thấy phiên bản sản phẩm
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phiên bản sản phẩm: " + e.getMessage());
+        } catch (ProductVersionConflictException e) {
+            // Trường hợp tên phiên bản trùng
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xung đột tên phiên bản: " + e.getMessage());
+        } catch (ProductNotFoundException e) {
+            // Trường hợp không tìm thấy sản phẩm tương ứng
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm: " + e.getMessage());
+        } catch (Exception e) {
+            // Các lỗi khác liên quan đến hệ thống
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
+        }
     }
+
+
 
     @PutMapping("/{id}/status")
     public ResponseEntity<String> updateProductVersionStatus(
