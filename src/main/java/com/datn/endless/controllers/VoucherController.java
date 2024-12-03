@@ -15,12 +15,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/vouchers")
@@ -77,42 +79,79 @@ public class VoucherController {
         }
     }
 
-    // API để thêm voucher cho tất cả các user có trạng thái active là true
     @PostMapping("/add-to-all-active-users")
-    public ResponseEntity<String> addVoucherToAllActiveUsers(@RequestBody VoucherModel voucherModel) {
+    public ResponseEntity<Object> addVoucherToAllActiveUsers(
+            @Valid @RequestBody VoucherModel voucherModel, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            // Xử lý lỗi xác thực
+            Map<String, String> errors = bindingResult.getFieldErrors()
+                    .stream()
+                    .collect(Collectors.toMap(
+                            fieldError -> fieldError.getField(),
+                            fieldError -> fieldError.getDefaultMessage()
+                    ));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        }
+
         try {
             voucherService.addVoucherAllUser(voucherModel);
             return ResponseEntity.ok("Thêm voucher và cấp cho tất cả người dùng đang hoạt động thành công");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi trong quá trình xử lý yêu cầu"+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Đã xảy ra lỗi trong quá trình xử lý yêu cầu: " + e.getMessage());
         }
     }
 
     @PostMapping("/add-voucher-users")
-    public ResponseEntity<String> addVoucherUsers(@RequestBody VoucherModel2 voucherModel) {
+    public ResponseEntity<Object> addVoucherUsers(
+            @Valid @RequestBody VoucherModel2 voucherModel, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            // Xử lý lỗi xác thực
+            Map<String, String> errors = bindingResult.getFieldErrors()
+                    .stream()
+                    .collect(Collectors.toMap(
+                            fieldError -> fieldError.getField(),
+                            fieldError -> fieldError.getDefaultMessage()
+                    ));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        }
+
         try {
             voucherService.addVoucherForUser(voucherModel);
             return ResponseEntity.ok("Thêm voucher và cấp cho người dùng thành công");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi trong quá trình xử lý yêu cầu"+e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Đã xảy ra lỗi trong quá trình xử lý yêu cầu: " + e.getMessage());
         }
     }
 
-
-
     @PutMapping("/update/{id}")
-    public ResponseEntity<Object> updateVoucher(@PathVariable String id, @Valid @RequestBody VoucherModel updatedVoucher) {
+    public ResponseEntity<Object> updateVoucher(
+            @PathVariable String id,
+            @Valid @RequestBody VoucherModel updatedVoucher,
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            // Xử lý lỗi xác thực
+            Map<String, String> errors = bindingResult.getFieldErrors()
+                    .stream()
+                    .collect(Collectors.toMap(
+                            fieldError -> fieldError.getField(),
+                            fieldError -> fieldError.getDefaultMessage()
+                    ));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        }
+
         Map<String, Object> response = new HashMap<>();
         try {
             voucherService.updateVoucher(id, updatedVoucher);
             response.put("success", true);
             response.put("message", "Cập nhật voucher thành công");
             return ResponseEntity.ok(response);
-        } catch (VoucherNotFoundException e) { // Thay bằng loại ngoại lệ thực tế
+        } catch (VoucherNotFoundException e) {
             response.put("success", false);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ErrorResponse("Voucher không tìm thấy", e.getMessage()));
-        } catch (ValidationException e) { // Một loại ngoại lệ khác nếu có
+        } catch (ValidationException e) {
             response.put("success", false);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorResponse("Lỗi xác thực", e.getMessage()));
