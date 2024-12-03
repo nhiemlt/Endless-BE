@@ -4,6 +4,7 @@ import com.datn.endless.dtos.AttributeDTO;
 import com.datn.endless.dtos.AttributeValueDTO;
 import com.datn.endless.entities.Attribute;
 import com.datn.endless.entities.Attributevalue;
+import com.datn.endless.exceptions.AttributeNotFoundException;
 import com.datn.endless.repositories.AttributeRepository;
 import com.datn.endless.repositories.AttributevalueRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ public class AttributeService {
         if (!StringUtils.hasText(attributeDTO.getAttributeName())) {
             throw new RuntimeException("Tên thuộc tính không được bỏ trống.");
         }
+
 
         if (attributeRepository.existsByAttributeName(attributeDTO.getAttributeName())) {
             throw new RuntimeException("Thuộc tính đã tồn tại.");
@@ -140,14 +142,21 @@ public class AttributeService {
         return resultDTO;
     }
 
-
-
     public void deleteAttribute(String id) {
-        if (!attributeRepository.existsById(id)) {
-            throw new RuntimeException("Không tìm thấy thuộc tính.");
+        // Kiểm tra xem thuộc tính có tồn tại không
+        Attribute attribute = attributeRepository.findById(id)
+                .orElseThrow(() -> new AttributeNotFoundException("Không tìm thấy thuộc tính."));
+
+        // Xóa tất cả các giá trị thuộc tính liên quan
+        List<Attributevalue> attributeValues = attributeValueRepository.findByAttribute(attribute);
+        for (Attributevalue attributeValue : attributeValues) {
+            attributeValueRepository.delete(attributeValue);
         }
+
+        // Xóa thuộc tính
         attributeRepository.deleteById(id);
     }
+
 
     private AttributeDTO convertToDTO(Attribute attribute) {
         AttributeDTO attributeDTO = new AttributeDTO();

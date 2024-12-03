@@ -1,11 +1,12 @@
 package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.AttributeDTO;
-import com.datn.endless.dtos.AttributeValueDTO;
-import com.datn.endless.entities.Attribute;
+
+import com.datn.endless.exceptions.AttributeNotFoundException;
 import com.datn.endless.repositories.AttributeRepository;
 import com.datn.endless.services.AttributeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,12 +46,17 @@ public class AttributeController {
         return ResponseEntity.ok(updatedAttribute);
     }
 
-    // Delete attribute
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAttribute(@PathVariable String id) {
-        attributeService.deleteAttribute(id);
-        return ResponseEntity.ok("Attribute xóa thành công.");
+        try {
+            attributeService.deleteAttribute(id);
+            return ResponseEntity.ok("Thuộc tính xóa thành công.");
+        } catch (AttributeNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
+        }
     }
 
-//
+
 }
