@@ -270,7 +270,17 @@ public class OrderService {
         order.setCodValue(orderModel.getCodValue());
         order.setInsuranceValue(orderModel.getInsuranceValue());
         order.setServiceTypeID(orderModel.getServiceTypeID());
-        order.setVoucherDiscount(voucher != null ? calculateVoucherDiscount(voucher) : BigDecimal.ZERO);
+        if(voucher!=null){{
+            Uservoucher uservoucher = uservoucherRepository.findByUserIDAndVoucherID(currentUser, order.getVoucherID());
+            if(uservoucher==null){
+                throw new VoucherCannotBeUsedException("Không tìm thấy voucher của người dùng");
+            }
+            else{
+                order.setVoucherDiscount(calculateVoucherDiscount(voucher));
+                uservoucherRepository.delete(uservoucher);
+            }
+
+        }}
         order.setTotalMoney(totalMoney);
 
         // Kiểm tra và thêm chi tiết đơn hàng
