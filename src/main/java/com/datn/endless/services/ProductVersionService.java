@@ -411,6 +411,8 @@ public class ProductVersionService {
                     vaDTO.setVersionAttributeID(va.getVersionAttributeID());
                     vaDTO.setAttributeName(va.getAttributeValueID().getAttribute().getAttributeName());
                     vaDTO.setAttributeValue(va.getAttributeValueID().getValue());
+                    vaDTO.setAttributeValueID(va.getAttributeValueID().getAttributeValueID());
+
                     return vaDTO;
                 })
                 .collect(Collectors.toList());
