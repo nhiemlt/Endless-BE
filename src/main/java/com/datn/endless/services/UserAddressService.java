@@ -2,6 +2,7 @@ package com.datn.endless.services;
 
 import com.datn.endless.dtos.UseraddressDTO;
 import com.datn.endless.entities.*;
+import com.datn.endless.exceptions.AddressNotFoundException;
 import com.datn.endless.exceptions.UserNotFoundException;
 import com.datn.endless.models.UserAddressModel;
 import com.datn.endless.repositories.*;
@@ -92,6 +93,20 @@ public class UserAddressService {
             if (user == null) {
                 throw new UserNotFoundException("User not found");
             }
+
+            // Kiểm tra xem địa chỉ đã tồn tại chưa
+            boolean addressExists = userAddressRepository.existsByUserID_UserIDAndProvinceIDAndDistrictIDAndWardCodeAndDetailAddress(
+                    user.getUserID(),
+                    userAddressModel.getProvinceID(),
+                    userAddressModel.getDistrictID(),
+                    userAddressModel.getWardCode(),
+                    userAddressModel.getDetailAddress()
+            );
+
+            if (addressExists) {
+                throw new AddressNotFoundException("This address already exists for the user.");
+            }
+
             // Tạo đối tượng Useraddress mới để lưu địa chỉ
             Useraddress userAddress = new Useraddress();
             userAddress.setAddressID(UUID.randomUUID().toString());
@@ -103,15 +118,24 @@ public class UserAddressService {
             userAddress.setWardCode(userAddressModel.getWardCode());
             userAddress.setWardName(userAddressModel.getWardName());
             userAddress.setDetailAddress(userAddressModel.getDetailAddress());
+
             // Lưu địa chỉ người dùng vào cơ sở dữ liệu
             Useraddress savedUserAddress = userAddressRepository.save(userAddress);
+
             // Chuyển đổi đối tượng Useraddress thành UseraddressDTO để trả về
             return convertToDTO(savedUserAddress);
+        } catch (AddressNotFoundException e) {
+            // Xử lý ngoại lệ khi địa chỉ đã tồn tại
+            throw new AddressNotFoundException("This address already exists for the user.");
+        } catch (UserNotFoundException e) {
+            // Xử lý ngoại lệ khi người dùng không tồn tại
+            throw new UserNotFoundException("User not found");
         } catch (Exception e) {
             // Ghi log để theo dõi chi tiết lỗi
             throw new RuntimeException("Could not save user address. Please try again later.");
         }
     }
+
 
 
     // Cập nhật địa chỉ người dùng hiện tại

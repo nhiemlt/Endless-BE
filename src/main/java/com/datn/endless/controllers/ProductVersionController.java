@@ -53,6 +53,32 @@ public class ProductVersionController {
     }
 
 
+    @GetMapping("/filter-product-versions")
+    public ResponseEntity<Page<ProductVersionDTO>> filterProductVersions(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "versionName") String sortBy,
+            @RequestParam(defaultValue = "ASC") String direction,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) List<String> categoryIDs,
+            @RequestParam(required = false) List<String> brandIDs,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice) {
+
+        // Danh sách các thuộc tính hỗ trợ sắp xếp
+        List<String> sortableFields = List.of("versionName", "price", "purchasePrice", "weight");
+
+        // Kiểm tra sortBy hợp lệ
+        if (!sortableFields.contains(sortBy)) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        Page<ProductVersionDTO> productVersions = productVersionService.filterProductVersions(
+                page, size, sortBy, direction, keyword, categoryIDs, brandIDs, minPrice, maxPrice);
+
+        return ResponseEntity.ok(productVersions);
+    }
+
     // API tìm kiếm ProductVersion theo ID
     @GetMapping("/{id}")
     public ResponseEntity<ProductVersionDTO> getProductVersionById(@PathVariable("id") String productVersionID) {
@@ -75,6 +101,12 @@ public class ProductVersionController {
 
         return ResponseEntity.ok(productVersions);
     }
+
+
+
+
+
+
 
     @GetMapping("/top-selling")
     public Page<ProductVersionDTO> getTopSellingProductVersions(@RequestParam(defaultValue = "0") int page,
@@ -251,5 +283,13 @@ public class ProductVersionController {
         }
     }
 
+    @PostMapping("/multiple")
+    public ResponseEntity<List<ProductVersionDTO>> createMultipleProductVersions(@RequestBody @Valid ProductVersionModel productVersionModel) {
+        List<ProductVersionDTO> createdVersions = productVersionService.createMultipleProductVersions(productVersionModel);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdVersions);
+    }
+
+
 }
+
 

@@ -15,10 +15,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,6 +50,8 @@ public class ProductVersionService {
     private OrderdetailRepository orderdetailRepository;
     @Autowired
     private ProductversionRepository productversionRepository;
+    @Autowired
+    private AttributevalueRepository attributevalueRepository;
 
 
     // Tìm kiếm ProductVersion theo ID
@@ -91,6 +90,24 @@ public class ProductVersionService {
         // Chuyển đổi danh sách ProductVersion thành DTOs
         return pageResult.map(this::convertToDTO);
     }
+
+    public Page<ProductVersionDTO> filterProductVersions(int page, int size, String sortBy, String direction,
+                                                         String keyword, List<String> categoryIDs, List<String> brandIDs,
+                                                         BigDecimal minPrice, BigDecimal maxPrice) {
+
+        // Tạo đối tượng Pageable với thông tin phân trang và sắp xếp
+        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Lọc danh sách ProductVersion theo từ khóa, category, brand và price nếu có, chỉ lấy các sản phẩm có trạng thái "Active"
+        Page<Productversion> pageResult = productversionRepository.findProductVersionsByCriteria(
+                keyword, categoryIDs, brandIDs, minPrice, maxPrice, pageable);
+
+        // Chuyển đổi danh sách ProductVersion thành DTOs
+        return pageResult.map(this::convertToDTO);
+    }
+
+
 
 
     public List<ProductVersionDTO> filterProductVersionsByCategoriesAndBrands(
@@ -171,6 +188,8 @@ public class ProductVersionService {
     }
 
 
+
+
     public Page<ProductVersionDTO> getTop5BestSellingProductVersionsThisMonth(Pageable pageable) {
         LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
         LocalDateTime endOfMonth = LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()).atTime(23, 59, 59);
@@ -197,6 +216,7 @@ public class ProductVersionService {
             return convertToDTO(productVersion);
         });
     }
+
 
     public ProductVersionDTO createProductVersion(ProductVersionModel productVersionModel) {
         // Kiểm tra sự tồn tại của sản phẩm
@@ -233,7 +253,6 @@ public class ProductVersionService {
         return convertToDTO(savedVersion);
     }
 
-
     public ProductVersionDTO updateProductVersion(String productVersionID, ProductVersionModel productVersionModel) {
         // Tìm kiếm phiên bản sản phẩm hiện tại
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
@@ -266,6 +285,7 @@ public class ProductVersionService {
 
         return convertToDTO(updatedVersion);
     }
+
 
 
     // Cập nhật Status
@@ -525,6 +545,92 @@ public class ProductVersionService {
                 .sorted(comparator)
                 .collect(Collectors.toList());
     }
+
+
+
+    public List<ProductVersionDTO> createMultipleProductVersions(ProductVersionModel productVersionModel) {
+        // Kiểm tra sự tồn tại của sản phẩm
+        Product product = productRepository.findById(productVersionModel.getProductID())
+                .orElseThrow(() -> new ProductNotFoundException("Không tìm thấy sản phẩm với ID: " + productVersionModel.getProductID()));
+
+        // Phân nhóm attributeValueID theo attributeID
+        Map<String, List<Attributevalue>> attributeGroups = productVersionModel.getAttributeValueID().stream()
+                .map(attributeValueID -> attributeValueRepository.findById(attributeValueID)
+                        .orElseThrow(() -> new AttributeValueNotFoundException("Giá trị thuộc tính không tồn tại: " + attributeValueID)))
+                .collect(Collectors.groupingBy(attributeValue -> attributeValue.getAttribute().getAttributeID()));
+
+        // Tạo tổ hợp tất cả các giá trị thuộc tính
+        List<List<Attributevalue>> combinations = generateCombinations(new ArrayList<>(attributeGroups.values()));
+
+        // Tạo danh sách các phiên bản mới
+        List<ProductVersionDTO> createdVersions = new ArrayList<>();
+        for (List<Attributevalue> combination : combinations) {
+            // Tạo tên phiên bản
+            String combinedName = productVersionModel.getVersionName() + " " +
+                    combination.stream()
+                            .map(Attributevalue::getValue)
+                            .collect(Collectors.joining(" "));
+
+            // Kiểm tra trùng lặp tên phiên bản
+            boolean isVersionNameExists = productVersionRepository.existsByProductIDAndVersionName(product, combinedName);
+            if (isVersionNameExists) {
+                throw new ProductVersionConflictException("Phiên bản sản phẩm với tên '" + combinedName + "' đã tồn tại.");
+            }
+
+            // Tạo mới phiên bản sản phẩm
+            Productversion productVersion = new Productversion();
+            productVersion.setProductVersionID(UUID.randomUUID().toString());
+            productVersion.setProductID(product);
+            productVersion.setVersionName(combinedName);
+            productVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
+            productVersion.setPrice(productVersionModel.getPrice());
+            productVersion.setWeight(productVersionModel.getWeight());
+            productVersion.setHeight(productVersionModel.getHeight());
+            productVersion.setLength(productVersionModel.getLength());
+            productVersion.setWidth(productVersionModel.getWidth());
+            productVersion.setImage(productVersionModel.getImage());
+            productVersion.setStatus("Active");
+
+            // Lưu phiên bản sản phẩm
+            Productversion savedVersion = productVersionRepository.save(productVersion);
+
+            // Lưu thông tin thuộc tính
+            saveVersionAttributes(combination.stream()
+                    .map(Attributevalue::getAttributeValueID)
+                    .collect(Collectors.toList()), savedVersion);
+
+            // Chuyển đổi thành DTO và thêm vào danh sách
+            createdVersions.add(convertToDTO(savedVersion));
+        }
+
+        return createdVersions;
+    }
+
+
+    private List<List<Attributevalue>> generateCombinations(List<List<Attributevalue>> attributeGroups) {
+        if (attributeGroups.isEmpty()) {
+            return Collections.singletonList(Collections.emptyList());
+        }
+
+        List<Attributevalue> firstGroup = attributeGroups.get(0);
+        List<List<Attributevalue>> remainingCombinations = generateCombinations(attributeGroups.subList(1, attributeGroups.size()));
+
+        List<List<Attributevalue>> result = new ArrayList<>();
+        for (Attributevalue value : firstGroup) {
+            for (List<Attributevalue> combination : remainingCombinations) {
+                List<Attributevalue> newCombination = new ArrayList<>();
+                newCombination.add(value);
+                newCombination.addAll(combination);
+                result.add(newCombination);
+            }
+        }
+        return result;
+    }
+
+
+
+
+
 
 
 
