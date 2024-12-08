@@ -6,5 +6,5 @@ public class ZaloPayConfig {
     public static String KEY2 = "trMrHtvjo6myautxDUiAcYsVtaeQ8nhf";
     public static String CREATE_ORDER_URL = "https://sandbox.zalopay.com.vn/v001/tpe/createorder";
     public static String GET_STATUS_PAY_URL = "https://sandbox.zalopay.com.vn/v001/tpe/getstatusbyapptransid";
-    public static String REDIRECT_URL ="http://localhost:8080/api/payment/callback";
+    public static String REDIRECT_URL ="https://endlesstechstore.id.vn:8080/api/payment/callback";
 }

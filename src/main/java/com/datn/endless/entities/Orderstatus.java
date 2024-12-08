@@ -10,7 +10,7 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "Orderstatus")
+@Table(name = "orderstatus")
 public class Orderstatus {
 
     @EmbeddedId

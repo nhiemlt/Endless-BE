@@ -14,13 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface NotificationrecipientRepository extends JpaRepository<Notificationrecipient, String> {
-    @Query(value = "SELECT nr.* " +
-            "FROM NotificationRecipients nr " +
-            "JOIN Notifications n ON nr.NotificationID = n.NotificationID " +
-            "WHERE nr.UserID = :userId " +
-            "ORDER BY n.NotificationDate DESC",
-            nativeQuery = true)
-    List<Notificationrecipient> findAllByUserID(@Param("userId") String userId);
+
+    @Query(value = "SELECT nr " +
+            "FROM Notificationrecipient nr " +
+            "JOIN nr.notificationID n " +
+            "WHERE nr.userID.userID = :userId " +
+            "ORDER BY n.notificationDate DESC")
+    List<Notificationrecipient> findAllByUserId(@Param("userId") String userId);
 
     void deleteByNotificationID(Notification notification);
 
