@@ -20,7 +20,7 @@ public interface NotificationrecipientRepository extends JpaRepository<Notificat
             "JOIN nr.notificationID n " +
             "WHERE nr.userID.userID = :userId " +
             "ORDER BY n.notificationDate DESC")
-    List<Notificationrecipient> findAllByUserId(@Param("userId") String userId);
+    List<Notificationrecipient> findAllByUserID(@Param("userId") String userId);
 
     void deleteByNotificationID(Notification notification);
 
