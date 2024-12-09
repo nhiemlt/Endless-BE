@@ -128,7 +128,7 @@ public class AuthService {
             claims.put("password", registerModel.getPassword());
 
             String verificationToken = jwt.generateToken(registerModel.getEmail(), claims);
-            String verificationLink = "http://localhost:8080/verify?token=" + verificationToken;
+            String verificationLink = "https://endlesstechstore.id.vn:8080/verify?token=" + verificationToken;
 
             mailService.sendVerificationMail(registerModel.getUsername(), registerModel.getEmail(), verificationLink);
 
@@ -172,7 +172,7 @@ public class AuthService {
             claims.put("email", email);
 
             String verificationToken = jwt.generateToken(username, claims);
-            String verificationLink = "http://localhost:8080/verify-reset-email?token=" + verificationToken;
+            String verificationLink = "https://endlesstechstore.id.vn:8080/verify-reset-email?token=" + verificationToken;
 
             mailService.sendVerificationUpdateMail(username, user.getEmail(), verificationLink);
 
@@ -273,7 +273,7 @@ public class AuthService {
                 "<h1 class=\"text-9xl font-black text-gray-200\">" + title + "</h1>" +
                 "<p class=\"text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl\">" + message + "</p>" +
                 "<p class=\"mt-4 text-gray-500\">" + content + "</p>" +
-                "<a href=\"http://localhost:3000/login\" class=\"mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring\">" +
+                "<a href=\"https://endlesstechstore.id.vn/login\" class=\"mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring\">" +
                 "Đi đến trang đăng nhập" +
                 "</a>" +
                 "</div>" +
@@ -378,7 +378,7 @@ public class AuthService {
 
         String resetToken = jwt.generateToken(user.getUsername());
 
-        String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
+        String resetLink = "https://endlesstechstore.id.vn/:8080/reset-password?token=" + resetToken;
         mailService.sendResetPasswordMail(user.getUsername(), user.getEmail(), resetLink);
 
         response.put("success", true);

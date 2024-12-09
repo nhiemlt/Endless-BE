@@ -203,9 +203,6 @@ public class ZaloPaymentService {
         String status = payload.get("status");
         String modifiedUUID = apptransid.substring(apptransid.indexOf('_') + 1);
         String orderID = UUIDUtils.decodeModifiedUUID(modifiedUUID);
-        System.out.println("\n\n\n\n\n\n\n\n"+apptransid);
-        System.out.println(orderID);
-
 
         // Kiểm tra trạng thái giao dịch
         if ("1".equals(status)) {
@@ -224,8 +221,6 @@ public class ZaloPaymentService {
         orderService.autoMarkOrderAsPaid(apptransid);
     }
 
-
-
     public String generateHtml(String title, String message, String content) {
         return "<!DOCTYPE html>" +
                 "<html lang=\"vi\">" +
@@ -241,8 +236,8 @@ public class ZaloPaymentService {
                 "<h1 class=\"text-9xl font-black text-gray-200\">" + title + "</h1>" +
                 "<p class=\"text-2xl font-bold tracking-tight text-gray-900 sm:text-4xl\">" + message + "</p>" +
                 "<p class=\"mt-4 text-gray-500\">" + content + "</p>" +
-                "<a href=\"http://localhost:3000\" class=\"mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring\">" +
-                "Đi đến trang đăng nhập" +
+                "<a href=\"https://endlesstechstore.id.vn\" class=\"mt-6 inline-block rounded bg-indigo-600 px-5 py-3 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring\">" +
+                "Trở lại với enless" +
                 "</a>" +
                 "</div>" +
                 "</div>" +

@@ -52,6 +52,10 @@ public class SecurityConfig {
                                 .requestMatchers("/token/validate").permitAll()  // Sử dụng quyền token/validate
                                 .requestMatchers("/products").permitAll()  // Sử dụng quyền view_all_products
                                 .requestMatchers("/products/{id}").permitAll()  // Sử dụng quyền view_product_details
+                                .requestMatchers("/api/product-versions/get-user").permitAll()
+                                .requestMatchers("/api/product-versions/filter-product-versions").permitAll()
+                                .requestMatchers("/api/product-versions/filter").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/api/product-versions/{id}").permitAll()
                                 .requestMatchers("/api/product-versions/top-selling").permitAll()
                                 .requestMatchers("/api/product-versions/top-selling/all-time").permitAll()
                                 .requestMatchers("/ratings").permitAll()  // Sử dụng quyền view_all_ratings
@@ -167,9 +171,6 @@ public class SecurityConfig {
 
                                 .requestMatchers("/api/customers/**").hasAuthority("add_new_user")
                                 .requestMatchers("/api/employees/**").hasAuthority("add_new_user")
-
-
-
 
                                 .anyRequest().authenticated()
                 )
