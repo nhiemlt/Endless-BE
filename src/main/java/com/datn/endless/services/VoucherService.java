@@ -148,9 +148,9 @@ public class VoucherService {
             throw new RuntimeException("Giảm tối đa phải lớn hơn giảm tối thiểu");
         }
 
-        if (voucherModel.getBiggestDiscount().compareTo(voucherModel.getLeastBill()) >= 0) {
-            throw new RuntimeException("Giảm tối đa phải nhỏ hơn hóa đơn tối thiểu");
-        }
+//        if (voucherModel.getBiggestDiscount().compareTo(voucherModel.getLeastBill()) >= 0) {
+//            throw new RuntimeException("Giảm tối đa phải nhỏ hơn hóa đơn tối thiểu");
+//        }
 
         // Lấy ngày hiện tại (LocalDateTime)
         LocalDateTime now = LocalDateTime.now();
@@ -170,10 +170,10 @@ public class VoucherService {
             throw new RuntimeException("Giờ của ngày bắt đầu phải là giờ hiện tại hoặc trong tương lai");
         }
 
-        // Kiểm tra giờ của ngày kết thúc phải là giờ hiện tại hoặc trong tương lai
-        if (voucherModel.getEndDate().isBefore(now.withSecond(0).withNano(0))) {
-            throw new RuntimeException("Giờ của ngày kết thúc phải là giờ hiện tại hoặc trong tương lai");
-        }
+//        // Kiểm tra giờ của ngày kết thúc phải là giờ hiện tại hoặc trong tương lai
+//        if (voucherModel.getEndDate().isBefore(now.withSecond(0).withNano(0))) {
+//            throw new RuntimeException("Giờ của ngày kết thúc phải là giờ hiện tại hoặc trong tương lai");
+//        }
 
         // Tạo đối tượng voucher
         Voucher voucher = new Voucher();
@@ -234,9 +234,9 @@ public class VoucherService {
             throw new RuntimeException("Giờ bắt đầu phải sau giờ hiện tại");
         }
 
-        if (updatedVoucher.getEndDate().toLocalTime().isBefore(now.toLocalTime())) {
-            throw new RuntimeException("Giờ kết thúc phải sau giờ hiện tại");
-        }
+//        if (updatedVoucher.getEndDate().toLocalTime().isBefore(now.toLocalTime())) {
+//            throw new RuntimeException("Giờ kết thúc phải sau giờ hiện tại");
+//        }
 
         // Cập nhật mã voucher nếu cần
         String updatedVoucherCode = updatedVoucher.getVoucherCode().trim().toUpperCase();

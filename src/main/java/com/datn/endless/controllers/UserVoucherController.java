@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -49,4 +50,18 @@ public class UserVoucherController {
         // Trả về danh sách kết quả
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/by-amount")
+    public ResponseEntity<?> getVoucherByAmountMoney(@RequestParam BigDecimal totalAmount) {
+        // Lấy danh sách voucher hợp lệ
+        List<VoucherDTO> validVouchers = userVoucherService.getVouchersByAmount(totalAmount);
+
+        // Kiểm tra kết quả
+        if (validVouchers.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Không có voucher phù hợp.");
+        }
+
+        return ResponseEntity.ok(validVouchers);
+    }
+
 }
