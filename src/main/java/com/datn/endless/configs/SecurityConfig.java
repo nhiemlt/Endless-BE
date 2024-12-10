@@ -127,6 +127,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/api/brands/{id}").hasAuthority("update_brand")
                                 .requestMatchers(HttpMethod.DELETE, "/api/brands/{id}").hasAuthority("delete_brand")
 
+                                .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/categories").hasAuthority("add_new_category")
                                 .requestMatchers(HttpMethod.GET, "/api/categories/{id}").hasAuthority("view_category")
                                 .requestMatchers(HttpMethod.PUT, "/api/categories/{id}").hasAuthority("update_category")
