@@ -72,10 +72,6 @@ public class VoucherService {
             throw new RuntimeException("Giảm tối đa phải lớn hơn giảm tối thiểu");
         }
 
-        if (voucherModel.getBiggestDiscount().compareTo(voucherModel.getLeastBill()) >= 0) {
-            throw new RuntimeException("Giảm tối đa phải nhỏ hơn hóa đơn tối thiểu");
-        }
-
         // Kiểm tra ngày kết thúc có thể >= ngày hiện tại
         LocalDateTime now = LocalDateTime.now();
         if (voucherModel.getEndDate().isBefore(now)) {
@@ -92,8 +88,11 @@ public class VoucherService {
             throw new RuntimeException("Giờ bắt đầu phải sau giờ hiện tại");
         }
 
-        if (voucherModel.getEndDate().toLocalTime().isBefore(now.toLocalTime())) {
-            throw new RuntimeException("Giờ kết thúc phải sau giờ hiện tại");
+        if (voucherModel.getStartDate().toLocalDate().isEqual(voucherModel.getEndDate().toLocalDate())) {
+            // Nếu ngày bắt đầu và ngày kết thúc giống nhau, kiểm tra giờ
+            if (voucherModel.getEndDate().toLocalTime().isBefore(voucherModel.getStartDate().toLocalTime())) {
+                throw new RuntimeException("Giờ của ngày kết thúc phải lớn hơn giờ của ngày bắt đầu hoặc trong tương lai");
+            }
         }
 
         // Tạo đối tượng voucher
@@ -148,10 +147,6 @@ public class VoucherService {
             throw new RuntimeException("Giảm tối đa phải lớn hơn giảm tối thiểu");
         }
 
-//        if (voucherModel.getBiggestDiscount().compareTo(voucherModel.getLeastBill()) >= 0) {
-//            throw new RuntimeException("Giảm tối đa phải nhỏ hơn hóa đơn tối thiểu");
-//        }
-
         // Lấy ngày hiện tại (LocalDateTime)
         LocalDateTime now = LocalDateTime.now();
 
@@ -170,10 +165,12 @@ public class VoucherService {
             throw new RuntimeException("Giờ của ngày bắt đầu phải là giờ hiện tại hoặc trong tương lai");
         }
 
-//        // Kiểm tra giờ của ngày kết thúc phải là giờ hiện tại hoặc trong tương lai
-//        if (voucherModel.getEndDate().isBefore(now.withSecond(0).withNano(0))) {
-//            throw new RuntimeException("Giờ của ngày kết thúc phải là giờ hiện tại hoặc trong tương lai");
-//        }
+        if (voucherModel.getStartDate().toLocalDate().isEqual(voucherModel.getEndDate().toLocalDate())) {
+            // Nếu ngày bắt đầu và ngày kết thúc giống nhau, kiểm tra giờ
+            if (voucherModel.getEndDate().toLocalTime().isBefore(voucherModel.getStartDate().toLocalTime())) {
+                throw new RuntimeException("Giờ của ngày kết thúc phải lớn hơn giờ của ngày bắt đầu hoặc trong tương lai");
+            }
+        }
 
         // Tạo đối tượng voucher
         Voucher voucher = new Voucher();
@@ -234,9 +231,14 @@ public class VoucherService {
             throw new RuntimeException("Giờ bắt đầu phải sau giờ hiện tại");
         }
 
-//        if (updatedVoucher.getEndDate().toLocalTime().isBefore(now.toLocalTime())) {
-//            throw new RuntimeException("Giờ kết thúc phải sau giờ hiện tại");
-//        }
+        // Kiểm tra nếu ngày kết thúc trùng với ngày hiện tại
+        if (updatedVoucher.getEndDate().toLocalDate().isEqual(now.toLocalDate())) {
+            // Nếu ngày kết thúc là ngày hôm nay, kiểm tra giờ
+            if (updatedVoucher.getEndDate().toLocalTime().isBefore(now.toLocalTime())) {
+                throw new RuntimeException("Giờ kết thúc phải sau giờ hiện tại");
+            }
+        }
+
 
         // Cập nhật mã voucher nếu cần
         String updatedVoucherCode = updatedVoucher.getVoucherCode().trim().toUpperCase();
