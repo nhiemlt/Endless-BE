@@ -57,7 +57,7 @@ public class ProductVersionController {
     public ResponseEntity<Page<ProductVersionDTO>> filterProductVersions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "versionName") String sortBy,
+            @RequestParam(defaultValue = "quantitySold") String sortBy,
             @RequestParam(defaultValue = "ASC") String direction,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) List<String> categoryIDs,
@@ -66,13 +66,12 @@ public class ProductVersionController {
             @RequestParam(required = false) BigDecimal maxPrice) {
 
         // Danh sách các thuộc tính hỗ trợ sắp xếp
-        List<String> sortableFields = List.of("versionName", "price", "purchasePrice", "weight");
+        List<String> sortableFields = List.of("numberOfReviews", "discountPrice", "quantitySold");
 
         // Kiểm tra sortBy hợp lệ
-        if (!sortableFields.contains(sortBy)) {
-            return ResponseEntity.badRequest().body(null);
+        if (!sortableFields.contains(sortBy) || sortBy.isEmpty()) {
+            sortBy = "quantitySold";
         }
-
         Page<ProductVersionDTO> productVersions = productVersionService.filterProductVersions(
                 page, size, sortBy, direction, keyword, categoryIDs, brandIDs, minPrice, maxPrice);
 
@@ -271,17 +270,7 @@ public class ProductVersionController {
     }
 
 
-    @GetMapping("/sorted")
-    public ResponseEntity<List<ProductVersionDTO>> getSortedProductVersions(
-            @RequestParam String sortBy,
-            @RequestParam String direction) {
-        try {
-            List<ProductVersionDTO> sortedProductVersions = productVersionService.getSortedProductVersions(sortBy, direction);
-            return ResponseEntity.ok(sortedProductVersions);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
+
 
 
 

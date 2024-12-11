@@ -97,15 +97,60 @@ public class ProductVersionService {
 
         // Tạo đối tượng Pageable với thông tin phân trang và sắp xếp
         Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = PageRequest.of(page, size);
 
         // Lọc danh sách ProductVersion theo từ khóa, category, brand và price nếu có, chỉ lấy các sản phẩm có trạng thái "Active"
-        Page<Productversion> pageResult = productversionRepository.findProductVersionsByCriteria(
-                keyword, categoryIDs, brandIDs, minPrice, maxPrice, pageable);
+        List<Productversion> result = productversionRepository.findProductVersionsByCriteria(
+                keyword, categoryIDs, brandIDs, minPrice, maxPrice);
 
         // Chuyển đổi danh sách ProductVersion thành DTOs
-        return pageResult.map(this::convertToDTO);
+        return getSortedProductVersions(sortBy, direction, pageable, result);
     }
+
+
+
+    public Page<ProductVersionDTO> getSortedProductVersions(String sortBy, String direction, Pageable pageable, List<Productversion> productVersions) {
+        // Lọc sản phẩm có trạng thái active
+        List<ProductVersionDTO> productVersionDTOs = productVersions.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
+        // Sắp xếp theo tiêu chí
+        Comparator<ProductVersionDTO> comparator;
+        switch (sortBy) {
+            case "numberOfReviews":
+                comparator = Comparator.comparing(ProductVersionDTO::getNumberOfReviews);
+                break;
+            case "discountPrice":
+                comparator = Comparator.comparing(ProductVersionDTO::getDiscountPrice);
+                break;
+            case "quantitySold":
+                comparator = Comparator.comparing(ProductVersionDTO::getQuantitySold);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid sortBy parameter: " + sortBy);
+        }
+
+        // Áp dụng chiều sắp xếp
+        if ("desc".equalsIgnoreCase(direction)) {
+            comparator = comparator.reversed();
+        }
+
+        // Sắp xếp danh sách
+        List<ProductVersionDTO> sortedList = productVersionDTOs.stream()
+                .sorted(comparator)
+                .collect(Collectors.toList());
+
+        // Chuyển sang Pageable
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), sortedList.size());
+        Page<ProductVersionDTO> page = new PageImpl<>(sortedList.subList(start, end), pageable, sortedList.size());
+
+        return page;
+    }
+
+
+
 
 
 
@@ -508,44 +553,6 @@ public class ProductVersionService {
     public Integer getProductVersionOrderQuantity(String productVersionID) {
         Integer quantity = orderdetailRepository.findTotalSoldQuantityByProductVersion(productVersionID);
         return quantity == null ? 0 : quantity;
-    }
-
-
-    // Lấy danh sách sản phẩm có sắp xếp theo tiêu chí và chiều, chỉ lấy sản phẩm có trạng thái active
-    public List<ProductVersionDTO> getSortedProductVersions(String sortBy, String direction) {
-        // Lọc các sản phẩm có trạng thái active
-        List<Productversion> productVersions = productversionRepository.findByStatus("Active");
-
-        // Ánh xạ danh sách ProductVersion thành DTO
-        List<ProductVersionDTO> productVersionDTOs = productVersions.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-
-        // Sắp xếp danh sách dựa trên tiêu chí
-        Comparator<ProductVersionDTO> comparator;
-        switch (sortBy) {
-            case "numberOfReviews":
-                comparator = Comparator.comparing(ProductVersionDTO::getNumberOfReviews);
-                break;
-            case "discountPrice":
-                comparator = Comparator.comparing(ProductVersionDTO::getDiscountPrice);
-                break;
-            case "quantitySold":
-                comparator = Comparator.comparing(ProductVersionDTO::getQuantitySold);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid sortBy parameter: " + sortBy);
-        }
-
-        // Áp dụng chiều sắp xếp
-        if ("desc".equalsIgnoreCase(direction)) {
-            comparator = comparator.reversed();
-        }
-
-        // Sắp xếp danh sách
-        return productVersionDTOs.stream()
-                .sorted(comparator)
-                .collect(Collectors.toList());
     }
 
 
