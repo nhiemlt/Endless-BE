@@ -65,6 +65,19 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
                                                        Pageable pageable);
 
 
+    @Query("SELECT pv FROM Productversion pv WHERE pv.status = 'Active' " +
+            "AND (:keyword IS NULL OR pv.versionName LIKE %:keyword% OR pv.productID.name LIKE %:keyword% " +
+            "OR pv.productID.categoryID.name LIKE %:keyword% OR pv.productID.brandID.name LIKE %:keyword%) " +
+            "AND (:categoryIDs IS NULL OR pv.productID.categoryID.categoryID IN :categoryIDs) " +
+            "AND (:brandIDs IS NULL OR pv.productID.brandID.brandID IN :brandIDs) " +
+            "AND (:minPrice IS NULL OR pv.price >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR pv.price <= :maxPrice)")
+    List<Productversion> findProductVersionsByCriteria(
+            @Param("keyword") String keyword,
+            @Param("categoryIDs") List<String> categoryIDs,
+            @Param("brandIDs") List<String> brandIDs,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice);
 
 
 }

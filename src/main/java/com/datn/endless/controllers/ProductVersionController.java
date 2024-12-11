@@ -57,7 +57,7 @@ public class ProductVersionController {
     public ResponseEntity<Page<ProductVersionDTO>> filterProductVersions(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "versionName") String sortBy,
+            @RequestParam(defaultValue = "quantitySold") String sortBy,
             @RequestParam(defaultValue = "ASC") String direction,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) List<String> categoryIDs,
@@ -66,13 +66,12 @@ public class ProductVersionController {
             @RequestParam(required = false) BigDecimal maxPrice) {
 
         // Danh sách các thuộc tính hỗ trợ sắp xếp
-        List<String> sortableFields = List.of("versionName", "price", "purchasePrice", "weight");
+        List<String> sortableFields = List.of("numberOfReviews", "discountPrice", "quantitySold");
 
         // Kiểm tra sortBy hợp lệ
-        if (!sortableFields.contains(sortBy)) {
-            return ResponseEntity.badRequest().body(null);
+        if (!sortableFields.contains(sortBy) || sortBy.isEmpty()) {
+            sortBy = "quantitySold";
         }
-
         Page<ProductVersionDTO> productVersions = productVersionService.filterProductVersions(
                 page, size, sortBy, direction, keyword, categoryIDs, brandIDs, minPrice, maxPrice);
 
@@ -101,10 +100,6 @@ public class ProductVersionController {
 
         return ResponseEntity.ok(productVersions);
     }
-
-
-
-
 
 
 
@@ -154,9 +149,11 @@ public class ProductVersionController {
         return ResponseEntity.ok(productVersions);
     }
 
+
+
     @PostMapping
-    public ResponseEntity<?> createProductVersion(
-            @Valid @RequestBody ProductVersionModel model,
+    public ResponseEntity<?> createMultipleProductVersions(
+            @Valid @RequestBody ProductVersionModel productVersionModel,
             BindingResult result) {
 
         // Kiểm tra lỗi đầu vào
@@ -165,14 +162,16 @@ public class ProductVersionController {
             result.getAllErrors().forEach(error -> errorMessage.append(error.getDefaultMessage()).append(". "));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage.toString());
         }
-
         try {
-            // Gọi service để tạo mới phiên bản sản phẩm
-            ProductVersionDTO createdProductVersion = productVersionService.createProductVersion(model);
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdProductVersion);
+            // Gọi service để tạo nhiều phiên bản sản phẩm
+            List<ProductVersionDTO> createdVersions = productVersionService.createMultipleProductVersions(productVersionModel);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdVersions);
         } catch (ProductNotFoundException e) {
             // Trả về lỗi nếu không tìm thấy sản phẩm
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Sản phẩm không tồn tại: " + e.getMessage());
+        } catch (AttributeValueNotFoundException e) {
+            // Trả về lỗi nếu không tìm thấy giá trị thuộc tính
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Giá trị thuộc tính không tồn tại: " + e.getMessage());
         } catch (ProductVersionConflictException e) {
             // Trả về lỗi nếu phiên bản sản phẩm đã tồn tại
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Xung đột phiên bản: " + e.getMessage());
@@ -271,23 +270,9 @@ public class ProductVersionController {
     }
 
 
-    @GetMapping("/sorted")
-    public ResponseEntity<List<ProductVersionDTO>> getSortedProductVersions(
-            @RequestParam String sortBy,
-            @RequestParam String direction) {
-        try {
-            List<ProductVersionDTO> sortedProductVersions = productVersionService.getSortedProductVersions(sortBy, direction);
-            return ResponseEntity.ok(sortedProductVersions);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
-    }
 
-    @PostMapping("/multiple")
-    public ResponseEntity<List<ProductVersionDTO>> createMultipleProductVersions(@RequestBody @Valid ProductVersionModel productVersionModel) {
-        List<ProductVersionDTO> createdVersions = productVersionService.createMultipleProductVersions(productVersionModel);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdVersions);
-    }
+
+
 
 
 }
