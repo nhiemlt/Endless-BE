@@ -22,12 +22,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     @Query("SELECT p FROM Product p WHERE p.brandID.brandID = :brandID")
     List<Product> findByBrandID(@Param("brandID") String brandID);
 
-//    @Query("SELECT p FROM Product p WHERE p.categoryID.name LIKE %:name%")
-//    List<Product> findByCategoryNameContaining(@Param("name") String name);
-//
-//    @Query("SELECT p FROM Product p WHERE p.brandID.name LIKE %:name%")
-//    List<Product> findByBrandNameContaining(@Param("name") String name);
-
     // Phương thức tổng hợp tìm kiếm theo keyword
     @Query("""
            SELECT p FROM Product p 

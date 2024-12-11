@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 .requestMatchers("/products/{id}").permitAll()  // Sử dụng quyền view_product_details
                                 .requestMatchers("/api/product-versions/get-user").permitAll()
                                 .requestMatchers("/api/product-versions/filter-product-versions").permitAll()
+                                .requestMatchers("/api/product-versions/top5ByCategory").permitAll()
                                 .requestMatchers("/api/product-versions/filter").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/api/product-versions/{id}").permitAll()
                                 .requestMatchers("/api/product-versions/top-selling").permitAll()
@@ -127,6 +128,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/api/brands/{id}").hasAuthority("update_brand")
                                 .requestMatchers(HttpMethod.DELETE, "/api/brands/{id}").hasAuthority("delete_brand")
 
+                                .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/categories").hasAuthority("add_new_category")
                                 .requestMatchers(HttpMethod.GET, "/api/categories/{id}").hasAuthority("view_category")
                                 .requestMatchers(HttpMethod.PUT, "/api/categories/{id}").hasAuthority("update_category")
@@ -159,7 +161,7 @@ public class SecurityConfig {
 
 //                        .requestMatchers(HttpMethod.POST, "/api/roles").hasAuthority("add_new_user_role")
 
-                                .requestMatchers(HttpMethod.POST, "/api/ratings").hasAuthority("view_reviews")
+                                .requestMatchers(HttpMethod.POST, "/api/ratings").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
                                 .requestMatchers(HttpMethod.DELETE, "/user-roles/{id}").hasAuthority("delete_user_role")
 

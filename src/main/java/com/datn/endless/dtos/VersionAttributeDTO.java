@@ -8,4 +8,5 @@ public class VersionAttributeDTO {
 
     private String attributeName;
     private String attributeValue;
+    private String attributeValueID;
 }
