@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 .requestMatchers("/products/{id}").permitAll()  // Sử dụng quyền view_product_details
                                 .requestMatchers("/api/product-versions/get-user").permitAll()
                                 .requestMatchers("/api/product-versions/filter-product-versions").permitAll()
+                                .requestMatchers("/api/product-versions/top5ByCategory").permitAll()
                                 .requestMatchers("/api/product-versions/filter").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/api/product-versions/{id}").permitAll()
                                 .requestMatchers("/api/product-versions/top-selling").permitAll()
@@ -160,7 +161,7 @@ public class SecurityConfig {
 
 //                        .requestMatchers(HttpMethod.POST, "/api/roles").hasAuthority("add_new_user_role")
 
-                                .requestMatchers(HttpMethod.POST, "/api/ratings").hasAuthority("view_reviews")
+                                .requestMatchers(HttpMethod.POST, "/api/ratings").authenticated()
                                 .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
                                 .requestMatchers(HttpMethod.DELETE, "/user-roles/{id}").hasAuthority("delete_user_role")
 
