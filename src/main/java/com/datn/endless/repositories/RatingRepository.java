@@ -31,4 +31,6 @@ public interface RatingRepository extends JpaRepository<Rating, String> {
 
     // Đếm số lượng đánh giá theo productVersionID
     long countByOrderDetailID_ProductVersionID_ProductVersionID(String productVersionID);
+
+    boolean existsByOrderDetailID_orderDetailID(String orderDetailID);
 }

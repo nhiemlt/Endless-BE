@@ -15,4 +15,5 @@ public class OrderDetailDTO {
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal discountPrice;
+    private boolean rated;
 }
