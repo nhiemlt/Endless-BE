@@ -4,7 +4,9 @@ import com.datn.endless.dtos.RatingDTO;
 import com.datn.endless.dtos.RatingDTO2;
 import com.datn.endless.dtos.RatingPictureDTO;
 import com.datn.endless.entities.*;
+import com.datn.endless.exceptions.DuplicateResourceException;
 import com.datn.endless.exceptions.EntityNotFoundException;
+import com.datn.endless.exceptions.ForbidenException;
 import com.datn.endless.exceptions.OrderNotFoundException;
 import com.datn.endless.models.RatingModel;
 import com.datn.endless.repositories.*;
@@ -49,7 +51,10 @@ public class RatingService {
 
         // Kiểm tra quyền của user đối với chi tiết đơn hàng
         if (!orderDetail.getOrderID().getUserID().getUserID().equals(user.getUserID())) {
-            throw new RuntimeException("Người dùng không có quyền đánh giá chi tiết đơn hàng này");
+            throw new ForbidenException("Người dùng không có quyền đánh giá chi tiết đơn hàng này");
+        }
+        if (ratingRepository.existsByOrderDetailID_orderDetailID(orderDetail.getOrderDetailID())) {
+            throw new DuplicateResourceException("Bạn đã đánh giá rồi");
         }
 
         // Tạo mới đối tượng Rating

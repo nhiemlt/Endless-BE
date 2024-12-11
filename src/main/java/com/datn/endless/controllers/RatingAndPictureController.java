@@ -3,7 +3,9 @@ package com.datn.endless.controllers;
 import com.datn.endless.dtos.RatingDTO;
 import com.datn.endless.dtos.RatingDTO2;
 import com.datn.endless.entities.Rating;
+import com.datn.endless.exceptions.DuplicateResourceException;
 import com.datn.endless.exceptions.EntityNotFoundException;
+import com.datn.endless.exceptions.ForbidenException;
 import com.datn.endless.models.RatingModel;
 import com.datn.endless.services.RatingService;
 import com.datn.endless.exceptions.UserNotFoundException;
@@ -136,6 +138,14 @@ public class RatingAndPictureController {
             response.put("success", "false");
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (ForbidenException e){
+            response.put("success", "false");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        } catch (DuplicateResourceException e) {
+            response.put("success", "false");
+            response.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
             response.put("success", "false");
             response.put("message", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());

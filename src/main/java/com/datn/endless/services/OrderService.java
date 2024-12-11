@@ -66,6 +66,9 @@ public class OrderService {
     @Autowired
     private CartService cartService;
 
+    @Autowired
+    private RatingRepository ratingRepository;
+
     // Tính tổng tiền
     private BigDecimal calculateTotalMoney(List<OrderDetailModel> orderDetails, Voucher voucher) {
         BigDecimal totalMoney = orderDetails.stream()
@@ -659,6 +662,7 @@ public class OrderService {
         dto.setProductVersionImage(orderDetail.getProductVersionID().getImage()); // Assuming you have a ProductVersion entity
         dto.setQuantity(orderDetail.getQuantity());
         dto.setPrice(orderDetail.getPrice());
+        dto.setRated(ratingRepository.existsByOrderDetailID_orderDetailID(orderDetail.getOrderDetailID()));
         dto.setDiscountPrice(orderDetail.getDiscountPrice().doubleValue() == 0 ? orderDetail.getPrice() : orderDetail.getDiscountPrice());
         return dto;
     }
