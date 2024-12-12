@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -109,23 +110,25 @@ public class RatingAndPictureController {
 
     // Thêm đánh giá mới
     @PostMapping("/add")
-    public ResponseEntity<Map<String, String>> addRating(
-            @RequestParam("orderDetailId") String orderDetailId,
-            @RequestParam("ratingValue") int ratingValue,
-            @RequestParam("comment") String comment,
-            @RequestParam(value = "pictures", required = false) String[] pictures) {
+    public ResponseEntity<Map<String, Object>> addRating(
+            @RequestBody @Valid RatingModel ratingModel,
+            BindingResult bindingResult) {
 
-        Map<String, String> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra lỗi validation
+        if (bindingResult.hasErrors()) {
+            response.put("success", "false");
+            response.put("message", "Dữ liệu đầu vào không hợp lệ");
+            // Gửi danh sách lỗi chi tiết
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error ->
+                    errors.put(error.getField(), error.getDefaultMessage()));
+            response.put("errors", errors);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+
         try {
-            // Tạo đối tượng RatingModel từ dữ liệu đầu vào
-            RatingModel ratingModel = new RatingModel();
-            ratingModel.setOrderDetailId(orderDetailId);
-            ratingModel.setRatingValue(ratingValue);
-            ratingModel.setComment(comment);
-            // Xử lý hình ảnh nếu có
-            if (pictures != null && pictures.length > 0) {
-                ratingModel.setPictures(Arrays.asList(pictures)); // Chuyển mảng chuỗi thành danh sách
-            }
             // Thêm đánh giá thông qua service
             RatingDTO2 newRating = ratingService.addRating(ratingModel);
 
@@ -138,7 +141,7 @@ public class RatingAndPictureController {
             response.put("success", "false");
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } catch (ForbidenException e){
+        } catch (ForbidenException e) {
             response.put("success", "false");
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);

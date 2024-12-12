@@ -40,6 +40,9 @@ public class RatingService {
     @Autowired
     private UserLoginInfomation userLoginInfomation;
 
+    @Autowired
+    private OrderstatusRepository orderstatusRepository;
+
     // Thêm đánh giá
     public RatingDTO2 addRating(RatingModel ratingModel) {
         // Kiểm tra người dùng hiện tại
@@ -55,6 +58,9 @@ public class RatingService {
         }
         if (ratingRepository.existsByOrderDetailID_orderDetailID(orderDetail.getOrderDetailID())) {
             throw new DuplicateResourceException("Bạn đã đánh giá rồi");
+        }
+        if (!orderstatusRepository.findTopByOrderIdOrderByTimeDesc(orderDetail.getOrderID().getOrderID()).get().getStatusType().getName().equals("Đã giao hàng")){
+            throw new DuplicateResourceException("Không thể đánh giá hóa đơn này");
         }
 
         // Tạo mới đối tượng Rating
