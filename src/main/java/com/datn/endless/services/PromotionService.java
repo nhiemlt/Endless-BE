@@ -21,6 +21,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -39,18 +40,28 @@ public class PromotionService {
     @Autowired
     private ProductversionRepository productversionRepository;
 
-    // Lấy tất cả khuyến mãi với các tham số lọc khoảng thời gian, phân trang và sắp xếp
-    public Page<PromotionDTO> getAllPromotions(String keyword, Pageable pageable) {
-        // Nếu keyword không null, tìm kiếm theo tên
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            return promotionRepository.findByNameContainingIgnoreCase(keyword, pageable)
-                    .map(this::convertToDTO);
+    public Page<PromotionDTO> getAllPromotions(String keyword, Instant startDate, Instant endDate, Pageable pageable) {
+        // If keyword and start date, end date are provided
+        if (keyword != null && !keyword.trim().isEmpty() && startDate != null && endDate != null) {
+            return promotionRepository.findByNameContainingIgnoreCaseAndStartDateBetweenAndEndDateBetween(
+                    keyword, startDate, endDate, pageable).map(this::convertToDTO);
         }
 
-        // Nếu không có keyword, trả về tất cả
-        return promotionRepository.findAll(pageable)
-                .map(this::convertToDTO);
+        // If only keyword is provided
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return promotionRepository.findByNameContainingIgnoreCase(keyword, pageable).map(this::convertToDTO);
+        }
+
+        // If only start date and end date are provided
+        if (startDate != null && endDate != null) {
+            return promotionRepository.findByStartDateBetweenAndEndDateBetween(startDate, endDate, pageable).map(this::convertToDTO);
+        }
+
+        // If neither keyword nor start date/end date are provided
+        return promotionRepository.findAll(pageable).map(this::convertToDTO);
     }
+
+
 
     // Lấy khuyến mãi theo ID
     public PromotionDTO getPromotionById(String promotionID) {

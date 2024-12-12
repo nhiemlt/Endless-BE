@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -85,25 +86,38 @@ public class ProductService {
         return convertToDTO(productRepository.save(existingProduct));
     }
 
-    public Page<ProductDTO> getProducts(String keyword, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<ProductDTO> getProducts(String keyword, int page, int size, String categoryID, String brandID, String sortBy, String direction) {
+        // Thiết lập tham số sắp xếp
+        Sort sort = Sort.by(Sort.Order.by(sortBy));
+        sort = direction.equalsIgnoreCase("desc") ? sort.descending() : sort.ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);  // Sử dụng Pageable với sort
+
         Page<Product> productPage;
 
         // Nếu có keyword, tìm kiếm theo keyword (bao gồm tên, danh mục và thương hiệu)
         if (StringUtils.hasText(keyword)) {
             productPage = productRepository.findByKeyword(keyword, pageable);
         }
-        // Nếu không có keyword, lấy tất cả sản phẩm
+        // Nếu có cả categoryID và brandID
+        else if (categoryID != null && brandID != null) {
+            productPage = productRepository.findByCategoryAndBrand(categoryID, brandID, pageable);
+        }
+        // Nếu lọc theo categoryID
+        else if (categoryID != null) {
+            productPage = productRepository.findByCategoryID(categoryID, pageable);
+        }
+        // Nếu lọc theo brandID
+        else if (brandID != null) {
+            productPage = productRepository.findByBrandID(brandID, pageable);
+        }
+        // Nếu không có keyword, categoryID hoặc brandID, lấy tất cả sản phẩm
         else {
             productPage = productRepository.findAll(pageable);
         }
 
-        return productPage.map(this::convertToDTO); // Chuyển đổi các sản phẩm thành DTO
+        return productPage.map(this::convertToDTO); // Chuyển đổi sang DTO
     }
-
-
-
-
 
     // Lấy thông tin chi tiết của sản phẩm theo ID
     public Optional<ProductDTO> getProductById(String id) {
