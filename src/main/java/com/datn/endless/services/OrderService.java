@@ -341,21 +341,20 @@ public class OrderService {
     }
 
     // Lấy tất cả đơn hàng
-    public Page<OrderDTO> getAllOrderDTOs(String userID, String orderAddress, String orderPhone, String orderName, Pageable pageable) {
-        return getAllOrderDTOS(orderAddress, orderPhone, orderName, pageable, userID);
+    public Page<OrderDTO> getAllOrderDTOs( String keywords, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        return getAllOrderDTOS( keywords, startDate, endDate, pageable);
     }
 
-    public Page<OrderDTO> getAllOrderDTOsByUserLogin(String orderAddress, String orderPhone, String orderName, Pageable pageable) {
+    public Page<OrderDTO> getAllOrderDTOsByUserLogin( String keywords, LocalDateTime startDate, LocalDateTime endDate,Pageable pageable) {
         String userID = userRepository.findByUsername(userLoginInformation.getCurrentUsername()).getUserID();
-        return getAllOrderDTOS(orderAddress, orderPhone, orderName, pageable, userID);
+        return getAllOrderDTOS( keywords, startDate, endDate, pageable);
     }
 
-    private Page<OrderDTO> getAllOrderDTOS(String orderAddress, String orderPhone, String orderName, Pageable pageable, String userID) {
-        Page<Order> orders = orderRepository.findAllByUserIDContainingAndOrderAddressContainingAndOrderPhoneContainingAndOrderNameContaining(
-                userID != null ? userID : "",
-                orderAddress != null ? orderAddress : "",
-                orderPhone != null ? orderPhone : "",
-                orderName != null ? orderName : "",
+    private Page<OrderDTO> getAllOrderDTOS( String keywords, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        Page<Order> orders = orderRepository.findAllByFilters(
+                startDate == null ? startDate : LocalDateTime.MIN,
+                endDate == null ? endDate : LocalDateTime.MAX,
+                keywords == null ? keywords : "",
                 pageable);
 
         return orders.map(this::convertToOrderDTO);

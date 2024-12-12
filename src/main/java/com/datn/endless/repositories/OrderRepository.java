@@ -7,20 +7,25 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 
 public interface OrderRepository extends JpaRepository<Order, String> {
     @Query("SELECT o FROM Order o WHERE " +
-            "(:userID IS NULL OR o.userID.userID LIKE %:userID%) AND " +
-            "(:orderAddress IS NULL OR o.orderAddress LIKE %:orderAddress%) AND " +
-            "(:orderPhone IS NULL OR o.orderPhone LIKE %:orderPhone%) AND " +
-            "(:orderName IS NULL OR o.orderName LIKE %:orderName%)"+
+            "(:startDate IS NULL OR o.orderDate >= :startDate) AND " +
+            "(:endDate IS NULL OR o.orderDate <= :endDate) AND (" +
+            ":keywords IS NULL OR :keywords = '' OR " +
+            "o.userID.userID LIKE CONCAT('%', :keywords, '%') OR " +
+            "o.orderAddress LIKE CONCAT('%', :keywords, '%') OR " +
+            "o.orderPhone LIKE CONCAT('%', :keywords, '%') OR " +
+            "o.orderName LIKE CONCAT('%', :keywords, '%')" +
+            ") " +
             "ORDER BY o.orderDate DESC")
-    Page<Order> findAllByUserIDContainingAndOrderAddressContainingAndOrderPhoneContainingAndOrderNameContaining(
-            @Param("userID") String userID,
-            @Param("orderAddress") String orderAddress,
-            @Param("orderPhone") String orderPhone,
-            @Param("orderName") String orderName,
+    Page<Order> findAllByFilters(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("keywords") String keywords,
             Pageable pageable);
+
 }
