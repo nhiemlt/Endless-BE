@@ -9,6 +9,8 @@ import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.Instant;
+
 
 @Getter
 @Setter
@@ -43,6 +45,11 @@ public class Product {
     @Lob
     @Column(name = "Description")
     private String description;
+
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "CreateDate")
+    private Instant createDate;
+
 
 
 

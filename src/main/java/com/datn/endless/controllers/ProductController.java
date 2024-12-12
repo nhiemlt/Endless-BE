@@ -20,25 +20,30 @@ public class ProductController {
     private ProductService productService;
 
     // Endpoint: Lấy danh sách sản phẩm hoặc thông tin chi tiết của một sản phẩm
-    @GetMapping({ "", "/{id}" }) // Hỗ trợ cả đường dẫn "/api/products" và "/api/products/{id}"
+    @GetMapping({ "", "/{id}" })
     public ResponseEntity<?> getProductsOrProductById(
             @RequestParam(required = false) String keyword,
             @PathVariable(required = false) String id,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String categoryID,
+            @RequestParam(required = false) String brandID,
+            @RequestParam(defaultValue = "createDate") String sortBy, // Thêm tham số sortBy
+            @RequestParam(defaultValue = "asc") String direction) { // Thêm tham số direction
 
-        // Kiểm tra nếu có ID
+        // Nếu có ID
         if (id != null) {
-            System.out.println("Fetching product with ID: " + id); // Ghi nhật ký
             return productService.getProductById(id)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } else {
-            // Nếu không có ID, lấy danh sách sản phẩm
-            Page<ProductDTO> productPage = productService.getProducts(keyword, page, size);
+            // Nếu không có ID, lấy danh sách sản phẩm với các tiêu chí
+            Page<ProductDTO> productPage = productService.getProducts(keyword, page, size, categoryID, brandID, sortBy, direction);
             return ResponseEntity.ok(productPage);
         }
     }
+
+
 
     // Endpoint: Tạo mới sản phẩm
     @PostMapping
