@@ -8,10 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,20 +112,22 @@ public class OrderController {
     // Lấy tất cả đơn hàng
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllOrders(
-            @RequestParam(required = false) String userID,
-            @RequestParam(required = false) String orderAddress,
-            @RequestParam(required = false) String orderPhone,
-            @RequestParam(required = false) String orderName,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Map<String, Object> response = new HashMap<>();
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<OrderDTO> orders = orderService.getAllOrderDTOs(userID, orderAddress, orderPhone, orderName, pageable);
+            Page<OrderDTO> orders = orderService.getAllOrderDTOs(keywords, startDate, endDate, pageable);
 
             response.put("success", true);
-            response.put("data", orders);
+            response.put("data", orders.getContent());
+            response.put("currentPage", orders.getNumber());
+            response.put("totalItems", orders.getTotalElements());
+            response.put("totalPages", orders.getTotalPages());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
@@ -135,19 +139,22 @@ public class OrderController {
     // Lấy tất cả đơn hàng của người dùng đăng nhập
     @GetMapping("/user")
     public ResponseEntity<Map<String, Object>> getAllOrderByUserLogin(
-            @RequestParam(required = false) String orderAddress,
-            @RequestParam(required = false) String orderPhone,
-            @RequestParam(required = false) String orderName,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Map<String, Object> response = new HashMap<>();
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<OrderDTO> orders = orderService.getAllOrderDTOsByUserLogin(orderAddress, orderPhone, orderName, pageable);
+            Page<OrderDTO> orders = orderService.getAllOrderDTOsByUserLogin( keywords, startDate, endDate, pageable);
 
             response.put("success", true);
-            response.put("data", orders);
+            response.put("data", orders.getContent());
+            response.put("currentPage", orders.getNumber());
+            response.put("totalItems", orders.getTotalElements());
+            response.put("totalPages", orders.getTotalPages());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);

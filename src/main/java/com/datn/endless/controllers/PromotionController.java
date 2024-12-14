@@ -12,12 +12,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/promotions")
@@ -32,21 +34,24 @@ public class PromotionController {
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "sortBy", defaultValue = "createDate") String sortBy,
-            @RequestParam(value = "direction", defaultValue = "asc") String direction) {
+            @RequestParam(value = "direction", defaultValue = "asc") String direction,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate) {
 
         try {
-            // Chuyển đổi hướng sắp xếp
+            // Convert sorting direction
             Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
             Pageable pageable = PageRequest.of(page, size, sort);
 
-            // Gọi service với các tham số phân trang và tìm kiếm
-            Page<PromotionDTO> promotions = promotionService.getAllPromotions(keyword, pageable);
+            // Call the service method with the pagination and search parameters
+            Page<PromotionDTO> promotions = promotionService.getAllPromotions(keyword, startDate, endDate, pageable);
 
             return ResponseEntity.ok(promotions);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("System error: " + e.getMessage());
         }
     }
+
 
     @GetMapping("/{promotionID}")
     public ResponseEntity<?> getPromotionById(@PathVariable String promotionID) {

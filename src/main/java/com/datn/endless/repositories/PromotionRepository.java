@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotion, String> {
@@ -29,5 +30,31 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
     boolean existsByName(@Param("name") String name);
 
     public boolean existsByNameAndPromotionIDNot(String name, String promotionID);
+
+    @Query("SELECT p FROM Promotion p " +
+            "WHERE (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+            "AND (:startDate IS NULL OR p.startDate >= :startDate) " +
+            "AND (:endDate IS NULL OR p.endDate <= :endDate)")
+    Page<Promotion> findByNameContainingAndDateRange(@Param("keyword") String keyword,
+                                                     @Param("startDate") Instant startDate,
+                                                     @Param("endDate") Instant endDate,
+                                                     Pageable pageable);
+    @Query("SELECT p FROM Promotion p WHERE " +
+            "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:startDate IS NULL OR p.startDate >= :startDate) AND " +
+            "(:endDate IS NULL OR p.endDate <= :endDate)")
+    Page<Promotion> findByNameContainingIgnoreCaseAndStartDateBetweenAndEndDateBetween(
+            @Param("keyword") String keyword,
+            @Param("startDate") Instant startDate,
+            @Param("endDate") Instant endDate,
+            Pageable pageable);
+
+    @Query("SELECT p FROM Promotion p WHERE " +
+            "(:startDate IS NULL OR p.startDate >= :startDate) AND " +
+            "(:endDate IS NULL OR p.endDate <= :endDate)")
+    Page<Promotion> findByStartDateBetweenAndEndDateBetween(
+            @Param("startDate") Instant startDate,
+            @Param("endDate") Instant endDate,
+            Pageable pageable);
 
 }

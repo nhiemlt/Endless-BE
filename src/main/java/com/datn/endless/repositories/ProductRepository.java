@@ -22,14 +22,15 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     @Query("SELECT p FROM Product p WHERE p.brandID.brandID = :brandID")
     List<Product> findByBrandID(@Param("brandID") String brandID);
 
-    // Phương thức tổng hợp tìm kiếm theo keyword
-    @Query("""
-           SELECT p FROM Product p 
-           WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) 
-              OR LOWER(p.categoryID.name) LIKE LOWER(CONCAT('%', :keyword, '%')) 
-              OR LOWER(p.brandID.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
-           """)
-    Page<Product> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.categoryID.categoryID = :categoryID")
+    Page<Product> findByCategoryID(@Param("categoryID") String categoryID, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.brandID.brandID = :brandID")
+    Page<Product> findByBrandID(@Param("brandID") String brandID, Pageable pageable);
+
+    @Query("SELECT p FROM Product p WHERE p.categoryID.categoryID = :categoryID AND p.brandID.brandID = :brandID")
+    Page<Product> findByCategoryAndBrand(@Param("categoryID") String categoryID, @Param("brandID") String brandID, Pageable pageable);
 
 
     // Đếm số lượng sản phẩm
@@ -39,5 +40,16 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     // Đếm số lượng brand
     @Query("SELECT COUNT(DISTINCT p.brandID) FROM Product p")
     long countBrands();
+
+    @Query(""" 
+       SELECT p FROM Product p 
+       WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+          OR LOWER(p.categoryID.name) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+          OR LOWER(p.brandID.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
+       """)
+    Page<Product> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+
+
 }
 

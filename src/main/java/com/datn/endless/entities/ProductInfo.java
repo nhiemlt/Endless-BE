@@ -10,6 +10,8 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 
 @Getter
@@ -17,7 +19,7 @@ import java.time.Instant;
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "products")
-public class Product {
+public class ProductInfo {
     @Id
     @Size(max = 36)
     @GeneratedValue(generator = "uuid2")
@@ -25,6 +27,11 @@ public class Product {
     @ColumnDefault("(uuid())")
     @Column(name = "ProductID", nullable = false, length = 36)
     private String productID;
+
+    @Size(max = 255)
+    @NotNull
+    @Column(name = "Name", nullable = false)
+    private String name;
 
     @NotNull
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -36,23 +43,10 @@ public class Product {
     @JoinColumn(name = "BrandID", nullable = false)
     private Brand brandID;
 
-
-    @Size(max = 255)
-    @NotNull
-    @Column(name = "Name", nullable = false)
-    private String name;
-
     @Lob
     @Column(name = "Description")
     private String description;
 
-    @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "CreateDate")
-    private Instant createDate;
-
-
-
-
-
-
+    @OneToMany(mappedBy = "productID", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ProductversionInfo> productversions = new LinkedHashSet<>();
 }

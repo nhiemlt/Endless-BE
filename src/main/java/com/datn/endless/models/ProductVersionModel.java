@@ -11,7 +11,7 @@ public class ProductVersionModel {
     @NotBlank(message = "Mã sản phẩm không được để trống.")
     private String productID;
 
-    @NotNull(message = "Tên phiên bản không được để trống.")
+
     @Size(max = 255, message = "Tên phiên bản không được vượt quá 255 ký tự.")
     private String versionName;
 

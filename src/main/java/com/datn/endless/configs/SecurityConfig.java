@@ -68,6 +68,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers("/api/permission/**").permitAll()
                                 .requestMatchers("/api/payment/**").permitAll()
+                                .requestMatchers("/product-info/**").permitAll()
 
                                 // Các API yêu cầu đăng nhập
                                 .requestMatchers("/logout").authenticated()  // Sử dụng quyền logout
