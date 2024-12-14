@@ -118,7 +118,7 @@ public class ProductVersionController {
     }
 
     // Lấy top 5 sản phẩm bán chạy nhất theo danh mục
-    @GetMapping("/top5ByCategory/{categoryID}")
+    @GetMapping("j")
     public ResponseEntity<List<ProductVersionDTO>> getTop5BestSellingProductsByCategory(
             @PathVariable String categoryID) {
         List<ProductVersionDTO> topProducts = productVersionService.getTop5BestSellingProductsByCategory(categoryID);

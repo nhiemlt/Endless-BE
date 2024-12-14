@@ -175,6 +175,7 @@ public class ProductInfoService {
                 minPrice,
                 productInfo.getCategoryID().getName(),
                 productInfo.getBrandID().getName(),
+                productInfo.getDescription(),
                 productDetailDTOs != null ? calculateOverallDiscountPercentage(minPrice, minDiscountPrice) : 0,
                 totalQuantityAvailable,
                 totalQuantitySold,

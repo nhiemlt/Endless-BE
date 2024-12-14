@@ -15,6 +15,7 @@ public class ProductInfoDTO {
     private BigDecimal price;
     private String CategoryName;
     private String BrandName;
+    private String description;
 
     private double discountPercentage;
     private  double quantityAvailable;
