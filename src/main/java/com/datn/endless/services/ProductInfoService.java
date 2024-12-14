@@ -148,18 +148,42 @@ public class ProductInfoService {
         }
 
         // Tạo ProductInfoDTO
+        double totalQuantitySold = productDetailDTOs != null ?
+                productDetailDTOs.stream().mapToDouble(ProductDetailDTO::getQuantitySold).sum() : 0;
+        double totalQuantityAvailable = productDetailDTOs != null ?
+                productDetailDTOs.stream().mapToDouble(ProductDetailDTO::getQuantityAvailable).sum() : 0;
+        double totalNumberOfReviews = productDetailDTOs != null ?
+                productDetailDTOs.stream().mapToDouble(ProductDetailDTO::getNumberOfReviews).sum() : 0;
+        double averageRating = productDetailDTOs != null && totalNumberOfReviews > 0 ?
+                productDetailDTOs.stream().mapToDouble(dto -> dto.getAverageRating() * dto.getNumberOfReviews())
+                        .sum() / totalNumberOfReviews : 0;
+
+        // Tính giá thấp nhất (min price)
+        BigDecimal minPrice = productDetailDTOs != null ?
+                productDetailDTOs.stream().map(ProductDetailDTO::getPrice)
+                        .min(BigDecimal::compareTo).orElse(BigDecimal.ZERO) : BigDecimal.ZERO;
+
+        // Tính giá giảm thấp nhất (min discount price)
+        BigDecimal minDiscountPrice = productDetailDTOs != null ?
+                productDetailDTOs.stream().map(ProductDetailDTO::getDiscountPrice)
+                        .min(BigDecimal::compareTo).orElse(BigDecimal.ZERO) : BigDecimal.ZERO;
+
+        // Tạo và trả về DTO
         return new ProductInfoDTO(
                 productInfo.getProductID(),
                 productInfo.getName(),
-                productDetailDTOs.isEmpty() ? BigDecimal.ZERO :
-                        productDetailDTOs.stream().map(ProductDetailDTO::getPrice)
-                                .min(BigDecimal::compareTo).orElse(BigDecimal.ZERO),
+                minPrice,
                 productInfo.getCategoryID().getName(),
                 productInfo.getBrandID().getName(),
+                productDetailDTOs != null ? calculateOverallDiscountPercentage(minPrice, minDiscountPrice) : 0,
+                totalQuantityAvailable,
+                totalQuantitySold,
+                minDiscountPrice,
+                averageRating,
+                (long) totalNumberOfReviews,
                 productDetailDTOs
         );
     }
-
 
     private ProductDetailDTO convertToProductDetailDTO(ProductversionInfo productVersion) {
         ProductDetailDTO dto = new ProductDetailDTO();
@@ -204,6 +228,13 @@ public class ProductInfoService {
     private boolean isPromotionActive(Promotion promotion) {
         Instant now = Instant.now();
         return !promotion.getStartDate().isAfter(now) && !promotion.getEndDate().isBefore(now);
+    }
+
+    private double calculateOverallDiscountPercentage(BigDecimal originalPrice, BigDecimal discountPrice) {
+        if (originalPrice.compareTo(BigDecimal.ZERO) == 0) {
+            return 0;
+        }
+        return originalPrice.subtract(discountPrice).divide(originalPrice, 2, RoundingMode.HALF_UP).doubleValue() * 100;
     }
 
     private BigDecimal calculateDiscountPrice(String productVersionID) {
