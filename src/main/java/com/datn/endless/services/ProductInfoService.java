@@ -3,6 +3,7 @@ package com.datn.endless.services;
 import com.datn.endless.dtos.*;
 import com.datn.endless.entities.*;
 import com.datn.endless.exceptions.ProductVersionNotFoundException;
+import com.datn.endless.exceptions.ResourceNotFoundException;
 import com.datn.endless.repositories.ProductInfoRepository;
 import com.datn.endless.repositories.ProductversionRepository;
 import com.datn.endless.repositories.PromotionproductRepository;
@@ -33,6 +34,22 @@ public class ProductInfoService {
 
     @Autowired
     private PromotionproductRepository promotionproductRepository;
+
+    public ProductInfoDTO getByID(String productID){
+        ProductInfo productInfo = productInfoRepository.findById(productID).orElseThrow(
+                () -> new ResourceNotFoundException(productID)
+        );
+        return convertToDTO(productInfo);
+    }
+
+    public ProductInfoDTO getByProductVersionID(String productVersionID){
+        ProductInfo productInfo = productInfoRepository.getProductInfoByProductVersionID(productVersionID);
+        if(productInfo == null){
+            throw new ResourceNotFoundException(productVersionID);
+        }
+        return convertToDTO(productInfo);
+    }
+
 
     public Page<ProductInfoDTO> findAllProductInfos(int page, int size) {
         // Tạo đối tượng phân trang

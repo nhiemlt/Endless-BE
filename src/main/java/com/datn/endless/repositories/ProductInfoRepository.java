@@ -27,4 +27,11 @@ public interface ProductInfoRepository extends JpaRepository<ProductInfo, String
             @Param("brandIDs") List<String> brandIDs,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice);
+
+    @Query("SELECT p " +
+            "FROM ProductInfo p " +
+            "JOIN p.productversions pv " +
+            "WHERE pv.productVersionID = :productVersionID")
+    ProductInfo getProductInfoByProductVersionID(@Param("productVersionID") String productVersionID);
+
 }

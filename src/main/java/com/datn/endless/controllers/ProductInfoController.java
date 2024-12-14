@@ -1,9 +1,11 @@
 package com.datn.endless.controllers;
 
 import com.datn.endless.dtos.ProductInfoDTO;
+import com.datn.endless.exceptions.ResourceNotFoundException;
 import com.datn.endless.services.ProductInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,33 @@ public class ProductInfoController {
         // Trả về ResponseEntity chứa trang sản phẩm
         return ResponseEntity.ok(productInfos);
     }
+
+    // API lấy thông tin sản phẩm theo ProductID
+    @GetMapping("/{productID}")
+    public ResponseEntity<?> getProductByID(@PathVariable String productID) {
+        try {
+            ProductInfoDTO productInfoDTO = productInfoService.getByID(productID);
+            return ResponseEntity.ok(productInfoDTO);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm với ID: " + productID);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi không mong muốn.");
+        }
+    }
+
+    // API lấy thông tin sản phẩm theo ProductVersionID
+    @GetMapping("/by-version/{productVersionID}")
+    public ResponseEntity<?> getProductByProductVersionID(@PathVariable String productVersionID) {
+        try {
+            ProductInfoDTO productInfoDTO = productInfoService.getByProductVersionID(productVersionID);
+            return ResponseEntity.ok(productInfoDTO);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm với ProductVersionID: " + productVersionID);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi không mong muốn.");
+        }
+    }
+
 
     // API để lọc danh sách sản phẩm theo tiêu chí
     @GetMapping("/filter")
