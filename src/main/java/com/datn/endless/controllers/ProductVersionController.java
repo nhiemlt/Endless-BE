@@ -174,7 +174,7 @@ public class ProductVersionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Giá trị thuộc tính không tồn tại: " + e.getMessage());
         } catch (ProductVersionConflictException e) {
             // Trả về lỗi nếu phiên bản sản phẩm đã tồn tại
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Xung đột phiên bản: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(" " + e.getMessage());
         } catch (Exception e) {
             // Trả về lỗi hệ thống nếu có sự cố bất thường
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
