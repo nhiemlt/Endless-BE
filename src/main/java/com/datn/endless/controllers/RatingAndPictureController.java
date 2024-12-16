@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,26 +34,16 @@ public class RatingAndPictureController {
 
     // Lấy tất cả đánh giá
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getRatings(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "0") int ratingValue,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Map<String, Object> response = new HashMap<>();
-        try {
-            PageRequest pageable = PageRequest.of(page, size, Sort.by("ratingDate").ascending()); // Sắp xếp theo ratingDate
-            Page<RatingDTO2> ratings = ratingService.getRatingsByKeyWord(keyword, ratingValue, pageable);
-
-            response.put("success", true);
-            response.put("data", ratings);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+    public ResponseEntity<Page<RatingDTO2>> getRatings(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "ratingValue", defaultValue = "0") int ratingValue,
+            @RequestParam(value = "month", defaultValue = "0") int month,
+            @RequestParam(value = "year", defaultValue = "0") int year,
+            Pageable pageable) {
+        Page<RatingDTO2> ratings = ratingService.getRatingsByKeyWord(keyword, ratingValue, month, year, pageable);
+        return ResponseEntity.ok(ratings);
     }
+
 
     // Lấy đánh giá theo ID
     @GetMapping("/{id}")
@@ -156,4 +147,15 @@ public class RatingAndPictureController {
         }
     }
 
+    @GetMapping("/total-count")
+    public ResponseEntity<Long> getTotalRatingsCount() {
+        Long totalRatings = ratingService.getTotalRatingsCount();
+        return ResponseEntity.ok(totalRatings);
+    }
+
+    @GetMapping("/weighted-average-rating")
+    public ResponseEntity<Double> getWeightedAverageRating() {
+        Double weightedAverage = ratingService.calculateWeightedAverageRating();
+        return ResponseEntity.ok(weightedAverage);
+    }
 }

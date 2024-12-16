@@ -19,8 +19,16 @@ public interface RatingRepository extends JpaRepository<Rating, String> {
             "r.userID.username LIKE %:keyword% OR " +
             "r.userID.fullname LIKE %:keyword% OR " +
             "r.comment LIKE %:keyword%) " +
-            "AND (:value = 0 OR r.ratingValue = :value)")
-    Page<Rating> findByKeyWord(@Param("keyword") String keyword, @Param("value") int value, Pageable pageable);
+            "AND (:value = 0 OR r.ratingValue = :value) " +
+            "AND (:month = 0 OR FUNCTION('MONTH', r.ratingDate) = :month) " +
+            "AND (:year = 0 OR FUNCTION('YEAR', r.ratingDate) = :year)")
+    Page<Rating> findByKeyWord(
+            @Param("keyword") String keyword,
+            @Param("value") int value,
+            @Param("month") int month,
+            @Param("year") int year,
+            Pageable pageable
+    );
 
     // Lấy danh sách đánh giá theo productVersionID
     List<Rating> findByOrderDetailID_ProductVersionID_ProductVersionID(String productVersionID);
@@ -33,4 +41,10 @@ public interface RatingRepository extends JpaRepository<Rating, String> {
     long countByOrderDetailID_ProductVersionID_ProductVersionID(String productVersionID);
 
     boolean existsByOrderDetailID_orderDetailID(String orderDetailID);
+
+    @Query("SELECT COUNT(r) FROM Rating r WHERE r.ratingValue BETWEEN 1 AND 5")
+    Long countTotalRatings();
+
+    @Query("SELECT r.ratingValue, COUNT(r.ratingValue) FROM Rating r WHERE r.ratingValue BETWEEN 1 AND 5 GROUP BY r.ratingValue")
+    List<Object[]> findRatingsGroupedByValue();
 }
