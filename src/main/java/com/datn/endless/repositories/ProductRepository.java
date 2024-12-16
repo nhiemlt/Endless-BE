@@ -32,7 +32,6 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     @Query("SELECT p FROM Product p WHERE p.categoryID.categoryID = :categoryID AND p.brandID.brandID = :brandID")
     Page<Product> findByCategoryAndBrand(@Param("categoryID") String categoryID, @Param("brandID") String brandID, Pageable pageable);
 
-
     // Đếm số lượng sản phẩm
     @Query("SELECT COUNT(p) FROM Product p")
     long countProducts();

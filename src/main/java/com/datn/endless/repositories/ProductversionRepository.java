@@ -25,8 +25,17 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
     // Lọc các sản phẩm có trạng thái active
     List<Productversion> findByStatus(String status);
 
-    @Query("SELECT pv FROM Productversion pv WHERE pv.versionName LIKE %:keyword% or pv.productID.name LIKE %:keyword% ")
-    Page<Productversion> findByVersionNameContaining2(@Param("keyword") String keyword, Pageable pageable);
+    @Query("SELECT pv FROM Productversion pv " +
+            "WHERE (:productId IS NULL OR pv.productID.productID = :productId) " +
+            "AND (:keyword IS NULL OR pv.versionName LIKE %:keyword% OR pv.productID.name LIKE %:keyword% " +
+            "OR pv.productID.categoryID.name LIKE %:keyword% OR pv.productID.brandID.name LIKE %:keyword%) " +
+            "AND (:minPrice IS NULL OR pv.price >= :minPrice) " +
+            "AND (:maxPrice IS NULL OR pv.price <= :maxPrice)")
+    Page<Productversion> findByProductIDAndKeywordAndPrice(@Param("productId") String productId,
+                                                           @Param("keyword") String keyword,
+                                                           @Param("minPrice") BigDecimal minPrice,
+                                                           @Param("maxPrice") BigDecimal maxPrice,
+                                                           Pageable pageable);
 
 
     List<Productversion> findByProductID(Product product);
@@ -34,7 +43,6 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
 
     // Kiểm tra xem đã có versionName cho sản phẩm chưa
     boolean existsByProductIDAndVersionName(Product product, String versionName);
-
 
 
     // Kiểm tra trùng versionName với productID và loại trừ phiên bản hiện tại (để không kiểm tra trùng chính nó)
@@ -79,5 +87,9 @@ public interface ProductversionRepository extends JpaRepository<Productversion, 
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice);
 
+
+
+    @Query("SELECT pv FROM Productversion pv WHERE pv.productID.productID = :productId")
+    List<Productversion> findByProductID(@Param("productId") String productId);
 
 }
