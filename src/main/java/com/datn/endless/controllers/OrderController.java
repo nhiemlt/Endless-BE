@@ -138,28 +138,15 @@ public class OrderController {
 
     // Lấy tất cả đơn hàng của người dùng đăng nhập
     @GetMapping("/user")
-    public ResponseEntity<Map<String, Object>> getAllOrderByUserLogin(
-            @RequestParam(required = false) String keywords,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Map<String, Object> response = new HashMap<>();
+    public ResponseEntity<?> getAllUserOrders() {
         try {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<OrderDTO> orders = orderService.getAllOrderDTOsByUserLogin( keywords, startDate, endDate, pageable);
-
-            response.put("success", true);
-            response.put("data", orders.getContent());
-            response.put("currentPage", orders.getNumber());
-            response.put("totalItems", orders.getTotalElements());
-            response.put("totalPages", orders.getTotalPages());
-            return ResponseEntity.ok(response);
+            List<OrderDTO> orders = orderService.getAllUserLogin();
+            if (orders.isEmpty()) {
+                return new ResponseEntity<>(Map.of("message", "Không tìm thấy đơn hàng của người dùng", "data", orders), HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(Map.of("message", "Lấy đơn hàng thành công", "data", orders), HttpStatus.OK);
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return new ResponseEntity<>(Map.of("message", "Đã xảy ra lỗi khi lấy đơn hàng", "data", e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

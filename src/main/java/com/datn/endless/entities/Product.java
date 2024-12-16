@@ -36,7 +36,6 @@ public class Product {
     @JoinColumn(name = "BrandID", nullable = false)
     private Brand brandID;
 
-
     @Size(max = 255)
     @NotNull
     @Column(name = "Name", nullable = false)
@@ -49,10 +48,5 @@ public class Product {
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "CreateDate")
     private Instant createDate;
-
-
-
-
-
 
 }

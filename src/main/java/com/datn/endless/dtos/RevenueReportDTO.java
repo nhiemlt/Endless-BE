@@ -5,16 +5,22 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 public class RevenueReportDTO {
-    private BigDecimal totalRevenue; // Tổng doanh thu
-    private LocalDate startDate; // Ngày bắt đầu
-    private LocalDate endDate; // Ngày kết thúc
+    private BigDecimal totalRevenue;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private int totalOrders;
+    private int totalProductsSold;
+    private List<Detail> details;
 
-    // Constructor chỉ với tổng doanh thu
-    public RevenueReportDTO(BigDecimal totalRevenue) {
-        this.totalRevenue = totalRevenue;
+    @Data
+    @AllArgsConstructor
+    public static class Detail {
+        private LocalDate month;
+        private BigDecimal monthlyRevenue;
     }
 }

@@ -13,6 +13,4 @@ public interface CategoryRepository extends JpaRepository<Category, String> {
     // Tìm kiếm danh mục theo tên
     Optional<Category> findByName(String name);
     Page<Category> findByNameContainingIgnoreCase(String name, Pageable pageable);
-
-
 }
