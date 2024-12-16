@@ -687,7 +687,8 @@ public class OrderService {
         orderDetail.setProductVersionID(productversion);
         orderDetail.setQuantity(detailModel.getQuantity());
         BigDecimal price = productversion.getPrice();
-        orderDetail.setPrice(price);BigDecimal discountAmount = price.subtract(calculateDiscountPrice(detailModel.getProductVersionID()));
+        orderDetail.setPrice(price);
+        BigDecimal discountAmount = calculateDiscountPrice(detailModel.getProductVersionID());
         orderDetail.setDiscountPrice(discountAmount);
         return orderDetail;
     }
