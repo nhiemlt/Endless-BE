@@ -6,11 +6,14 @@ import com.datn.endless.models.RegisterModel;
 import com.datn.endless.services.AuthService;
 import com.datn.endless.services.UserLoginInfomation;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -28,7 +31,22 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterModel registerModel) {
+    public ResponseEntity<Map<String, Object>> register(@RequestBody @Valid RegisterModel registerModel,
+                                                        BindingResult bindingResult) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra lỗi validation
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> {
+                errors.put(error.getField(), error.getDefaultMessage());
+            });
+            response.put("errors", errors);
+            response.put("message", "Dữ liệu đầu vào không hợp lệ");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Gọi service xử lý logic đăng ký
         return authService.register(registerModel);
     }
 

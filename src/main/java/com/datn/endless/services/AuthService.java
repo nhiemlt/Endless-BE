@@ -38,7 +38,6 @@ public class AuthService {
     UserLoginInfomation userLoginInfomation;
 
     private JWT jwt;
-
     public ResponseEntity<Map<String, Object>> login(LoginModel loginRequest) {
         String username = loginRequest.getUsername();
         String password = loginRequest.getPassword();
@@ -48,26 +47,26 @@ public class AuthService {
 
         // Kiểm tra thông tin đăng nhập
         if (username == null || username.isEmpty()) {
-            response.put("error", "Username is required.");
+            response.put("error", "Tên người dùng không được để trống.");
             return ResponseEntity.badRequest().body(response);
         }
 
         if (password == null || password.isEmpty()) {
-            response.put("error", "Password is required.");
+            response.put("error", "Mật khẩu không được để trống.");
             return ResponseEntity.badRequest().body(response);
         }
 
         // Kiểm tra user trong database
         Optional<User> userOpt = Optional.ofNullable(userRepository.findByKeyword(username));
         if (userOpt.isEmpty()) {
-            response.put("error", "User not found.");
+            response.put("error", "Không tìm thấy người dùng.");
             return ResponseEntity.badRequest().body(response);
         }
 
         User user = userOpt.get();
 
         if (!user.getActive()) {
-            response.put("error", "User is blocked.");
+            response.put("error", "Người dùng này đã bị khóa.");
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
 
@@ -81,7 +80,7 @@ public class AuthService {
             String token = jwt.generateToken(user.getUsername());
 
             List<Role> roles = userRepository.findRolesByUserId(user.getUserID());
-            String roleName = roles.isEmpty() ? "user" : roles.get(0).getRoleName();
+            String roleName = roles.isEmpty() ? "người dùng" : roles.get(0).getRoleName();
 
             CustomUserDetails userDetails = new CustomUserDetails(user);
 
@@ -95,22 +94,21 @@ public class AuthService {
             // Trả về phản hồi với body chứa token
             return ResponseEntity.ok().body(response);
         } else {
-            response.put("error", "Invalid password.");
+            response.put("error", "Mật khẩu không chính xác.");
             return ResponseEntity.badRequest().body(response);
         }
     }
-
 
     public ResponseEntity<Map<String, Object>> register(RegisterModel registerModel) {
         Map<String, Object> response = new HashMap<>();
 
         if (userRepository.findByUsername(registerModel.getUsername()) != null) {
-            response.put("error", "Username is already in use, please choose another one.");
+            response.put("error", "Tên người dùng đã tồn tại, vui lòng chọn tên khác.");
             return ResponseEntity.badRequest().body(response);
         }
 
         if (userRepository.findByEmail(registerModel.getEmail()) != null) {
-            response.put("error", "Email is already in use, please choose another one.");
+            response.put("error", "Email đã được sử dụng, vui lòng chọn email khác.");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -141,10 +139,10 @@ public class AuthService {
             userRepository.save(user);
 
             response.put("success", true);
-            response.put("message", "Registration successful. Please check your email for verification.");
+            response.put("message", "Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản.");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            response.put("error", "Internal server error: " + e.getMessage());
+            response.put("error", "Lỗi máy chủ nội bộ: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -371,6 +369,11 @@ public class AuthService {
 
         User user = userOpt.get();
 
+        if(user.getPassword() == null || user.getPassword().isEmpty()){
+            response.put("error", "Tài khoản này được tạo bằng google, không thể dùng tính năng này!");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
         String secret = new Constant().getAUTH_KEY();
         SecretKey secretKey = new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS256.getJcaName());
         long expirationTimeMillis = 24 * 60 * 60 * 1000L;
@@ -471,34 +474,33 @@ public class AuthService {
         return ResponseEntity.ok(response);
     }
 
-
     public ResponseEntity<Map<String, Object>> changePassword(Map<String, String> passwordMap) {
         Map<String, Object> response = new HashMap<>();
 
         String oldPassword = passwordMap.get("oldPassword");
         String newPassword = passwordMap.get("newPassword");
 
-        // Lấy username từ thông tin người dùng đã đăng nhập
+        // Lấy tên người dùng từ thông tin đăng nhập
         String username = userLoginInfomation.getCurrentUsername();
 
         // Kiểm tra xem người dùng có tồn tại không
         Optional<User> userOpt = Optional.ofNullable(userRepository.findByUsername(username));
         if (userOpt.isEmpty()) {
-            response.put("error", "User not found.");
+            response.put("error", "Người dùng không tồn tại.");
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-        
+
         User user = userOpt.get();
 
-        // Kiểm tra xem người dùng có mật khẩu không
+        // Kiểm tra xem người dùng đã có mật khẩu chưa
         if (user.getPassword() == null) {
-            response.put("error", "User does not have a password set. Password cannot be changed.");
+            response.put("error", "Người dùng chưa thiết lập mật khẩu. Không thể thay đổi mật khẩu.");
             return ResponseEntity.badRequest().body(response);
         }
 
         // Kiểm tra mật khẩu cũ
         if (!Encode.checkCode(oldPassword, user.getPassword())) {
-            response.put("error", "Old password is incorrect.");
+            response.put("error", "Mật khẩu cũ không đúng.");
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -507,7 +509,7 @@ public class AuthService {
         userRepository.save(user);
 
         response.put("success", true);
-        response.put("message", "Password changed successfully.");
+        response.put("message", "Mật khẩu đã được thay đổi thành công.");
         return ResponseEntity.ok(response);
     }
 

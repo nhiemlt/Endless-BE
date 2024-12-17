@@ -337,7 +337,8 @@ INSERT INTO modules (ModuleName) VALUES
     ('Quản lý thông báo'),
     ('Quản lý đơn hàng'),
     ('Quản lý nhập hàng'),
-    ('Quản lý người dùng'),
+    ('Quản lý nhân viên'),
+    ('Quản lý khách hàng'),
     ('Quản lý thuộc tính'),
     ('Quản lý thương hiệu'),
     ('Quản lý danh mục'),
@@ -354,88 +355,79 @@ INSERT INTO modules (ModuleName) VALUES
 
 
 INSERT INTO permissions (ModuleID, PermissionName, Code) VALUES 
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Xem tất cả thông báo', 'view_all_notifications'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Xem tất cả thông báo', 'view_notification'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Gửi thông báo', 'send_notifications'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Đánh dấu thông báo đã đọc', 'notifications/markAsRead'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Đánh dấu tất cả thông báo đã đọc', 'notifications/markAllAsRead'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Xóa thông báo', 'notifications/delete'),
 
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem tất cả đơn hàng', 'view_all_orders'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Thêm đơn hàng mới', 'orders/create'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem chi tiết đơn hàng', 'orders/{id}/details'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Hủy đơn hàng', 'orders/cancel'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận thanh toán', 'orders/mark-as-paid'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đang giao hàng', 'orders/mark-as-shipping'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đã giao hàng', 'orders/mark-as-delivered'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận đơn hàng', 'orders/mark-as-confirmed'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đang chờ xử lý', 'orders/mark-as-pending'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem tất cả đơn hàng', 'view_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem chi tiết đơn hàng', 'view_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Hủy đơn hàng', 'cancel_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận thanh toán', 'mark-as-paid_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đang giao hàng', 'mark-as-shipping_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận đơn hàng', 'mark-as-confirmed_order'),
 
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Xem tất cả đơn nhập', 'view_all_entries'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Thêm đơn nhập mới', 'add_new_entries'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Cập nhật đơn nhập', 'update_entries'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Xem đơn nhập', 'view_entry'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Thêm đơn nhập mới', 'add_new_entry'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Cập nhật đơn nhập', 'update_entry'),
 
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xem tất cả thuộc tính', 'view_attributes'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm thuộc tính mới', 'add_new_attribute'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xem tất cả thuộc tính', 'view_attribute'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm thuộc tính mới', 'add_attribute'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính mới', 'update_attribute'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm mới thuộc tính', 'add_attribute_value'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính', 'update_attribute_value'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa giá trị thuộc tính', 'delete_attribute_value'),    
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa thuộc tính mới', 'delete_attribute'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xóa thương hiệu', 'delete_attribute'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_all_brands'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Thêm thương hiệu mới', 'add_new_brand'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_brand'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Thêm thương hiệu mới', 'add_brand'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Cập nhật thương hiệu', 'update_brand'),
 	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xóa thương hiệu', 'delete_brand'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Xem tất cả danh mục', 'view_all_categories'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Thêm danh mục mới', 'add_new_category'),
-	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Xóa danh mục', 'delete_category'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Xem tất cả danh mục', 'view_category'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Thêm danh mục mới', 'add_category'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Cập nhật danh mục', 'update_category'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Xóa danh mục', 'delete_category'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý người dùng'), 'Xem tất cả người dùng', 'view_all_users'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý người dùng'), 'Thêm người dùng mới', 'add_new_user'),
-	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý người dùng'), 'Xóa người dùng', 'delete_user'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý người dùng'), 'Cập nhật người dùngc', 'update_user'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhân viên'), 'Xem tất cả nhân viên', 'view_employee'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhân viên'), 'Thêm người nhân viên', 'add_employee'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhân viên'), 'Cập nhật nhân viên', 'update_employee'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xem tất cả sản phẩm', 'view_all_products'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Thêm sản phẩm mới', 'add_new_product'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Xem tất cả khách hàng', 'view_customer'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Thêm người khách hàng', 'add_customer'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Cập nhật khách hàng', 'update_customer'),
+    
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xem sản phẩm', 'view_product'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Thêm sản phẩm mới', 'add_product'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Chỉnh sửa sản phẩm', 'edit_product'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xóa sản phẩm', 'delete_product'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Quản lý phiên bản sản phẩm', 'manage_product_versions'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Nhập hàng loạt sản phẩm', 'bulk_import_products'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xem tất cả phiên bản sản phẩm', 'view_all_product_versions'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Thêm phiên bản sản phẩm mới', 'add_new_product_version'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xem phiên bản sản phẩm', 'view_product_version'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Thêm phiên bản sản phẩm mới', 'add_product_version'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xóa phiên bản sản phẩm', 'delete_product_version'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Cập nhật phiên bản sản phẩm mới', 'update_product_version'),
     
-    
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xem danh sách khuyến mãi', 'view_promotions_list'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Kích hoạt khuyến mãi', 'activate_promotions'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xem danh sách khuyến mãi', 'view_promotion'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Kích hoạt khuyến mãi', 'activate_promotion'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'update_promotion'),
 	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Thêm mới khuyến mãi', 'add_new_promotion'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'search_promotions'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xóa khuyến mãi', 'delete_promotion'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add_new_promotion_details'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xem chi tiết khuyến mãi', 'view_promotion_details'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Cập nhật chi tiết khuyến mãi', 'update_promotion_details'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xóa chi tiết khuyến mãi', 'delete_promotion_details'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add__promotion_detail'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xem chi tiết khuyến mãi', 'view_promotion_detail'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Cập nhật chi tiết khuyến mãi', 'update_promotion_detail'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xóa chi tiết khuyến mãi', 'delete_promotion_detail'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm trong khuyến mãi'), 'Xem tất cả sản phẩm khuyến mãi', 'view_all_promotion_products'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm trong khuyến mãi'), 'Xem tất cả sản phẩm khuyến mãi', 'view_promotion_product'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xem đánh giá', 'view_reviews'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xóa đánh giá', 'delete_reviews'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xem đánh giá', 'view_review'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xóa đánh giá', 'delete_review'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý giỏ hàng'), 'Xem giỏ hàng', 'view_cart'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý giỏ hàng'), 'Thêm sản phẩm vào giỏ hàng', 'add_product_to_cart'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý voucher'), 'Quản lý voucher', 'manage_voucher'),    
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý voucher'), 'Quản lý voucher', 'manage_voucher'),
-    
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý quyền'), 'Xem tất cả quyền', 'view_all_roles'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý quyền'), 'Xem quyền', 'view_role'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý quyền'), 'Thêm quyền mới', 'add_new_role'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Thống kê báo cáo'), 'Xem báo cáo', 'view_reports');
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Thống kê báo cáo'), 'Xem báo cáo', 'view_report');
 
 
 INSERT INTO roles(RoleName) VALUES
@@ -527,7 +519,6 @@ BEGIN
 END$$
 
 DELIMITER ;
-
 
 CALL GetStatistics('2024-10-01 00:00:00', '2024-12-31 23:59:59');
 
