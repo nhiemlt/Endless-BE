@@ -28,4 +28,5 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             @Param("keywords") String keywords,
             Pageable pageable);
 
+    List<Order> findByUserID_Username(String username);
 }

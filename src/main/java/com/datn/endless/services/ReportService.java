@@ -4,8 +4,7 @@ import com.datn.endless.dtos.RevenueReportDTO;
 import com.datn.endless.dtos.ProductReportDTO;
 import com.datn.endless.dtos.StockReportDTO;
 import com.datn.endless.entities.Order;
-import com.datn.endless.entities.Productversion;
-import com.datn.endless.entities.Entrydetail;
+import com.datn.endless.entities.Orderstatus;
 import com.datn.endless.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,10 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +22,9 @@ public class ReportService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderstatusRepository orderstatusRepository;
 
     @Autowired
     private ProductversionRepository productversionRepository;
@@ -36,80 +35,169 @@ public class ReportService {
     @Autowired
     private OrderdetailRepository orderdetailRepository;
 
-    // Thống kê doanh thu với ngày bắt đầu và kết thúc
-    public RevenueReportDTO getRevenueReport(LocalDate startDate, LocalDate endDate) {
-        // Nếu không có ngày bắt đầu và ngày kết thúc, sử dụng ngày hiện tại
-        if (startDate == null || endDate == null) {
-            startDate = LocalDate.now();
-            endDate = LocalDate.now();
+    public RevenueReportDTO getRevenueReportByYear(int year) {
+        LocalDate currentDate = LocalDate.now();
+        int currentYear = currentDate.getYear();
+
+        if (year > currentYear) {
+            throw new IllegalArgumentException("Year cannot be in the future");
+        }
+
+        LocalDate startDate = LocalDate.of(year, 1, 1);
+        LocalDate endDate = LocalDate.of(year, 12, 31);
+
+        List<Order> deliveredOrders = orderRepository.findAll().stream()
+                .filter(order -> {
+                    Orderstatus latestStatus = orderstatusRepository.findAll().stream()
+                            .filter(orderStatus -> orderStatus.getOrder().getOrderID().equals(order.getOrderID()))
+                            .max(Comparator.comparing(Orderstatus::getTime))
+                            .orElse(null);
+
+                    return latestStatus != null &&
+                            "Đã giao hàng".equals(latestStatus.getStatusType().getName()) &&
+                            !order.getOrderDate().toLocalDate().isBefore(startDate) &&
+                            !order.getOrderDate().toLocalDate().isAfter(endDate);
+                })
+                .collect(Collectors.toList());
+
+        // Tính tổng doanh thu
+        BigDecimal totalRevenue = deliveredOrders.stream()
+                .map(Order::getTotalMoney)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        int totalOrders = deliveredOrders.size();
+        int totalProductsSold = deliveredOrders.stream()
+                .flatMap(order -> order.getOrderdetails().stream())
+                .mapToInt(Orderdetail::getQuantity)
+                .sum();
+
+        List<RevenueReportDTO.Detail> details = new ArrayList<>();
+        for (int month = 1; month <= 12; month++) {
+            LocalDate currentMonthStart = LocalDate.of(year, month, 1);
+            LocalDate currentMonthEnd = currentMonthStart.withDayOfMonth(currentMonthStart.lengthOfMonth());
+
+            BigDecimal monthlyRevenue = deliveredOrders.stream()
+                    .filter(order -> {
+                        LocalDate orderDate = order.getOrderDate().toLocalDate();
+                        return !orderDate.isBefore(currentMonthStart) && !orderDate.isAfter(currentMonthEnd);
+                    })
+                    .map(Order::getTotalMoney)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            details.add(new RevenueReportDTO.Detail(currentMonthStart, monthlyRevenue));
+        }
+
+        return new RevenueReportDTO(totalRevenue, startDate, endDate, totalOrders, totalProductsSold, details);
+    }
+
+    // Thống kê xuất nhập
+    public List<StockReportDTO> getStockReport(String period) {
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now();
+
+        // Xác định khoảng thời gian cần thống kê
+        switch (period) {
+            case "day":
+                startDate = endDate;
+                break;
+            case "week":
+                startDate = endDate.minusDays(7);
+                break;
+            case "month":
+                startDate = endDate.minusMonths(1);
+                break;
+            case "quarter":
+                startDate = endDate.minusMonths(3);
+                break;
+            case "year":
+                startDate = endDate.minusYears(1);
+                break;
         }
 
         final LocalDate finalStartDate = startDate;
         final LocalDate finalEndDate = endDate;
 
-        // Lấy tổng doanh thu từ bảng Order
-        LocalDateTime startDateTime = finalStartDate.atStartOfDay();
-        LocalDateTime endDateTime = finalEndDate.atTime(LocalTime.MAX);
-
-        BigDecimal totalRevenue = orderRepository.findAll().stream()
-                .filter(order -> {
-                    LocalDateTime orderDate = order.getOrderDate();
-                    return (orderDate.isEqual(startDateTime) || orderDate.isEqual(endDateTime) ||
-                            (orderDate.isAfter(startDateTime) && orderDate.isBefore(endDateTime)));
-                })
-                .map(Order::getTotalMoney)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-
-        return new RevenueReportDTO(totalRevenue, finalStartDate, finalEndDate);
-    }
-
-    // Thống kê kho hàng
-    public List<StockReportDTO> getStockReport() {
-        List<StockReportDTO> stockReports = new ArrayList<>();
-        List<Productversion> allVersions = productversionRepository.findAll();
-
-        // Tạo một bản đồ để giữ tổng số lượng đã đặt hàng cho mỗi phiên bản
+        // Bản đồ lưu tổng số lượng
         Map<String, Long> totalOrderQuantityMap = new HashMap<>();
-
-        // Tính toán tổng số lượng đã đặt hàng
-        for (Orderdetail orderDetail : orderdetailRepository.findAll()) {
-            String productVersionId = orderDetail.getProductVersionID().getProductVersionID();
-            totalOrderQuantityMap.put(productVersionId,
-                    totalOrderQuantityMap.getOrDefault(productVersionId, 0L) + orderDetail.getQuantity());
-        }
-
-        // Tính toán tổng số lượng đã nhập cho từng phiên bản
         Map<String, Long> totalEntryQuantityMap = new HashMap<>();
-        for (Entrydetail entryDetail : entrydetailRepository.findAll()) {
-            String productVersionId = entryDetail.getProductVersionID().getProductVersionID();
-            totalEntryQuantityMap.put(productVersionId,
-                    totalEntryQuantityMap.getOrDefault(productVersionId, 0L) + entryDetail.getQuantity());
-        }
 
-        // Tạo báo cáo cho từng phiên bản sản phẩm
-        for (Productversion version : allVersions) {
-            StockReportDTO stockReport = new StockReportDTO();
-            stockReport.setVersionName(version.getVersionName());
-            stockReport.setTotalEntryQuantity(totalEntryQuantityMap.getOrDefault(version.getProductVersionID(), 0L));
-            stockReport.setTotalOrderQuantity(totalOrderQuantityMap.getOrDefault(version.getProductVersionID(), 0L));
-            stockReports.add(stockReport);
-        }
+        // Tổng số lượng bán ra
+        orderdetailRepository.findAll().forEach(orderDetail -> {
+            Order order = orderDetail.getOrderID();
+            LocalDate orderDate = order.getOrderDate().toLocalDate();
+            if (!orderDate.isBefore(finalStartDate) && !orderDate.isAfter(finalEndDate)) {
+                String productName = orderDetail.getProductVersionID().getVersionName();
+                totalOrderQuantityMap.put(productName,
+                        totalOrderQuantityMap.getOrDefault(productName, 0L) + orderDetail.getQuantity());
+            }
+        });
+
+        // Tổng số lượng nhập kho
+        entrydetailRepository.findAll().forEach(entryDetail -> {
+            LocalDate entryDate = entryDetail.getEntry().getEntryDate().toLocalDate();
+            if (!entryDate.isBefore(finalStartDate) && !entryDate.isAfter(finalEndDate)) {
+                String productName = entryDetail.getProductVersionID().getVersionName();
+                totalEntryQuantityMap.put(productName,
+                        totalEntryQuantityMap.getOrDefault(productName, 0L) + entryDetail.getQuantity());
+            }
+        });
+
+        // Tạo danh sách báo cáo
+        List<StockReportDTO> stockReports = new ArrayList<>();
+        productversionRepository.findAll().forEach(version -> {
+            String name = version.getProductID().getName() + " - " + version.getVersionName();
+            String productName = version.getVersionName();
+            stockReports.add(new StockReportDTO(
+                    name,
+                    totalEntryQuantityMap.getOrDefault(productName, 0L),
+                    totalOrderQuantityMap.getOrDefault(productName, 0L)
+            ));
+        });
 
         return stockReports;
     }
 
     // Thống kê sản phẩm (sản phẩm bán chạy nhất)
-    public List<ProductReportDTO> getProductReport() {
-        Map<String, Long> productCounts = new HashMap<>();
+    public List<ProductReportDTO> getProductReport(String period) {
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now();
 
-        for (Orderdetail orderDetail : orderdetailRepository.findAll()) {
-            String productVersionName = orderDetail.getProductVersionID().getVersionName();
-            productCounts.put(productVersionName,
-                    productCounts.getOrDefault(productVersionName, 0L) + orderDetail.getQuantity());
+        // Xác định khoảng thời gian cần thống kê
+        switch (period) {
+            case "day":
+                startDate = endDate;
+                break;
+            case "last7days":
+                startDate = endDate.minusDays(6);
+                break;
+            case "month":
+                startDate = endDate.minusMonths(1);
+                break;
+            case "quarter":
+                startDate = endDate.minusMonths(3);
+                break;
+            case "year":
+                startDate = endDate.minusYears(1);
+                break;
         }
 
-        // Chuyển đổi sang danh sách DTO và lấy 3 sản phẩm bán chạy nhất
+        final LocalDate finalStartDate = startDate;
+        final LocalDate finalEndDate = endDate;
+
+        Map<String, Long> productCounts = new HashMap<>();
+
+        // Tính toán số lượng bán được trong khoảng thời gian
+        for (Orderdetail orderDetail : orderdetailRepository.findAll()) {
+            Order order = orderDetail.getOrderID();
+            LocalDate orderDate = order.getOrderDate().toLocalDate();
+            if (!orderDate.isBefore(finalStartDate) && !orderDate.isAfter(finalEndDate)) {
+                String productVersionName = orderDetail.getProductVersionID().getVersionName();
+                productCounts.put(productVersionName,
+                        productCounts.getOrDefault(productVersionName, 0L) + orderDetail.getQuantity());
+            }
+        }
+
+        // Chuyển đổi thành danh sách DTO và lấy 3 sản phẩm bán chạy nhất
         return productCounts.entrySet().stream()
                 .map(entry -> new ProductReportDTO(entry.getKey(), entry.getValue()))
                 .sorted((p1, p2) -> p2.getTotalQuantitySold().compareTo(p1.getTotalQuantitySold()))

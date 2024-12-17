@@ -65,17 +65,26 @@ public class ProductVersionService {
     }
 
 
-    // Lấy danh sách ProductVersions với phân trang, lọc và sắp xếp
-    public Page<ProductVersionDTO> getProductVersions(int page, int size, String sortBy, String direction, String keyword) {
-        Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
-        Pageable pageable = PageRequest.of(page, size, sort);
+       // Lấy danh sách ProductVersions với phân trang, lọc và sắp xếp
+       public Page<ProductVersionDTO> getProductVersions(int page, int size, String sortBy, String direction,
+                                                         String keyword, String productId, BigDecimal minPrice,
+                                                         BigDecimal maxPrice) {
+           Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+           Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Productversion> pageResult = (keyword != null && !keyword.isEmpty())
-                ? productVersionRepository.findByVersionNameContaining2(keyword, pageable)
-                : productVersionRepository.findAll(pageable);
+           // Gọi phương thức đã tạo trong repository với tất cả các điều kiện bao gồm giá
+           Page<Productversion> pageResult = productVersionRepository.findByProductIDAndKeywordAndPrice(
+                   (productId != null && !productId.isEmpty()) ? productId : null,
+                   (keyword != null && !keyword.isEmpty()) ? keyword : null,
+                   minPrice,
+                   maxPrice,
+                   pageable
+           );
 
-        return pageResult.map(this::convertToDTO);
-    }
+           return pageResult.map(this::convertToDTO);
+       }
+
+
 
     public Page<ProductVersionDTO> getProductVersionsByKeyword(int page, int size, String sortBy, String direction, String keyword) {
         // Tạo đối tượng Pageable với thông tin phân trang và sắp xếp
@@ -148,11 +157,6 @@ public class ProductVersionService {
 
         return page;
     }
-
-
-
-
-
 
 
     public List<ProductVersionDTO> filterProductVersionsByCategoriesAndBrands(
@@ -234,7 +238,6 @@ public class ProductVersionService {
 
 
 
-
     public Page<ProductVersionDTO> getTop5BestSellingProductVersionsThisMonth(Pageable pageable) {
         LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
         LocalDateTime endOfMonth = LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()).atTime(23, 59, 59);
@@ -262,6 +265,50 @@ public class ProductVersionService {
         });
     }
 
+    public boolean checkUpdateProductVersion(Product product, List<String> attributeValueIDs, String productVersionID) {
+        boolean result = true;
+
+        List<Productversion> productversions = productversionRepository.findByProductID(product);
+
+        for (Productversion productversion : productversions) {
+            List<String> productVersionAttributeValueIDs = new ArrayList<>();
+            for (Versionattribute versionattribute : productversion.getVersionattributes()) {
+                if(!versionattribute.getProductVersion().getProductVersionID().equals(productVersionID)){
+                    productVersionAttributeValueIDs.add(versionattribute.getAttributeValue().getAttributeValueID());
+                }
+            }
+            if (productVersionAttributeValueIDs.containsAll(attributeValueIDs) && attributeValueIDs.containsAll(productVersionAttributeValueIDs)) {
+                result = false;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public boolean checkCreateProductVersion(Product product, List<String> attributeValueIDs, String versionName) {
+        boolean result = true;
+
+        List<Productversion> productversions = productversionRepository.findByProductID(product);
+
+        for (Productversion productversion : productversions) {
+            if (versionName.replaceAll("\\s", "").equals(productversion.getVersionName().replaceAll("\\s", ""))) {
+                result = false;
+                break;
+            }
+            List<String> productVersionAttributeValueIDs = new ArrayList<>();
+            for (Versionattribute versionattribute : productversion.getVersionattributes()) {
+                productVersionAttributeValueIDs.add(versionattribute.getAttributeValue().getAttributeValueID());
+            }
+            if (productVersionAttributeValueIDs.containsAll(attributeValueIDs) && attributeValueIDs.containsAll(productVersionAttributeValueIDs)) {
+                result = false;
+                break;
+            }
+        }
+
+        return result;
+    }
+
 
 
     public ProductVersionDTO updateProductVersion(String productVersionID, ProductVersionModel productVersionModel) {
@@ -269,14 +316,32 @@ public class ProductVersionService {
         Productversion existingProductVersion = productVersionRepository.findById(productVersionID)
                 .orElseThrow(() -> new ProductVersionNotFoundException("Không tìm thấy phiên bản sản phẩm"));
 
-        // Kiểm tra trùng versionName cho sản phẩm
-        boolean isVersionNameExists = productVersionRepository.existsByProductIDAndVersionNameAndNotId(existingProductVersion.getProductID(), productVersionModel.getVersionName(), productVersionID);
+
+        // Lấy danh sách các giá trị thuộc tính
+        List<Attributevalue> selectedAttributes = productVersionModel.getAttributeValueID().stream()
+                .map(attributeValueID -> attributeValueRepository.findById(attributeValueID)
+                        .orElseThrow(() -> new AttributeValueNotFoundException("Không tìm thấy giá trị thuộc tính với ID: " + attributeValueID)))
+                .collect(Collectors.toList());
+
+        if (!checkUpdateProductVersion(existingProductVersion.getProductID(), productVersionModel.getAttributeValueID(), productVersionID)) {
+            throw new ProductVersionConflictException("Phiên bản san pham da ton tai");
+        }
+
+        // Tạo tên phiên bản từ các giá trị thuộc tính
+        String combinedName = selectedAttributes.stream()
+                .map(Attributevalue::getValue) // Lấy giá trị của thuộc tính
+                .collect(Collectors.joining(" ")); // Kết hợp các giá trị thành tên phiên bản
+
+        String versionName = productVersionModel.getVersionName().equals(existingProductVersion.getVersionName()) ? combinedName : productVersionModel.getVersionName();
+        // Kiểm tra trùng tên phiên bản cho sản phẩm
+        boolean isVersionNameExists = productVersionRepository.existsByProductIDAndVersionNameAndNotId(
+                existingProductVersion.getProductID(), versionName, productVersionID);
         if (isVersionNameExists) {
             throw new ProductVersionConflictException("Phiên bản sản phẩm với tên này đã tồn tại");
         }
 
         // Cập nhật thông tin phiên bản sản phẩm
-        existingProductVersion.setVersionName(productVersionModel.getVersionName());
+        existingProductVersion.setVersionName(versionName);  // Tự động tạo VersionName từ thuộc tính
         existingProductVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
         existingProductVersion.setPrice(productVersionModel.getPrice());
         existingProductVersion.setWeight(productVersionModel.getWeight());
@@ -288,13 +353,13 @@ public class ProductVersionService {
         // Lưu lại thông tin phiên bản sản phẩm đã cập nhật
         Productversion updatedVersion = productVersionRepository.save(existingProductVersion);
 
-        // Xử lý VersionAttributes (Xoá những thuộc tính không còn liên quan và cập nhật các thuộc tính mới)
+        // Xử lý VersionAttributes: Xóa những thuộc tính không còn liên quan và cập nhật các thuộc tính mới
         versionAttributeRepository.deleteByProductVersionID(productVersionID);
 
         // Lưu lại các thuộc tính mới cho phiên bản sản phẩm
         saveVersionAttributes(productVersionModel.getAttributeValueID(), updatedVersion);
 
-        return convertToDTO(updatedVersion);
+        return convertToDTO(updatedVersion);  // Trả về DTO của phiên bản đã cập nhật
     }
 
 
@@ -547,45 +612,44 @@ public class ProductVersionService {
                             .collect(Collectors.joining(" "));
 
             // Kiểm tra trùng lặp tên phiên bản
-            boolean isVersionNameExists = productVersionRepository.existsByProductIDAndVersionName(product, combinedName);
-            if (isVersionNameExists) {
+
+            if (!checkCreateProductVersion(product, productVersionModel.getAttributeValueID(), combinedName)) {
                 continue;
             }
 
-            // Tạo mới phiên bản sản phẩm
-            Productversion productVersion = new Productversion();
-            productVersion.setProductVersionID(UUID.randomUUID().toString());
-            productVersion.setProductID(product);
-            productVersion.setVersionName(combinedName);
-            productVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
-            productVersion.setPrice(productVersionModel.getPrice());
-            productVersion.setWeight(productVersionModel.getWeight());
-            productVersion.setHeight(productVersionModel.getHeight());
-            productVersion.setLength(productVersionModel.getLength());
-            productVersion.setWidth(productVersionModel.getWidth());
-            productVersion.setImage(productVersionModel.getImage());
-            productVersion.setStatus("Active");
 
-            // Lưu phiên bản sản phẩm
-            Productversion savedVersion = productVersionRepository.save(productVersion);
+                Productversion productVersion = new Productversion();
+                productVersion.setProductVersionID(UUID.randomUUID().toString());
+                productVersion.setProductID(product);
+                productVersion.setVersionName(combinedName);
+                productVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
+                productVersion.setPrice(productVersionModel.getPrice());
+                productVersion.setWeight(productVersionModel.getWeight());
+                productVersion.setHeight(productVersionModel.getHeight());
+                productVersion.setLength(productVersionModel.getLength());
+                productVersion.setWidth(productVersionModel.getWidth());
+                productVersion.setImage(productVersionModel.getImage());
+                productVersion.setStatus("Active");
 
-            // Lưu thông tin thuộc tính
-            saveVersionAttributes(combination.stream()
-                    .map(Attributevalue::getAttributeValueID)
-                    .collect(Collectors.toList()), savedVersion);
+                // Lưu phiên bản sản phẩm
+                Productversion savedVersion = productVersionRepository.save(productVersion);
 
-            // Chuyển đổi thành DTO và thêm vào danh sách
-            createdVersions.add(convertToDTO(savedVersion));
+                // Lưu thông tin thuộc tính
+                saveVersionAttributes(combination.stream()
+                        .map(Attributevalue::getAttributeValueID)
+                        .collect(Collectors.toList()), savedVersion);
+
+                // Chuyển đổi thành DTO và thêm vào danh sách
+                createdVersions.add(convertToDTO(savedVersion));
+
         }
 
-        if(createdVersions.size()==0){
+        if (createdVersions.size() == 0) {
             throw new ProductVersionConflictException("Các thuộc tính đã chọn đều tồn tại");
         }
 
-
         return createdVersions;
     }
-
 
     private List<List<Attributevalue>> generateCombinations(List<List<Attributevalue>> attributeGroups) {
         if (attributeGroups.isEmpty()) {
@@ -607,11 +671,9 @@ public class ProductVersionService {
         return result;
     }
 
-
-
-
-
-
+    public List<String> getAllAttributeValueIdsByProductId(String productId) {
+        return versionAttributeRepository.findByProductID(productId);
+    }
 
 
 

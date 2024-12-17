@@ -53,7 +53,7 @@ public interface OrderdetailRepository extends JpaRepository<Orderdetail, String
             "JOIN o.orderdetails odetail " +
             "JOIN Orderstatus os ON os.order = o " +
             "JOIN os.statusType st " +
-            "WHERE st.id = -1 " +
+            "WHERE st.id = 7 " +
             "AND od.productVersionID.productVersionID = :productVersionID")
     Integer countCancelledProductVersionQuantity(@Param("productVersionID") String productVersionID);
 }

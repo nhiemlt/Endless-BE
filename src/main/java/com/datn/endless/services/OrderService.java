@@ -345,6 +345,17 @@ public class OrderService {
         return getAllOrderDTOS( keywords, startDate, endDate, pageable);
     }
 
+    public List<OrderDTO> getAllUserLogin() {
+        // Fetch orders based on the current username
+        List<Order> orders = orderRepository.findByUserID_Username(userLoginInformation.getCurrentUsername());
+
+        // Map each Order to OrderDTO
+        return orders.stream()
+                .map(this::convertToOrderDTO)
+                .collect(Collectors.toList());
+    }
+
+
     public Page<OrderDTO> getAllOrderDTOsByUserLogin( String keywords, LocalDateTime startDate, LocalDateTime endDate,Pageable pageable) {
         String userID = userRepository.findByUsername(userLoginInformation.getCurrentUsername()).getUserID();
         return getAllOrderDTOS( keywords, startDate, endDate, pageable);
@@ -677,7 +688,8 @@ public class OrderService {
         orderDetail.setQuantity(detailModel.getQuantity());
         BigDecimal price = productversion.getPrice();
         orderDetail.setPrice(price);
-        orderDetail.setDiscountPrice(price.subtract(calculateDiscountPrice(detailModel.getProductVersionID()))); // Giảm giá cho một đơn vị sản phẩm
+        BigDecimal discountAmount = calculateDiscountPrice(detailModel.getProductVersionID());
+        orderDetail.setDiscountPrice(discountAmount);
         return orderDetail;
     }
 

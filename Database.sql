@@ -292,10 +292,7 @@ INSERT INTO categories (Name) VALUES
 ('Phụ kiện điện thoại'),
 ('Phụ kiện laptop'),
 ('Máy tính để bàn'),
-('Thiết bị đeo thông minh'),
-('Tivi'),
-('Máy in'),
-('Thiết bị mạng');
+('Thiết bị đeo thông minh');
 
 INSERT INTO attributes (AttributeName) VALUES
 ('Màu sắc'),
@@ -309,110 +306,6 @@ INSERT INTO attributes (AttributeName) VALUES
 ('Hệ điều hành'),
 ('Độ phân giải màn hình');
 
-INSERT INTO attributevalues (AttributeID, Value) VALUES
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'Màu sắc'), 'Đen'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'Màu sắc'), 'Trắng'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'Kích thước màn hình'), '6.1 inch'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'Kích thước màn hình'), '15.6 inch'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'Bộ nhớ trong'), '128GB'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'Bộ nhớ trong'), '512GB'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'RAM'), '8GB'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'RAM'), '16GB'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'CPU'), 'Intel Core i7'),
-((SELECT AttributeID FROM attributes WHERE AttributeName = 'CPU'), 'Apple M1');
-
-INSERT INTO products (CategoryID, BrandID, Name, Description) VALUES
-((SELECT CategoryID FROM categories WHERE Name = 'Điện thoại'), (SELECT BrandID FROM brands WHERE Name = 'Apple'), 'iPhone 13', 'Điện thoại thông minh với chip A15 Bionic.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Điện thoại'), (SELECT BrandID FROM brands WHERE Name = 'Samsung'), 'Samsung Galaxy S21', 'Điện thoại với màn hình 6.2 inch và camera 64MP.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Laptop'), (SELECT BrandID FROM brands WHERE Name = 'Dell'), 'Dell XPS 13', 'Laptop cao cấp với màn hình 13.3 inch và CPU Intel Core i7.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Laptop'), (SELECT BrandID FROM brands WHERE Name = 'Apple'), 'MacBook Pro 14', 'Laptop với chip Apple M1 và màn hình Retina.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Máy tính bảng'), (SELECT BrandID FROM brands WHERE Name = 'Apple'), 'iPad Pro 11', 'Máy tính bảng với màn hình 11 inch và chip M1.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Phụ kiện điện thoại'), (SELECT BrandID FROM brands WHERE Name = 'Apple'), 'AirPods Pro', 'Tai nghe không dây với công nghệ chống ồn chủ động.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Phụ kiện laptop'), (SELECT BrandID FROM brands WHERE Name = 'Microsoft'), 'Surface Pen', 'Bút cảm ứng dành cho Surface.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Thiết bị đeo thông minh'), (SELECT BrandID FROM brands WHERE Name = 'Apple'), 'Apple Watch Series 7', 'Đồng hồ thông minh với nhiều tính năng sức khỏe.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Tivi'), (SELECT BrandID FROM brands WHERE Name = 'Samsung'), 'Samsung QLED 55', 'Tivi 55 inch với công nghệ QLED và độ phân giải 4K.'),
-((SELECT CategoryID FROM categories WHERE Name = 'Thiết bị mạng'), (SELECT BrandID FROM brands WHERE Name = 'Asus'), 'Asus RT-AX88U', 'Router Wi-Fi 6 hiệu năng cao.');
-
-INSERT INTO productversions (ProductID, VersionName, CostPrice, Price, Weight, Height, Length, Width, Status, Image) VALUES
-((SELECT ProductID FROM products WHERE Name = 'iPhone 13'), '128GB - Đen', 19000000, 22000000, 173, 7.65, 14.67, 0.73, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'Samsung Galaxy S21'), '256GB - Trắng', 15000000, 18000000, 200, 7.9, 15.5, 0.7, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'Dell XPS 13'), '16GB RAM - 512GB SSD', 30000000, 35000000, 1400, 1.48, 30.1, 19.9, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'MacBook Pro 14'), '16GB RAM - 1TB SSD', 50000000, 55000000, 1600, 1.6, 31.3, 22.2, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'iPad Pro 11'), '128GB - Xám', 20000000, 23000000, 468, 0.61, 24.81, 17.95, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'AirPods Pro'), 'AirPods Pro', 5000000, 6000000, 56, 5.4, 4.5, 2.5, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'Surface Pen'), 'Bút cảm ứng - Đen', 2000000, 2500000, 20, 0.6, 14, 1.5, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'Apple Watch Series 7'), '44mm - Xanh', 12000000, 14000000, 100, 1.1, 4.5, 3.3, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'Samsung QLED 55'), 'QLED 55 inch', 15000000, 18000000, 21000, 7.9, 123.2, 72.6, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633'),
-((SELECT ProductID FROM products WHERE Name = 'Asus RT-AX88U'), 'Router Wi-Fi 6', 4000000, 4500000, 960, 3.1, 25, 15, 'Active', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/Product%2Fcanon_eosr8.jpeg?alt=media&token=388f3aae-04e1-436f-a900-a32dd50ff633');
-
-
-INSERT INTO versionattributes (ProductVersionID, AttributeValueID)
-SELECT pv.ProductVersionID, av.AttributeValueID
-FROM productversions pv
-JOIN attributevalues av ON (av.Value = '128GB' AND pv.VersionName = '128GB - Đen') OR
-                           (av.Value = 'Đen' AND pv.VersionName = '128GB - Đen') OR
-                           (av.Value = '256GB' AND pv.VersionName = '256GB - Trắng') OR
-                           (av.Value = 'Trắng' AND pv.VersionName = '256GB - Trắng') OR
-                           (av.Value = '16GB' AND pv.VersionName = '16GB RAM - 512GB SSD') OR
-                           (av.Value = '512GB' AND pv.VersionName = '16GB RAM - 512GB SSD') OR
-                           (av.Value = '1TB' AND pv.VersionName = '16GB RAM - 1TB SSD') OR
-                           (av.Value = '16GB' AND pv.VersionName = '16GB RAM - 1TB SSD') OR
-                           (av.Value = '128GB' AND pv.VersionName = '128GB - Xám') OR
-                           (av.Value = 'Xám' AND pv.VersionName = '128GB - Xám');
-
-
-INSERT INTO promotions (Name, StartDate, EndDate, PercentDiscount) VALUES
-('Giảm giá mùa hè', '2024-06-01', '2024-06-30', 10),
-('Black Friday', '2024-11-29', '2024-11-29', 20),
-('Tết Nguyên Đán', '2025-01-01', '2025-01-31', 15),
-('Giảm giá Noel', '2024-12-24', '2024-12-25', 25),
-('Ngày của Mẹ', '2024-05-12', '2024-05-12', 5),
-('Ngày Quốc Khánh', '2024-09-02', '2024-09-02', 10),
-('Mùa tựu trường', '2024-08-01', '2024-08-31', 15),
-('Cyber Monday', '2024-12-02', '2024-12-02', 30),
-('Valentine\'s Day', '2024-02-14', '2024-02-14', 20),
-('Ngày Quốc tế Phụ nữ', '2024-03-08', '2024-03-08', 15);
-
-INSERT INTO promotionproducts (PromotionID, ProductVersionID)
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Giảm giá mùa hè') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = '128GB - Đen') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Black Friday') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = '256GB - Trắng') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Tết Nguyên Đán') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = '16GB RAM - 512GB SSD') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Giảm giá Noel') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = '16GB RAM - 1TB SSD') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Ngày của Mẹ') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = '128GB - Xám') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Ngày Quốc Khánh') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = 'AirPods Pro') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Mùa tựu trường') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = 'Bút cảm ứng - Đen') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Cyber Monday') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = '44mm - Xanh') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Valentine''s Day') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = 'QLED 55 inch') AS ProductVersionID
-UNION ALL
-SELECT 
-    (SELECT PromotionID FROM promotions WHERE Name = 'Ngày Quốc tế Phụ nữ') AS PromotionID,
-    (SELECT ProductVersionID FROM productversions WHERE VersionName = 'Router Wi-Fi 6') AS ProductVersionID;
 
 
 
@@ -428,114 +321,9 @@ INSERT INTO users (Username, Fullname, Password, Phone, Email, Avatar, active, f
 ('user09', 'Tran Van I', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654329', 'user09@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE),
 ('user10', 'Pham Thi J', 'AItAAtqZ+MHVTXQtCBOxSTN1Pe/DDIqz', '0987654330', 'user10@example.com', 'https://firebasestorage.googleapis.com/v0/b/endlesstechstoreecommerce.appspot.com/o/User%2Ftong-hop-25-hinh-anh-meme-ech-xanh-hai-huoc_3.jpg?alt=media&token=1b5cccab-9eeb-44cd-85a2-f2e6c262d06a', TRUE, FALSE);
 
-INSERT INTO vouchers (VoucherCode, LeastBill, LeastDiscount, BiggestDiscount, DiscountLevel, StartDate, EndDate) VALUES
-('SUMMER2024', 500000, 50000, 100000, 10, '2024-06-01', '2024-06-30'),
-('BLACKFRIDAY', 1000000, 100000, 200000, 20, '2024-11-25', '2024-11-28'),
-('TET2024', 800000, 80000, 150000, 15, '2024-01-15', '2024-02-15'),
-('XMAS2024', 700000, 70000, 140000, 25, '2024-12-20', '2024-12-25'),
-('MOTHERDAY', 600000, 60000, 120000, 5, '2024-05-10', '2024-05-14');
 
-INSERT INTO uservouchers (UserID, VoucherID) VALUES
-((SELECT UserID FROM users WHERE Username = 'user01'), 
- (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'SUMMER2024')),
-((SELECT UserID FROM users WHERE Username = 'user02'), 
- (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'BLACKFRIDAY')),
-((SELECT UserID FROM users WHERE Username = 'user03'), 
- (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'TET2024')),
-((SELECT UserID FROM users WHERE Username = 'user04'), 
- (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'XMAS2024')),
-((SELECT UserID FROM users WHERE Username = 'user05'), 
- (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'MOTHERDAY'));
 
-INSERT INTO orders (UserID, VoucherID, VoucherDiscount, OrderDate, ShipFee, TotalMoney, CodValue, InsuranceValue, ServiceTypeID, OrderAddress, OrderPhone, OrderName) VALUES
-((SELECT UserID FROM users WHERE Username = 'user01'), (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'SUMMER2024'),10000, '2024-06-05', 60000, 590000, 0, 0, 1, '123 Phúc Xá', '0987654321', 'Nguyen Van A'),
-((SELECT UserID FROM users WHERE Username = 'user02'), (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'BLACKFRIDAY'),50000, '2024-10-26', 70000, 1220000, 100000, 0, 1, '456 Cầu Ông Lãnh', '0987654322', 'Le Thi B'),
-((SELECT UserID FROM users WHERE Username = 'user03'), (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'TET2024'),20000, '2024-02-01', 50000, 840000, 0, 50000, 2, '789 Phạm Đình Hổ', '0987654323', 'Tran Van C'),
-((SELECT UserID FROM users WHERE Username = 'user04'), (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'XMAS2024'),10000, '2024-10-21', 40000, 630000, 200000, 0, 1, '321 Bình Thạnh', '0987654324', 'Pham Thi D'),
-((SELECT UserID FROM users WHERE Username = 'user05'), (SELECT VoucherID FROM vouchers WHERE VoucherCode = 'MOTHERSDAY'),10000, '2024-05-11', 60000, 750000, 0, 0, 1, '654 Vĩnh Phúc', '0987654325', 'Hoang Van E');
 
-INSERT INTO orderdetails (OrderID, ProductVersionID, Quantity, Price, DiscountPrice) VALUES
-((SELECT OrderID FROM orders WHERE OrderName = 'Nguyen Van A'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '128GB - Đen'), 1, 600000, 540000),
-((SELECT OrderID FROM orders WHERE OrderName = 'Le Thi B'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '256GB - Trắng'), 1, 1500000, 1200000),
-((SELECT OrderID FROM orders WHERE OrderName = 'Tran Van C'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '16GB RAM - 512GB SSD'), 1, 900000, 810000),
-((SELECT OrderID FROM orders WHERE OrderName = 'Pham Thi D'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '16GB RAM - 1TB SSD'), 1, 800000, 600000),
-((SELECT OrderID FROM orders WHERE OrderName = 'Hoang Van E'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '128GB - Xám'), 1, 700000, 700000);
-
-INSERT INTO ratings (UserID, OrderDetailID, RatingValue, Comment, RatingDate) VALUES
-((SELECT UserID FROM users WHERE Username = 'user01'), 
- (SELECT OrderDetailID FROM orderdetails WHERE Price = 600000), 5, 'Sản phẩm rất tốt!', '2024-06-06 14:00:00'),
-((SELECT UserID FROM users WHERE Username = 'user02'), 
- (SELECT OrderDetailID FROM orderdetails WHERE Price = 1500000), 4, 'Hài lòng với sản phẩm.', '2024-11-27 09:30:00'),
-((SELECT UserID FROM users WHERE Username = 'user03'), 
- (SELECT OrderDetailID FROM orderdetails WHERE Price = 900000), 3, 'Sản phẩm tạm ổn.', '2024-02-02 16:45:00'),
-((SELECT UserID FROM users WHERE Username = 'user04'), 
- (SELECT OrderDetailID FROM orderdetails WHERE Price = 800000), 2, 'Không hài lòng với chất lượng.', '2024-12-22 10:15:00'),
-((SELECT UserID FROM users WHERE Username = 'user05'), 
- (SELECT OrderDetailID FROM orderdetails WHERE Price = 700000), 1, 'Rất thất vọng về sản phẩm.', '2024-05-12 11:20:00');
-
-INSERT INTO ratingpictures (RatingID, Picture) VALUES
-((SELECT RatingID FROM ratings WHERE Comment = 'Sản phẩm rất tốt!'), 'image_good1.png'),
-((SELECT RatingID FROM ratings WHERE Comment = 'Hài lòng với sản phẩm.'), 'image_good2.png'),
-((SELECT RatingID FROM ratings WHERE Comment = 'Sản phẩm tạm ổn.'), 'image_okay1.png'),
-((SELECT RatingID FROM ratings WHERE Comment = 'Không hài lòng với chất lượng.'), 'image_bad1.png'),
-((SELECT RatingID FROM ratings WHERE Comment = 'Rất thất vọng về sản phẩm.'), 'image_bad2.png');
-
-INSERT INTO entries (EntryDate, TotalMoney)
-VALUES
-('2024-07-01', 10000000),
-('2024-08-01', 5000000),
-('2024-09-01', 2000000),
-('2024-10-01', 3000000),
-('2024-10-02', 15000000);
-
-INSERT INTO entrydetails (EntryID, ProductVersionID, Quantity, Price)
-VALUES
-((SELECT EntryID FROM entries WHERE EntryDate = '2024-07-01'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '128GB - Đen'), 10, 600000),
-((SELECT EntryID FROM entries WHERE EntryDate = '2024-08-01'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '256GB - Trắng'), 5, 1500000),
-((SELECT EntryID FROM entries WHERE EntryDate = '2024-09-01'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '16GB RAM - 512GB SSD'), 2, 900000),
-((SELECT EntryID FROM entries WHERE EntryDate = '2024-10-01'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '16GB RAM - 1TB SSD'), 3, 800000),
-((SELECT EntryID FROM entries WHERE EntryDate = '2024-10-02'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '128GB - Xám'), 15, 700000);
-
-INSERT INTO carts (UserID, ProductVersionID, Quantity) VALUES
-((SELECT UserID FROM users WHERE Username = 'user01'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '128GB - Đen'), 1),
-((SELECT UserID FROM users WHERE Username = 'user02'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '256GB - Trắng'), 2),
-((SELECT UserID FROM users WHERE Username = 'user03'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '16GB RAM - 512GB SSD'), 1),
-((SELECT UserID FROM users WHERE Username = 'user04'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '16GB RAM - 1TB SSD'), 3),
-((SELECT UserID FROM users WHERE Username = 'user05'), 
- (SELECT ProductVersionID FROM productversions WHERE VersionName = '128GB - Xám'), 1);
-
-INSERT INTO notifications (Title, Content, Type, NotificationDate, Status) VALUES
-('Khuyến mãi mùa hè', 'Giảm giá đến 50% cho tất cả các sản phẩm!', 'Gửi tự động', '2024-06-01 08:00:00', 'Sent'),
-('Black Friday', 'Giảm giá sốc 70% trong ngày Black Friday!', 'Gửi tự động', '2024-11-25 09:00:00', 'Scheduled'),
-('Tết 2024', 'Mua sắm thả ga với khuyến mãi Tết 2024!', 'Gửi tự động', '2024-01-15 07:00:00', 'Sent'),
-('Giáng sinh 2024', 'Ưu đãi lớn cho mùa Giáng sinh năm nay!', 'Gửi tự động', '2024-12-20 10:00:00', 'Sent'),
-('Ngày của mẹ', 'Món quà tuyệt vời dành cho mẹ nhân ngày của mẹ!', 'Gửi tự động', '2024-05-10 08:30:00', 'Scheduled');
-
-INSERT INTO notificationrecipients (NotificationID, UserID, Status) VALUES
-((SELECT NotificationID FROM notifications WHERE Title = 'Khuyến mãi mùa hè'), 
- (SELECT UserID FROM users WHERE Username = 'user01'), 'Delivered'),
-((SELECT NotificationID FROM notifications WHERE Title = 'Black Friday'), 
- (SELECT UserID FROM users WHERE Username = 'user02'), 'Pending'),
-((SELECT NotificationID FROM notifications WHERE Title = 'Tết 2024'), 
- (SELECT UserID FROM users WHERE Username = 'user03'), 'Delivered'),
-((SELECT NotificationID FROM notifications WHERE Title = 'Giáng sinh 2024'), 
- (SELECT UserID FROM users WHERE Username = 'user04'), 'Delivered'),
-((SELECT NotificationID FROM notifications WHERE Title = 'Ngày của mẹ'), 
- (SELECT UserID FROM users WHERE Username = 'user05'), 'Pending');
  
 INSERT INTO useraddresses (UserID, ProvinceID, ProvinceName, DistrictID, DistrictName, WardCode, WardName, DetailAddress) VALUES
 ((SELECT UserID FROM users WHERE Username = 'user01'), 1, 'ProvinceName1', 101, 'DistrictName1', '001', 'WardName1', '123 Main St'),
@@ -549,7 +337,8 @@ INSERT INTO modules (ModuleName) VALUES
     ('Quản lý thông báo'),
     ('Quản lý đơn hàng'),
     ('Quản lý nhập hàng'),
-    ('Quản lý người dùng'),
+    ('Quản lý nhân viên'),
+    ('Quản lý khách hàng'),
     ('Quản lý thuộc tính'),
     ('Quản lý thương hiệu'),
     ('Quản lý danh mục'),
@@ -566,88 +355,79 @@ INSERT INTO modules (ModuleName) VALUES
 
 
 INSERT INTO permissions (ModuleID, PermissionName, Code) VALUES 
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Xem tất cả thông báo', 'view_all_notifications'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Xem tất cả thông báo', 'view_notification'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Gửi thông báo', 'send_notifications'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Đánh dấu thông báo đã đọc', 'notifications/markAsRead'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Đánh dấu tất cả thông báo đã đọc', 'notifications/markAllAsRead'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thông báo'), 'Xóa thông báo', 'notifications/delete'),
 
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem tất cả đơn hàng', 'view_all_orders'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Thêm đơn hàng mới', 'orders/create'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem chi tiết đơn hàng', 'orders/{id}/details'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Hủy đơn hàng', 'orders/cancel'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận thanh toán', 'orders/mark-as-paid'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đang giao hàng', 'orders/mark-as-shipping'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đã giao hàng', 'orders/mark-as-delivered'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận đơn hàng', 'orders/mark-as-confirmed'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đang chờ xử lý', 'orders/mark-as-pending'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem tất cả đơn hàng', 'view_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xem chi tiết đơn hàng', 'view_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Hủy đơn hàng', 'cancel_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận thanh toán', 'mark-as-paid_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Đang giao hàng', 'mark-as-shipping_order'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đơn hàng'), 'Xác nhận đơn hàng', 'mark-as-confirmed_order'),
 
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Xem tất cả đơn nhập', 'view_all_entries'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Thêm đơn nhập mới', 'add_new_entries'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Cập nhật đơn nhập', 'update_entries'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Xem đơn nhập', 'view_entry'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Thêm đơn nhập mới', 'add_new_entry'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhập hàng'), 'Cập nhật đơn nhập', 'update_entry'),
 
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xem tất cả thuộc tính', 'view_attributes'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm thuộc tính mới', 'add_new_attribute'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xem tất cả thuộc tính', 'view_attribute'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm thuộc tính mới', 'add_attribute'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính mới', 'update_attribute'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm mới thuộc tính', 'add_attribute_value'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính', 'update_attribute_value'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa giá trị thuộc tính', 'delete_attribute_value'),    
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa thuộc tính mới', 'delete_attribute'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xóa thương hiệu', 'delete_attribute'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_all_brands'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Thêm thương hiệu mới', 'add_new_brand'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_brand'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Thêm thương hiệu mới', 'add_brand'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Cập nhật thương hiệu', 'update_brand'),
 	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xóa thương hiệu', 'delete_brand'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Xem tất cả danh mục', 'view_all_categories'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Thêm danh mục mới', 'add_new_category'),
-	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Xóa danh mục', 'delete_category'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Xem tất cả danh mục', 'view_category'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Thêm danh mục mới', 'add_category'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Cập nhật danh mục', 'update_category'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý danh mục'), 'Xóa danh mục', 'delete_category'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý người dùng'), 'Xem tất cả người dùng', 'view_all_users'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý người dùng'), 'Thêm người dùng mới', 'add_new_user'),
-	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý người dùng'), 'Xóa người dùng', 'delete_user'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý người dùng'), 'Cập nhật người dùngc', 'update_user'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhân viên'), 'Xem tất cả nhân viên', 'view_employee'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhân viên'), 'Thêm người nhân viên', 'add_employee'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý nhân viên'), 'Cập nhật nhân viên', 'update_employee'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xem tất cả sản phẩm', 'view_all_products'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Thêm sản phẩm mới', 'add_new_product'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Xem tất cả khách hàng', 'view_customer'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Thêm người khách hàng', 'add_customer'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Cập nhật khách hàng', 'update_customer'),
+    
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xem sản phẩm', 'view_product'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Thêm sản phẩm mới', 'add_product'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Chỉnh sửa sản phẩm', 'edit_product'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xóa sản phẩm', 'delete_product'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Quản lý phiên bản sản phẩm', 'manage_product_versions'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Nhập hàng loạt sản phẩm', 'bulk_import_products'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xem tất cả phiên bản sản phẩm', 'view_all_product_versions'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Thêm phiên bản sản phẩm mới', 'add_new_product_version'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xem phiên bản sản phẩm', 'view_product_version'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Thêm phiên bản sản phẩm mới', 'add_product_version'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xóa phiên bản sản phẩm', 'delete_product_version'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Cập nhật phiên bản sản phẩm mới', 'update_product_version'),
     
-    
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xem danh sách khuyến mãi', 'view_promotions_list'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Kích hoạt khuyến mãi', 'activate_promotions'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xem danh sách khuyến mãi', 'view_promotion'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Kích hoạt khuyến mãi', 'activate_promotion'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'update_promotion'),
 	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Thêm mới khuyến mãi', 'add_new_promotion'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'search_promotions'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xóa khuyến mãi', 'delete_promotion'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add_new_promotion_details'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xem chi tiết khuyến mãi', 'view_promotion_details'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Cập nhật chi tiết khuyến mãi', 'update_promotion_details'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xóa chi tiết khuyến mãi', 'delete_promotion_details'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add__promotion_detail'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xem chi tiết khuyến mãi', 'view_promotion_detail'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Cập nhật chi tiết khuyến mãi', 'update_promotion_detail'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xóa chi tiết khuyến mãi', 'delete_promotion_detail'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm trong khuyến mãi'), 'Xem tất cả sản phẩm khuyến mãi', 'view_all_promotion_products'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm trong khuyến mãi'), 'Xem tất cả sản phẩm khuyến mãi', 'view_promotion_product'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xem đánh giá', 'view_reviews'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xóa đánh giá', 'delete_reviews'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xem đánh giá', 'view_review'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xóa đánh giá', 'delete_review'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý giỏ hàng'), 'Xem giỏ hàng', 'view_cart'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý giỏ hàng'), 'Thêm sản phẩm vào giỏ hàng', 'add_product_to_cart'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý voucher'), 'Quản lý voucher', 'manage_voucher'),    
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý voucher'), 'Quản lý voucher', 'manage_voucher'),
-    
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý quyền'), 'Xem tất cả quyền', 'view_all_roles'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý quyền'), 'Xem quyền', 'view_role'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý quyền'), 'Thêm quyền mới', 'add_new_role'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Thống kê báo cáo'), 'Xem báo cáo', 'view_reports');
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Thống kê báo cáo'), 'Xem báo cáo', 'view_report');
 
 
 INSERT INTO roles(RoleName) VALUES
@@ -682,5 +462,66 @@ INSERT INTO orderstatustype (StatusID, Name) VALUES
 (6, 'Đã giao hàng'),
 (7, 'Đã hủy');
 
-INSERT INTO orderstatus (OrderID, StatusID, Time)
-SELECT OrderID, 1, '2024-6-6 05:55:13' FROM orders;
+DELIMITER $$
+
+CREATE PROCEDURE getstatistics(
+    IN startdate DATETIME,
+    IN enddate DATETIME
+)
+BEGIN
+    -- Thống kê tổng nhập kho (entry) và tổng lượt bán (orderdetails)
+    SELECT
+        p.name AS productname,
+        pv.versionname AS productversion,
+        IFNULL(SUM(ed.quantity), 0) AS totalimport,
+        IFNULL(SUM(od.quantity), 0) AS totalsales,
+        IFNULL(SUM(od.quantity * od.price), 0) AS totalrevenue
+    FROM products p
+    JOIN productversions pv ON pv.productID = p.productID
+    LEFT JOIN entrydetails ed ON ed.productVersionID = pv.productVersionID
+    LEFT JOIN orders o ON o.orderdate BETWEEN startdate AND enddate
+    LEFT JOIN orderdetails od ON o.orderID = od.orderID AND od.productVersionID = pv.productVersionID
+    LEFT JOIN orderstatus os ON os.orderID = o.orderID
+    WHERE os.statusID = 6  -- Trạng thái "Đã giao hàng"
+    GROUP BY p.name, pv.versionname;
+
+    -- Thống kê doanh thu theo danh mục sản phẩm (productcategories)
+    SELECT
+        c.name AS categoryname,
+        IFNULL(SUM(od.quantity * od.price), 0) AS totalrevenue,
+        IFNULL(SUM(od.quantity * od.price) / (SELECT SUM(od2.quantity * od2.price) 
+                                              FROM orderdetails od2
+                                              JOIN orders o2 ON o2.orderID = od2.orderID
+                                              LEFT JOIN orderstatus os2 ON os2.orderID = o2.orderID
+                                              WHERE o2.orderdate BETWEEN startdate AND enddate
+                                                AND os2.statusID = 6) * 100, 0) AS percentage
+    FROM orderdetails od
+    JOIN productversions pv ON pv.productVersionID = od.productVersionID
+    JOIN products p ON p.productID = pv.productID
+    JOIN categories c ON c.categoryID = p.categoryID
+    JOIN orders o ON o.orderID = od.orderID
+    LEFT JOIN orderstatus os ON os.orderID = o.orderID
+    WHERE o.orderdate BETWEEN startdate AND enddate
+      AND os.statusID = 6  -- Trạng thái "Đã giao hàng"
+    GROUP BY c.name
+    HAVING totalrevenue > 0;  -- Chỉ hiển thị những danh mục có doanh thu
+
+	-- Thống kê sản phẩm không bán được (không có đơn hàng liên quan)
+	SELECT DISTINCT
+		p.name AS productname,
+		pv.versionname AS productversion
+	FROM products p
+	JOIN productversions pv ON pv.productID = p.productID
+	LEFT JOIN orderdetails od ON od.productVersionID = pv.productVersionID
+	LEFT JOIN orders o ON o.orderID = od.orderID
+	WHERE od.orderDetailID IS NULL;  -- Chỉ những sản phẩm không có trong bất kỳ đơn hàng nào
+
+END$$
+
+DELIMITER ;
+
+CALL GetStatistics('2024-10-01 00:00:00', '2024-12-31 23:59:59');
+
+
+
+

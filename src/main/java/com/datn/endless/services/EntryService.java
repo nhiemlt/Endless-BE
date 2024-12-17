@@ -92,6 +92,7 @@ public class EntryService {
                 .map(detail -> {
                     EntryDetailDTO detailDTO = new EntryDetailDTO();
                     detailDTO.setPurchaseOrderDetailID(detail.getEntryDetailID());
+                    detailDTO.setProductImage(detail.getProductVersionID().getImage());
                     detailDTO.setProductName(detail.getProductVersionID().getProductID().getName());
                     detailDTO.setProductVersionID(detail.getProductVersionID().getProductVersionID());
                     detailDTO.setProductVersionName(detail.getProductVersionID().getVersionName());
@@ -112,6 +113,7 @@ public class EntryService {
                 .map(detail -> {
                     EntryDetailDTO detailDTO = new EntryDetailDTO();
                     detailDTO.setPurchaseOrderDetailID(detail.getEntryDetailID());
+                    detailDTO.setProductImage(detail.getProductVersionID().getImage());
                     detailDTO.setProductName(detail.getProductVersionID().getProductID().getName());
                     detailDTO.setProductVersionID(detail.getProductVersionID().getProductVersionID());
                     detailDTO.setProductVersionName(detail.getProductVersionID().getVersionName());

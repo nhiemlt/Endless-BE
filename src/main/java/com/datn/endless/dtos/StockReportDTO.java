@@ -12,4 +12,3 @@ public class StockReportDTO {
     private Long totalEntryQuantity;
     private Long totalOrderQuantity;
 }
-

@@ -24,5 +24,10 @@ public interface VersionattributeRepository extends JpaRepository<Versionattribu
     public abstract List<Versionattribute> findByProductVersionID(Productversion productVersion);
 
 
+    @Query("SELECT va FROM Versionattribute va WHERE va.productVersionID.productVersionID = :productVersionID")
+    List<Versionattribute> findByProductVersionID(@Param("productVersionID") String productVersionID);
+
+    @Query("SELECT DISTINCT va.attributeValue.attributeValueID FROM Versionattribute va WHERE va.productVersionID.productID.productID = :productID")
+    List<String> findByProductID(@Param("productID") String productID);
 
 }

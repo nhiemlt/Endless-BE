@@ -59,12 +59,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET,"/api/product-versions/{id}").permitAll()
                                 .requestMatchers("/api/product-versions/top-selling").permitAll()
                                 .requestMatchers("/api/product-versions/top-selling/all-time").permitAll()
-                                .requestMatchers("/ratings").permitAll()  // Sử dụng quyền view_all_ratings
-                                .requestMatchers("/ratings/{id}").permitAll()  // Sử dụng quyền view_rating_details
                                 .requestMatchers("/api/user-vouchers").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/ratings/id/{id}").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/ratings/add").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/ratings/productVersion/{productVersionID}").permitAll()
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers("/api/permission/**").permitAll()
                                 .requestMatchers("/api/payment/**").permitAll()
@@ -103,19 +98,19 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/orders").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/orders/create-order-online").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/orders/{id}").authenticated()
-                                .requestMatchers(HttpMethod.GET, "/orders").hasAuthority("view_all_orders")
+                                .requestMatchers(HttpMethod.GET, "/orders").hasAuthority("view_order")
                                 .requestMatchers(HttpMethod.GET, "/orders/{id}/details").hasAuthority("orders/{id}/details")
-                                .requestMatchers(HttpMethod.POST, "/orders/cancel").hasAuthority("orders/cancel")
-                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-paid").hasAuthority("orders/mark-as-paid")
-                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-shipping").hasAuthority("orders/mark-as-shipping")
-                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-confirmed").hasAuthority("orders/mark-as-confirmed")
+                                .requestMatchers(HttpMethod.POST, "/orders/cancel").hasAuthority("cancel_order")
+                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-paid").hasAuthority("mark-as-paid_order")
+                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-shipping").hasAuthority("mark-as-shipping_order")
+                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-confirmed").hasAuthority("mark-as-confirmed_order")
 
                                 .requestMatchers(HttpMethod.GET, "/purchase-orders").hasAuthority("view_all_purchase_orders")
                                 .requestMatchers(HttpMethod.GET, "/purchase-orders/{id}").hasAuthority("view_purchase_order")
                                 .requestMatchers(HttpMethod.GET, "/purchase-orders").hasAuthority("view_all_purchase_orders")
                                 .requestMatchers(HttpMethod.GET, "/purchase-orders/{id}/details").hasAuthority("view_purchase_order_details")
 
-                                .requestMatchers(HttpMethod.POST, "/api/attributes").hasAuthority("add_new_attribute")
+                                .requestMatchers(HttpMethod.POST, "/api/attributes").hasAuthority("add_attribute")
                                 .requestMatchers(HttpMethod.GET, "/api/attributes/{id}").hasAuthority("view_attribute")
                                 .requestMatchers(HttpMethod.PUT, "/api/attributes/{id}").hasAuthority("update_attribute")
                                 .requestMatchers(HttpMethod.DELETE, "/api/attributes/{id}").hasAuthority("delete_attribute")
@@ -123,24 +118,24 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/api/attributes/values/{valueId}").hasAuthority("update_attribute_value")
                                 .requestMatchers(HttpMethod.DELETE, "/api/attributes/values/{valueId}").hasAuthority("delete_attribute_value")
 
-                                .requestMatchers(HttpMethod.POST, "/api/brands").hasAuthority("add_new_brand")
+                                .requestMatchers(HttpMethod.POST, "/api/brands").hasAuthority("add_brand")
                                 .requestMatchers(HttpMethod.GET, "/api/brands/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/brands").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/api/brands/{id}").hasAuthority("update_brand")
                                 .requestMatchers(HttpMethod.DELETE, "/api/brands/{id}").hasAuthority("delete_brand")
 
                                 .requestMatchers(HttpMethod.GET, "/api/categories").permitAll()
-                                .requestMatchers(HttpMethod.POST, "/api/categories").hasAuthority("add_new_category")
+                                .requestMatchers(HttpMethod.POST, "/api/categories").hasAuthority("add_category")
                                 .requestMatchers(HttpMethod.GET, "/api/categories/{id}").hasAuthority("view_category")
                                 .requestMatchers(HttpMethod.PUT, "/api/categories/{id}").hasAuthority("update_category")
                                 .requestMatchers(HttpMethod.DELETE, "/api/categories/{id}").hasAuthority("delete_category")
 
-                                .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("add_new_product")
+                                .requestMatchers(HttpMethod.POST, "/api/products").hasAuthority("add_product")
                                 .requestMatchers(HttpMethod.GET, "/api/products/{id}").hasAuthority("view_product")
                                 .requestMatchers(HttpMethod.PUT, "/api/products/{id}").hasAuthority("edit_product")
                                 .requestMatchers(HttpMethod.DELETE, "/api/products/{id}").hasAuthority("delete_product")
 
-                                .requestMatchers(HttpMethod.POST, "/api/product-versions").hasAuthority("add_new_product_version")
+                                .requestMatchers(HttpMethod.POST, "/api/product-versions").hasAuthority("add_product_version")
                                 .requestMatchers(HttpMethod.PUT, "/api/product-versions/{id}").hasAuthority("update_product_version")
                                 .requestMatchers(HttpMethod.DELETE, "/api/product-versions/{id}").hasAuthority("delete_product_version")
 
@@ -155,16 +150,27 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/api/promotion-details/{id}").hasAuthority("update_promotion_detail")
                                 .requestMatchers(HttpMethod.DELETE, "/api/promotion-details/{id}").hasAuthority("delete_promotion_detail")
 
-                                .requestMatchers(HttpMethod.POST, "/api/promotion-products").hasAuthority("add_new_promotion_product")
-                                .requestMatchers(HttpMethod.GET, "/api/promotion-products/{id}").hasAuthority("view_promotion_product")
-                                .requestMatchers(HttpMethod.PUT, "/api/promotion-products/{id}").hasAuthority("update_promotion_product")
-                                .requestMatchers(HttpMethod.DELETE, "/api/promotion-products/{id}").hasAuthority("delete_promotion_product")
+                                .requestMatchers(HttpMethod.POST, "/api/promotion-products").hasAuthority("add_promotion_detail")
+                                .requestMatchers(HttpMethod.GET, "/api/promotion-products/{id}").hasAuthority("view_promotion_detail")
+                                .requestMatchers(HttpMethod.PUT, "/api/promotion-products/{id}").hasAuthority("update_promotion_detail")
+                                .requestMatchers(HttpMethod.DELETE, "/api/promotion-products/{id}").hasAuthority("delete_promotion_detail")
+
+                                .requestMatchers(HttpMethod.GET, "/entry-orders/**").hasAuthority("view_entry")
+                                .requestMatchers(HttpMethod.POST, "/entry-orders").hasAuthority("add_new_entry")
 
 //                        .requestMatchers(HttpMethod.POST, "/api/roles").hasAuthority("add_new_user_role")
 
+                                .requestMatchers(HttpMethod.GET, "/api/ratings/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/ratings").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/api/ratings/{id}").hasAuthority("delete_review")
+
+                                .requestMatchers(HttpMethod.GET, "/api/vouchers/**").hasAuthority("view_voucher")
+                                .requestMatchers(HttpMethod.POST, "/api/vouchers/**").hasAuthority("add_voucher")
+                                .requestMatchers(HttpMethod.PUT, "/api/vouchers/update/{id}").hasAuthority("update_voucher")
+
                                 .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
                                 .requestMatchers(HttpMethod.DELETE, "/user-roles/{id}").hasAuthority("delete_user_role")
+                                .requestMatchers(HttpMethod.GET, "/user-roles").hasAuthority("view_role")
 
                                 .requestMatchers(HttpMethod.GET, "/api/users").hasAuthority("view_all_users")
                                 .requestMatchers(HttpMethod.GET, "/api/users/get-infor").hasAuthority("view_all_users")
@@ -172,9 +178,16 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/api/users/{id}").hasAuthority("update_user")
                                 .requestMatchers(HttpMethod.POST, "/api/users/get-infor").hasAuthority("add_new_user")
 
-                                .requestMatchers("/api/customers/**").hasAuthority("add_new_user")
-                                .requestMatchers("/api/employees/**").hasAuthority("add_new_user")
+                                .requestMatchers(HttpMethod.POST,"/api/employees").hasAuthority("add_employee")
+                                .requestMatchers(HttpMethod.GET, "/api/employees/**").hasAuthority("view_employee")
+                                .requestMatchers(HttpMethod.PUT, "/api/employees/{userId}").hasAuthority("update_employee")
+                                .requestMatchers(HttpMethod.PATCH, "/api/employees/**").hasAuthority("update_employee")
 
+                                .requestMatchers(HttpMethod.POST,"/api/customers/**").hasAuthority("add_customer")
+                                .requestMatchers(HttpMethod.GET, "/api/customers/**").hasAuthority("view_customer")
+                                .requestMatchers(HttpMethod.PUT, "/api/customers/{userId}").hasAuthority("update_customer")
+                                .requestMatchers(HttpMethod.PATCH, "/api/customers/{userId}/status").hasAuthority("update_customer")
+                                .requestMatchers(HttpMethod.POST,"/api/customers/**").hasAuthority("delete_customer")
                                 .anyRequest().authenticated()
                 )
 
