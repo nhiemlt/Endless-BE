@@ -99,6 +99,7 @@ public class RatingService {
         ratingDTO2.setAvatar(rating.getUserID().getAvatar());
         ratingDTO2.setOrderDetailID(rating.getOrderDetailID().getOrderDetailID());
         ratingDTO2.setProductVersionID(rating.getOrderDetailID().getProductVersionID().getProductVersionID());
+        ratingDTO2.setName(rating.getOrderDetailID().getProductVersionID().getProductID().getName());
         ratingDTO2.setVersionName(rating.getOrderDetailID().getProductVersionID().getVersionName());
         ratingDTO2.setImage(rating.getOrderDetailID().getProductVersionID().getImage());
         ratingDTO2.setRatingValue(rating.getRatingValue());
@@ -124,6 +125,7 @@ public class RatingService {
         ratingDTO.setAvatar(rating.getUserID().getAvatar());
         ratingDTO.setOrderDetailID(rating.getOrderDetailID().getOrderDetailID());
         ratingDTO.setProductVersionID(rating.getOrderDetailID().getProductVersionID().getProductVersionID());
+        ratingDTO.setName(rating.getOrderDetailID().getProductVersionID().getProductID().getName());
         ratingDTO.setVersionName(rating.getOrderDetailID().getProductVersionID().getVersionName());
         ratingDTO.setImage(rating.getOrderDetailID().getProductVersionID().getImage());
         ratingDTO.setRatingValue(rating.getRatingValue());

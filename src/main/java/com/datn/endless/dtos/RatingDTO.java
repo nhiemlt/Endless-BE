@@ -15,6 +15,7 @@ public class RatingDTO {
     private String avatar;
     private String orderDetailID;
     private String productVersionID;
+    private String name;
     private String versionName;
     private String image;
     private Integer ratingValue;
