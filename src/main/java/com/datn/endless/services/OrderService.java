@@ -470,7 +470,7 @@ public class OrderService {
         autoUpdateOrderStatus(
                 orderId,
                 7, // Trạng thái 'Hủy đơn hàng'
-                Arrays.asList(3), // Các trạng thái cho phép hủy đơn hàng
+                Arrays.asList(1,2,3), // Các trạng thái cho phép hủy đơn hàng
                 "Đơn hàng không thể hủy do đã được thanh toán hoặc đang giao"
         );
 
