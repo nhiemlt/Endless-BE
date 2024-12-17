@@ -113,15 +113,14 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllOrders(
             @RequestParam(required = false) String keywords,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(defaultValue = "10") int statusId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
         Map<String, Object> response = new HashMap<>();
         try {
             Pageable pageable = PageRequest.of(page, size);
-            Page<OrderDTO> orders = orderService.getAllOrderDTOs(keywords, startDate, endDate, pageable);
+            Page<OrderDTO> orders = orderService.getAllOrderDTOs(keywords, statusId, pageable);
 
             response.put("success", true);
             response.put("data", orders.getContent());
@@ -207,6 +206,38 @@ public class OrderController {
             response.put("error", "Không thể hủy đơn hàng: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @PostMapping("/{id}/cancel-paid")
+    public ResponseEntity<Map<String, Object>> cancelOrderPaid(@PathVariable String id) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Gọi service để hủy đơn hàng
+            orderService.cancelOrderPaid(id);
+
+            // Trả về phản hồi thành công
+            response.put("success", true);
+            response.put("message", "Đơn hàng đã bị hủy thành công.");
+            return ResponseEntity.ok(response);
+
+        } catch (OrderNotFoundException e) {
+            // Xử lý khi không tìm thấy đơn hàng
+            response.put("success", false);
+            response.put("error", "Không tìm thấy đơn hàng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+
+        } catch (OrderCannotBeCancelledException e) {
+            // Xử lý khi đơn hàng không thể hủy
+            response.put("success", false);
+            response.put("error", "Không thể hủy đơn hàng: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+
+        } catch (Exception e) {
+            // Xử lý lỗi không mong muốn
             response.put("success", false);
             response.put("error", "Đã xảy ra lỗi không mong muốn: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

@@ -341,8 +341,8 @@ public class OrderService {
     }
 
     // Lấy tất cả đơn hàng
-    public Page<OrderDTO> getAllOrderDTOs( String keywords, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-        return getAllOrderDTOS( keywords, startDate, endDate, pageable);
+    public Page<OrderDTO> getAllOrderDTOs( String keywords, int statusId, Pageable pageable) {
+        return getAllOrderDTOS( keywords, statusId, pageable);
     }
 
     public List<OrderDTO> getAllUserLogin() {
@@ -356,16 +356,15 @@ public class OrderService {
     }
 
 
-    public Page<OrderDTO> getAllOrderDTOsByUserLogin( String keywords, LocalDateTime startDate, LocalDateTime endDate,Pageable pageable) {
+    public Page<OrderDTO> getAllOrderDTOsByUserLogin( String keywords, int statusId,Pageable pageable) {
         String userID = userRepository.findByUsername(userLoginInformation.getCurrentUsername()).getUserID();
-        return getAllOrderDTOS( keywords, startDate, endDate, pageable);
+        return getAllOrderDTOS( keywords,statusId, pageable);
     }
 
-    private Page<OrderDTO> getAllOrderDTOS( String keywords, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+    private Page<OrderDTO> getAllOrderDTOS( String keywords, int statusId, Pageable pageable) {
         Page<Order> orders = orderRepository.findAllByFilters(
-                startDate == null ? startDate : LocalDateTime.MIN,
-                endDate == null ? endDate : LocalDateTime.MAX,
-                keywords == null ? keywords : "",
+                keywords != null ? keywords : "",
+                statusId > 8  ? null : statusId < 0 ? null : statusId,
                 pageable);
 
         return orders.map(this::convertToOrderDTO);
@@ -465,6 +464,17 @@ public class OrderService {
 
         sendOrderStatusNotification(orderId, "Hủy đơn hàng", "Đơn hàng "+orderId+" đã bị hủy.");
         return updatedStatus;
+    }
+
+    public void cancelOrderPaid(String orderId) {
+        autoUpdateOrderStatus(
+                orderId,
+                7, // Trạng thái 'Hủy đơn hàng'
+                Arrays.asList(3), // Các trạng thái cho phép hủy đơn hàng
+                "Đơn hàng không thể hủy do đã được thanh toán hoặc đang giao"
+        );
+
+        sendOrderStatusNotification(orderId, "Hủy đơn hàng", "Đơn hàng "+orderId+" đã bị hủy.");
     }
 
     public void cancelOrderUnpair(String orderId) {

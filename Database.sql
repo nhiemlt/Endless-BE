@@ -273,38 +273,38 @@ CREATE TABLE orderstatus (
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 
-INSERT INTO brands (Name, Logo) VALUES
-('Apple',  'https://example.com/logos/apple.png'),
-('Samsung',  'https://example.com/logos/samsung.png'),
-('Dell',  'https://example.com/logos/dell.png'),
-('HP',  'https://example.com/logos/hp.png'),
-('Asus',  'https://example.com/logos/asus.png'),
-('Lenovo',  'https://example.com/logos/lenovo.png'),
-('Acer',  'https://example.com/logos/acer.png'),
-('Microsoft',  'https://example.com/logos/microsoft.png'),
-('Xiaomi',  'https://example.com/logos/xiaomi.png'),
-('Huawei',  'https://example.com/logos/huawei.png');
+-- INSERT INTO brands (Name, Logo) VALUES
+-- ('Apple',  'https://example.com/logos/apple.png'),
+-- ('Samsung',  'https://example.com/logos/samsung.png'),
+-- ('Dell',  'https://example.com/logos/dell.png'),
+-- ('HP',  'https://example.com/logos/hp.png'),
+-- ('Asus',  'https://example.com/logos/asus.png'),
+-- ('Lenovo',  'https://example.com/logos/lenovo.png'),
+-- ('Acer',  'https://example.com/logos/acer.png'),
+-- ('Microsoft',  'https://example.com/logos/microsoft.png'),
+-- ('Xiaomi',  'https://example.com/logos/xiaomi.png'),
+-- ('Huawei',  'https://example.com/logos/huawei.png');
 
-INSERT INTO categories (Name) VALUES
-('Điện thoại'),
-('Laptop'),
-('Máy tính bảng'),
-('Phụ kiện điện thoại'),
-('Phụ kiện laptop'),
-('Máy tính để bàn'),
-('Thiết bị đeo thông minh');
+-- INSERT INTO categories (Name) VALUES
+-- ('Điện thoại'),
+-- ('Laptop'),
+-- ('Máy tính bảng'),
+-- ('Phụ kiện điện thoại'),
+-- ('Phụ kiện laptop'),
+-- ('Máy tính để bàn'),
+-- ('Thiết bị đeo thông minh');
 
-INSERT INTO attributes (AttributeName) VALUES
-('Màu sắc'),
-('Kích thước màn hình'),
-('Bộ nhớ trong'),
-('RAM'),
-('CPU'),
-('Pin'),
-('Camera'),
-('Trọng lượng'),
-('Hệ điều hành'),
-('Độ phân giải màn hình');
+-- INSERT INTO attributes (AttributeName) VALUES
+-- ('Màu sắc'),
+-- ('Kích thước màn hình'),
+-- ('Bộ nhớ trong'),
+-- ('RAM'),
+-- ('CPU'),
+-- ('Pin'),
+-- ('Camera'),
+-- ('Trọng lượng'),
+-- ('Hệ điều hành'),
+-- ('Độ phân giải màn hình');
 
 
 
@@ -340,6 +340,7 @@ INSERT INTO modules (ModuleName) VALUES
     ('Quản lý nhân viên'),
     ('Quản lý khách hàng'),
     ('Quản lý thuộc tính'),
+	('Quản lý chi tiết thuộc tính'),
     ('Quản lý thương hiệu'),
     ('Quản lý danh mục'),
     ('Quản lý sản phẩm'),
@@ -375,9 +376,12 @@ INSERT INTO permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xem tất cả thuộc tính', 'view_attribute'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Thêm thuộc tính mới', 'add_attribute'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Cập nhật thuộc tính mới', 'update_attribute'),
-	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xóa thương hiệu', 'delete_attribute'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thuộc tính'), 'Xóa thương hiệu', 'delete_attribute'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_brand'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết thuộc tính'), 'Thêm thuộc tính mới', 'add_attribute_value'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết thuộc tính'), 'Cập nhật thuộc tính mới', 'update_attribute_value'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết thuộc tính'), 'Xóa thương hiệu', 'delete_attribute_value'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xem tất cả thương hiệu', 'view_brand'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Thêm thương hiệu mới', 'add_brand'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Cập nhật thương hiệu', 'update_brand'),
 	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý thương hiệu'), 'Xóa thương hiệu', 'delete_brand'),
@@ -394,6 +398,7 @@ INSERT INTO permissions (ModuleID, PermissionName, Code) VALUES
 	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Xem tất cả khách hàng', 'view_customer'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Thêm người khách hàng', 'add_customer'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Cập nhật khách hàng', 'update_customer'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khách hàng'), 'Xóa khách hàng', 'delete_customer'),
     
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Xem sản phẩm', 'view_product'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý sản phẩm'), 'Thêm sản phẩm mới', 'add_product'),
@@ -403,7 +408,7 @@ INSERT INTO permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xem phiên bản sản phẩm', 'view_product_version'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Thêm phiên bản sản phẩm mới', 'add_product_version'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Xóa phiên bản sản phẩm', 'delete_product_version'),
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Cập nhật phiên bản sản phẩm mới', 'update_product_version'),
+	((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý phiên bản sản phẩm'), 'Cập nhật phiên bản sản phẩm mới', 'update_product_version'),
     
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xem danh sách khuyến mãi', 'view_promotion'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Kích hoạt khuyến mãi', 'activate_promotion'),
@@ -412,7 +417,7 @@ INSERT INTO permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Cập nhật khuyến mãi', 'search_promotions'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý khuyến mãi'), 'Xóa khuyến mãi', 'delete_promotion'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add__promotion_detail'),
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Thêm chi tiết khuyến mãi', 'add_promotion_detail'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xem chi tiết khuyến mãi', 'view_promotion_detail'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Cập nhật chi tiết khuyến mãi', 'update_promotion_detail'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý chi tiết khuyến mãi'), 'Xóa chi tiết khuyến mãi', 'delete_promotion_detail'),
@@ -422,7 +427,9 @@ INSERT INTO permissions (ModuleID, PermissionName, Code) VALUES
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xem đánh giá', 'view_review'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý đánh giá'), 'Xóa đánh giá', 'delete_review'),
     
-    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý voucher'), 'Quản lý voucher', 'manage_voucher'),    
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý voucher'), 'Thêm voucher', 'add_voucher'),    
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý voucher'), 'Xem voucher', 'view_voucher'),  
+    ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý voucher'), 'Cập nhật voucher', 'update_voucher'),
     
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý quyền'), 'Xem quyền', 'view_role'),
     ((SELECT ModuleID FROM modules WHERE ModuleName = 'Quản lý quyền'), 'Thêm quyền mới', 'add_new_role'),
@@ -520,7 +527,6 @@ END$$
 
 DELIMITER ;
 
-CALL GetStatistics('2024-10-01 00:00:00', '2024-12-31 23:59:59');
 
 
 

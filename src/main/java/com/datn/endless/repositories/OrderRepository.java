@@ -12,21 +12,31 @@ import java.util.List;
 
 
 public interface OrderRepository extends JpaRepository<Order, String> {
-    @Query("SELECT o FROM Order o WHERE " +
-            "(:startDate IS NULL OR o.orderDate >= :startDate) AND " +
-            "(:endDate IS NULL OR o.orderDate <= :endDate) AND (" +
-            ":keywords IS NULL OR :keywords = '' OR " +
-            "o.userID.userID LIKE CONCAT('%', :keywords, '%') OR " +
+    @Query("SELECT o FROM Order o " +
+            "WHERE (:keywords IS NULL OR :keywords = '' OR " +
+            "o.orderID = :keywords OR " +
+            "o.userID.username LIKE CONCAT('%', :keywords, '%') OR " +
+            "o.userID.email LIKE CONCAT('%', :keywords, '%') OR " +
+            "o.userID.fullname LIKE CONCAT('%', :keywords, '%') OR " +
             "o.orderAddress LIKE CONCAT('%', :keywords, '%') OR " +
             "o.orderPhone LIKE CONCAT('%', :keywords, '%') OR " +
             "o.orderName LIKE CONCAT('%', :keywords, '%')" +
+            ") AND " +
+            "( :statusID IS NULL OR " +
+            "o.orderID IN (" +
+            "   SELECT os.order.orderID FROM Orderstatus os " +
+            "   WHERE os.time = (" +
+            "       SELECT MAX(os2.time) FROM Orderstatus os2 WHERE os2.order.orderID = os.order.orderID" +
+            "   ) AND os.statusType.id = :statusID" +
+            ")" +
             ") " +
             "ORDER BY o.orderDate DESC")
     Page<Order> findAllByFilters(
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
             @Param("keywords") String keywords,
+            @Param("statusID") Integer statusID,
             Pageable pageable);
+
+
 
     List<Order> findByUserID_Username(String username);
 

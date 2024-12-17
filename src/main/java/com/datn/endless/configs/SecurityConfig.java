@@ -100,8 +100,10 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/orders/{id}").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/orders").hasAuthority("view_order")
                                 .requestMatchers(HttpMethod.GET, "/orders/{id}/details").hasAuthority("orders/{id}/details")
-                                .requestMatchers(HttpMethod.POST, "/orders/cancel").hasAuthority("cancel_order")
-                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-paid").hasAuthority("mark-as-paid_order")
+                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-delivered").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/orders/cancel").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/orders/cancel-paid").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/orders/mark-as-paid").hasAuthority("view_order")
                                 .requestMatchers(HttpMethod.POST, "/orders/mark-as-shipping").hasAuthority("mark-as-shipping_order")
                                 .requestMatchers(HttpMethod.POST, "/orders/mark-as-confirmed").hasAuthority("mark-as-confirmed_order")
 
