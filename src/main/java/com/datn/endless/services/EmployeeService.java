@@ -63,7 +63,7 @@ public class EmployeeService {
     // Tạo nhân viên
     public EmployeeDTO createEmployee(EmployeeModel employeeModel) {
         // Kiểm tra sự tồn tại của username, phone và email
-        if(employeeModel.getUsername().isEmpty()){
+        if (employeeModel.getUsername().isEmpty()) {
             throw new DuplicateResourceException("Username không được bỏ trống");
         }
         if (employeeRepository.existsByUsername(employeeModel.getUsername())) {
@@ -85,30 +85,45 @@ public class EmployeeService {
 
         // Thiết lập vai trò cho nhân viên
         Set<Role> roles = getRolesFromIds(employeeModel.getRoleIds());
+
+        // Lấy vai trò "Nhân viên"
         Role nv = roleRepository.findByRoleName("Nhân viên");
-        roles.removeIf(role -> role.equals(nv));
-        roles.add(nv);
+
+        // Đảm bảo vai trò "Nhân viên" luôn có mặt trong các vai trò của nhân viên
+        if (!roles.contains(nv)) {
+            roles.add(nv);  // Thêm vai trò "Nhân viên" nếu chưa có
+        }
+
+        // Lưu các vai trò vào người dùng
         user.setRoles(roles);
 
         // Lưu User và trả về EmployeeDTO
         return convertToDTO(employeeRepository.save(user));
     }
 
+
     // Cập nhật nhân viên
     public EmployeeDTO updateEmployee(String userId, EmployeeModel employeeModel) {
         User user = employeeRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Không tìm thấy nhân viên"));
-        if(user.getRoles().isEmpty()){
+
+        // Kiểm tra vai trò: Nếu không có vai trò, là tài khoản khách hàng
+        if (user.getRoles().isEmpty()) {
             throw new DuplicateResourceException("Đây là tài khoản khách hàng");
         }
+
+        // Kiểm tra số điện thoại và email
         if (!employeeModel.getPhone().equals(user.getPhone()) && employeeRepository.existsByPhone(employeeModel.getPhone())) {
             throw new DuplicateResourceException("Số điện thoại đã tồn tại");
         }
         if (!employeeModel.getEmail().equals(user.getEmail()) && employeeRepository.existsByEmail(employeeModel.getEmail())) {
             throw new DuplicateResourceException("Email đã tồn tại");
         }
+
+        // Cập nhật thông tin nhân viên
         setUpdateDetails(user, employeeModel);
 
+        // Lưu thông tin nhân viên
         return convertToDTO(employeeRepository.save(user));
     }
 
@@ -245,6 +260,19 @@ public class EmployeeService {
         user.setPhone(model.getPhone());
         user.setEmail(model.getEmail());
         user.setAvatar(model.getAvatar());
+
+        // Giữ lại vai trò 'superadmin' nếu có
+        Set<Role> roles = new HashSet<>(user.getRoles()); // Bắt đầu với vai trò hiện tại của người dùng
+        for (String id : model.getRoleIds()) {
+            Role role = roleRepository.findById(id).orElse(null);
+            if (role != null) {
+                // Kiểm tra nếu role là 'superadmin', không thêm mới mà giữ nguyên
+                if (!role.getRoleName().equals("superadmin")||!role.getRoleName().equals("Nhân viên")) {
+                    roles.add(role); // Chỉ thêm các vai trò khác, không thay đổi 'superadmin'
+                }
+            }
+        }
+        user.setRoles(roles);
     }
 
 
