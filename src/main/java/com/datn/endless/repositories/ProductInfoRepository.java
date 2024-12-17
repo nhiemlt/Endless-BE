@@ -13,7 +13,8 @@ public interface ProductInfoRepository extends JpaRepository<ProductInfo, String
     @Query("SELECT p " +
             "FROM ProductInfo p " +
             "JOIN p.productversions pv " +
-            "Where (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+            "WHERE pv.status = 'Active' " + // Thêm điều kiện trạng thái Active
+            "AND (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(p.categoryID.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(p.brandID.name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "OR LOWER(pv.versionName) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
@@ -27,6 +28,7 @@ public interface ProductInfoRepository extends JpaRepository<ProductInfo, String
             @Param("brandIDs") List<String> brandIDs,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice);
+
 
     @Query("SELECT p " +
             "FROM ProductInfo p " +
