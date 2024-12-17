@@ -11,5 +11,4 @@ import java.math.BigDecimal;
 public class CategoryStatisticsDTO {
     private String categoryName;
     private BigDecimal totalRevenue;
-    private Double percentage;
 }

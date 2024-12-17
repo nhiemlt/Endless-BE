@@ -13,8 +13,8 @@ public class StatisticsRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public List<Map<String, Object>> getTotalImportAndSales(String startDate, String endDate) {
-        String sql = "CALL getTotalImportAndSales(?, ?)";
+    public List<Map<String, Object>> getTop5BestSellingProducts(String startDate, String endDate) {
+        String sql = "CALL getTop5BestSellingProducts(?, ?)";
         return jdbcTemplate.queryForList(sql, startDate, endDate);
     }
 
@@ -27,4 +27,14 @@ public class StatisticsRepository {
         String sql = "CALL getUnsoldProducts()";
         return jdbcTemplate.queryForList(sql);
     }
+
+    public List<Map<String, Object>> getTotalImportAndSales() {
+        String sql = "CALL getTotalImportAndSales()";
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    // Phương thức mới để gọi stored procedure getProductSalesSummary
+    public List<Map<String, Object>> getProductSalesSummary(String startDate, String endDate)
+        { String sql = "CALL getProductSalesSummary(?, ?)";
+        return jdbcTemplate.queryForList(sql, startDate, endDate);}
 }

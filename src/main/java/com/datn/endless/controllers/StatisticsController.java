@@ -20,9 +20,9 @@ public class StatisticsController {
     @Autowired
     private StatisticsService statisticsService;
 
-    @GetMapping("/total-import-sales")
-    public ResponseEntity<?> getTotalImportAndSales(@RequestParam String startDate, @RequestParam String endDate) {
-        List<ProductStatisticsDTO> result = statisticsService.getTotalImportAndSales(startDate, endDate);
+    @GetMapping("/top5bestsale")
+    public ResponseEntity<?> getTop5BestSellingProducts(@RequestParam String startDate, @RequestParam String endDate) {
+        List<ProductStatisticsDTO> result = statisticsService.getTop5BestSellingProducts(startDate, endDate);
         return ResponseEntity.ok(result);
     }
 
@@ -37,4 +37,20 @@ public class StatisticsController {
         List<UnsoldProductDTO> result = statisticsService.getUnsoldProducts();
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping("/total-import-sales")
+    public ResponseEntity<List<ProductStatisticsDTO>> getTotalImportAndSales() {
+        List<ProductStatisticsDTO> result = statisticsService.getTotalImportAndSales();
+        return ResponseEntity.ok(result);
+    }
+
+    // Endpoint mới để lấy thông tin bán hàng sản phẩm
+    @GetMapping("/product-sales-summary")
+    public ResponseEntity<List<ProductStatisticsDTO>> getProductSalesSummary(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate) {
+        List<ProductStatisticsDTO> result = statisticsService.getProductSalesSummary(startDate, endDate);
+        return ResponseEntity.ok(result);
+    }
 }
+
