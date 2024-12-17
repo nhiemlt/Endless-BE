@@ -1,19 +1,30 @@
 package com.datn.endless.repositories;
 
-import com.datn.endless.entities.Productversion;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Repository
-public interface StatisticsRepository extends JpaRepository<Productversion, String> {
+public class StatisticsRepository {
 
-    @Query(value = "CALL GetStatistics(:startDate, :endDate)", nativeQuery = true)
-    List<Object[]> callGetStatistics(
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate);
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    public List<Map<String, Object>> getTotalImportAndSales(String startDate, String endDate) {
+        String sql = "CALL getTotalImportAndSales(?, ?)";
+        return jdbcTemplate.queryForList(sql, startDate, endDate);
+    }
+
+    public List<Map<String, Object>> getRevenueByCategory(String startDate, String endDate) {
+        String sql = "CALL getRevenueByCategory(?, ?)";
+        return jdbcTemplate.queryForList(sql, startDate, endDate);
+    }
+
+    public List<Map<String, Object>> getUnsoldProducts() {
+        String sql = "CALL getUnsoldProducts()";
+        return jdbcTemplate.queryForList(sql);
+    }
 }

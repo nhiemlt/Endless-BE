@@ -1,14 +1,16 @@
 package com.datn.endless.services;
 
+import com.datn.endless.dtos.ProductStatisticsDTO;
+import com.datn.endless.dtos.CategoryStatisticsDTO;
+import com.datn.endless.dtos.UnsoldProductDTO;
 import com.datn.endless.repositories.StatisticsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class StatisticsService {
@@ -16,34 +18,34 @@ public class StatisticsService {
     @Autowired
     private StatisticsRepository statisticsRepository;
 
-    public Map<String, Object> getStatistics(String startDate, String endDate) {
-        LocalDateTime start = LocalDateTime.parse(startDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        LocalDateTime end = LocalDateTime.parse(endDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    public List<ProductStatisticsDTO> getTotalImportAndSales(String startDate, String endDate) {
+        List<Map<String, Object>> result = statisticsRepository.getTotalImportAndSales(startDate, endDate);
 
-        List<Object[]> statisticsData = statisticsRepository.callGetStatistics(start, end);
-
-        return processStatisticsData(statisticsData);
+        return result.stream().map(row -> new ProductStatisticsDTO(
+                (String) row.get("productName"),
+                (String) row.get("productVersion"),
+                ((Number) row.get("totalImport")).longValue(),
+                ((Number) row.get("totalSales")).longValue(),
+                (BigDecimal) row.get("totalRevenue")
+        )).collect(Collectors.toList());
     }
 
-    private Map<String, Object> processStatisticsData(List<Object[]> statisticsData) {
-        Map<String, Object> result = new HashMap<>();
+    public List<CategoryStatisticsDTO> getRevenueByCategory(String startDate, String endDate) {
+        List<Map<String, Object>> result = statisticsRepository.getRevenueByCategory(startDate, endDate);
 
-        if (statisticsData != null) {
-            for (Object[] row : statisticsData) {
-                try {
-                    String category = (String) row[0];
-                    Double totalRevenue = (Double) row[1];
-                    Double percentage = (Double) row[2];
-                    result.put(category, Map.of("totalRevenue", totalRevenue, "percentage", percentage));
-                } catch (Exception e) {
-                    e.printStackTrace(); // Log the error for debugging
-                }
-            }
-        } else {
-            System.out.println("No statistics data found.");
-        }
-
-        return result;
+        return result.stream().map(row -> new CategoryStatisticsDTO(
+                (String) row.get("categoryName"),
+                (BigDecimal) row.get("totalRevenue"),
+                ((Number) row.get("percentage")).doubleValue()
+        )).collect(Collectors.toList());
     }
 
+    public List<UnsoldProductDTO> getUnsoldProducts() {
+        List<Map<String, Object>> result = statisticsRepository.getUnsoldProducts();
+
+        return result.stream().map(row -> new UnsoldProductDTO(
+                (String) row.get("productName"),
+                (String) row.get("productVersion")
+        )).collect(Collectors.toList());
+    }
 }
