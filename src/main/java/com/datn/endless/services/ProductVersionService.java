@@ -602,46 +602,55 @@ public class ProductVersionService {
         // Tạo tổ hợp tất cả các giá trị thuộc tính
         List<List<Attributevalue>> combinations = generateCombinations(new ArrayList<>(attributeGroups.values()));
 
+        // Danh sách ưu tiên thứ tự của attributeName
+        List<String> attributePriority = List.of("Màu sắc", "Ram", "Bộ nhớ trong");
+
         // Tạo danh sách các phiên bản mới
         List<ProductVersionDTO> createdVersions = new ArrayList<>();
         for (List<Attributevalue> combination : combinations) {
-            // Tạo tên phiên bản
+            // Sắp xếp các giá trị thuộc tính dựa trên attributePriority
+            List<Attributevalue> sortedCombination = combination.stream()
+                    .sorted(Comparator.comparingInt(attr -> {
+                        String attributeName = attr.getAttribute().getAttributeName();
+                        return attributePriority.indexOf(attributeName) >= 0 ?
+                                attributePriority.indexOf(attributeName) : Integer.MAX_VALUE;
+                    }))
+                    .collect(Collectors.toList());
+
+            // Tạo tên phiên bản với các giá trị được sắp xếp
             String combinedName = productVersionModel.getVersionName() + " " +
-                    combination.stream()
+                    sortedCombination.stream()
                             .map(Attributevalue::getValue)
                             .collect(Collectors.joining(" "));
 
             // Kiểm tra trùng lặp tên phiên bản
-
             if (!checkCreateProductVersion(product, productVersionModel.getAttributeValueID(), combinedName)) {
                 continue;
             }
 
+            Productversion productVersion = new Productversion();
+            productVersion.setProductVersionID(UUID.randomUUID().toString());
+            productVersion.setProductID(product);
+            productVersion.setVersionName(combinedName);
+            productVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
+            productVersion.setPrice(productVersionModel.getPrice());
+            productVersion.setWeight(productVersionModel.getWeight());
+            productVersion.setHeight(productVersionModel.getHeight());
+            productVersion.setLength(productVersionModel.getLength());
+            productVersion.setWidth(productVersionModel.getWidth());
+            productVersion.setImage(productVersionModel.getImage());
+            productVersion.setStatus("Active");
 
-                Productversion productVersion = new Productversion();
-                productVersion.setProductVersionID(UUID.randomUUID().toString());
-                productVersion.setProductID(product);
-                productVersion.setVersionName(combinedName);
-                productVersion.setPurchasePrice(productVersionModel.getPurchasePrice());
-                productVersion.setPrice(productVersionModel.getPrice());
-                productVersion.setWeight(productVersionModel.getWeight());
-                productVersion.setHeight(productVersionModel.getHeight());
-                productVersion.setLength(productVersionModel.getLength());
-                productVersion.setWidth(productVersionModel.getWidth());
-                productVersion.setImage(productVersionModel.getImage());
-                productVersion.setStatus("Active");
+            // Lưu phiên bản sản phẩm
+            Productversion savedVersion = productVersionRepository.save(productVersion);
 
-                // Lưu phiên bản sản phẩm
-                Productversion savedVersion = productVersionRepository.save(productVersion);
+            // Lưu thông tin thuộc tính
+            saveVersionAttributes(sortedCombination.stream()
+                    .map(Attributevalue::getAttributeValueID)
+                    .collect(Collectors.toList()), savedVersion);
 
-                // Lưu thông tin thuộc tính
-                saveVersionAttributes(combination.stream()
-                        .map(Attributevalue::getAttributeValueID)
-                        .collect(Collectors.toList()), savedVersion);
-
-                // Chuyển đổi thành DTO và thêm vào danh sách
-                createdVersions.add(convertToDTO(savedVersion));
-
+            // Chuyển đổi thành DTO và thêm vào danh sách
+            createdVersions.add(convertToDTO(savedVersion));
         }
 
         if (createdVersions.size() == 0) {
@@ -650,6 +659,7 @@ public class ProductVersionService {
 
         return createdVersions;
     }
+
 
     private List<List<Attributevalue>> generateCombinations(List<List<Attributevalue>> attributeGroups) {
         if (attributeGroups.isEmpty()) {

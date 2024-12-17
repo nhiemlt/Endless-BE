@@ -15,7 +15,8 @@ public interface PromotionproductRepository extends JpaRepository<Promotionprodu
     @Query("SELECT pp FROM Promotionproduct pp " +
             "JOIN pp.promotionID p " +
             "WHERE pp.productVersionID.productVersionID = :productVersionID " +
-            "AND p.startDate <= :currentTime " +
+            "AND p.active = true" +
+            " AND p.startDate <= :currentTime " +
             "AND p.endDate >= :currentTime")
     List<Promotionproduct> findByProductVersionIDAndPromotionStartDateBeforeAndPromotionEndDateAfter(
             @Param("productVersionID") String productVersionID,
