@@ -347,7 +347,7 @@ public class OrderService {
 
     public List<OrderDTO> getAllUserLogin() {
         // Fetch orders based on the current username
-        List<Order> orders = orderRepository.findByUserID_Username(userLoginInformation.getCurrentUsername());
+        List<Order> orders = orderRepository.findByUserID_UsernameOrderByOrderDateDesc(userLoginInformation.getCurrentUsername());
 
         // Map each Order to OrderDTO
         return orders.stream()

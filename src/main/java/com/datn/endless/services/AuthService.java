@@ -80,7 +80,7 @@ public class AuthService {
             String token = jwt.generateToken(user.getUsername());
 
             List<Role> roles = userRepository.findRolesByUserId(user.getUserID());
-            String roleName = roles.isEmpty() ? "người dùng" : roles.get(0).getRoleName();
+            String roleName = roles.isEmpty() ? "user" : roles.get(0).getRoleName();
 
             CustomUserDetails userDetails = new CustomUserDetails(user);
 
