@@ -43,6 +43,16 @@ public class RoleService {
         return roleRepository.findAll(pageable).map(this::toDTO);
     }
 
+// Lấy tất cả roles mà không có tìm kiếm, không phân trang
+public List<RoleDTO> getAllRoles() {
+    return roleRepository.findAll().stream()
+            // Lọc bỏ vai trò có tên là "Nhân viên"
+            .filter(role -> !role.getRoleName().equals("Nhân viên"))
+            .map(this::toBasicDTO)
+            .collect(Collectors.toList());
+}
+
+
     // Lấy vai trò của người dùng hiện tại
     public Set<RoleDTO> getCurrentUserRoles() {
         // Lấy thông tin tên người dùng hiện tại thông qua UserLoginInfomation
@@ -132,6 +142,11 @@ public class RoleService {
         return new RoleDTO(role.getRoleId(), role.getRoleName(),employee, employeeActive, employeeInactive, permissionDTOs);
     }
 
+
+    private RoleDTO toBasicDTO(Role role) {
+
+        return new RoleDTO(role.getRoleId(), role.getRoleName(),null, null, null, null);
+    }
     // Lấy danh sách permissions theo ID
     private Set<Permission> fetchPermissionsByIds(List<String> permissionIds) {
         return new HashSet<>(permissionRepository.findAllById(permissionIds));

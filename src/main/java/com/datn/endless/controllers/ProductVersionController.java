@@ -136,16 +136,19 @@ public class ProductVersionController {
 
     @GetMapping
     public ResponseEntity<?> getProductVersions(
-
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "versionName") String sortBy,
             @RequestParam(defaultValue = "ASC") String direction,
-            @RequestParam(value = "keyword", required = false) String keyword) {
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "productId", required = false) String productId,
+            @RequestParam(value = "minPrice", required = false) BigDecimal minPrice,    // Thêm tham số minPrice
+            @RequestParam(value = "maxPrice", required = false) BigDecimal maxPrice) {  // Thêm tham số maxPrice
 
+        // Gọi service để lấy danh sách ProductVersions với các điều kiện đã truyền vào
+        Page<ProductVersionDTO> productVersions = productVersionService.getProductVersions(
+                page, size, sortBy, direction, keyword, productId, minPrice, maxPrice);
 
-        // Nếu không có tham số, trả về tất cả ProductVersions có phân trang và sort
-        Page<ProductVersionDTO> productVersions = productVersionService.getProductVersions(page, size, sortBy, direction, keyword);
         return ResponseEntity.ok(productVersions);
     }
 
@@ -194,21 +197,19 @@ public class ProductVersionController {
             result.getAllErrors().forEach(error -> errorMessage.append(error.getDefaultMessage()).append("; "));
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage.toString());
         }
-
         try {
             // Cập nhật phiên bản sản phẩm thông qua service
             ProductVersionDTO updatedProductVersion = productVersionService.updateProductVersion(productVersionID, model);
             return ResponseEntity.ok(updatedProductVersion); // Trả về phiên bản sản phẩm đã được cập nhật
-
         } catch (ProductVersionNotFoundException e) {
             // Trường hợp không tìm thấy phiên bản sản phẩm
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy phiên bản sản phẩm: " + e.getMessage());
         } catch (ProductVersionConflictException e) {
             // Trường hợp tên phiên bản trùng
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Lỗi xung đột tên phiên bản: " + e.getMessage());
-        } catch (ProductNotFoundException e) {
-            // Trường hợp không tìm thấy sản phẩm tương ứng
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm: " + e.getMessage());
+        } catch (AttributeValueNotFoundException e) {
+            // Trường hợp không tìm thấy giá trị thuộc tính
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy giá trị thuộc tính: " + e.getMessage());
         } catch (Exception e) {
             // Các lỗi khác liên quan đến hệ thống
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi hệ thống: " + e.getMessage());
@@ -270,7 +271,15 @@ public class ProductVersionController {
     }
 
 
-
+    @GetMapping("/{productId}/attribute-values")
+    public ResponseEntity<?> getAllAttributeValueIdsByProductId(@PathVariable String productId) {
+        try {
+            List<String> attributeValueIds = productVersionService.getAllAttributeValueIdsByProductId(productId);
+            return ResponseEntity.ok(attributeValueIds);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
+    }
 
 
 

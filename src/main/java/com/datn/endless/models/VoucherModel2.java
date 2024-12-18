@@ -29,7 +29,7 @@ public class VoucherModel2 {
     private BigDecimal biggestDiscount;
 
     @NotNull(message = "Mức giảm giá không được để trống")
-    @Min(value = 0, message = "Mức giảm giá phải ít nhất là 0")
+    @Min(value = 1, message = "Mức giảm giá phải ít nhất là 1")
     @Max(value = 50, message = "Mức giảm giá phải không được vượt quá 50")
     private Integer discountLevel;
 

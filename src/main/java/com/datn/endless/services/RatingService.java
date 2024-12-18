@@ -99,6 +99,7 @@ public class RatingService {
         ratingDTO2.setAvatar(rating.getUserID().getAvatar());
         ratingDTO2.setOrderDetailID(rating.getOrderDetailID().getOrderDetailID());
         ratingDTO2.setProductVersionID(rating.getOrderDetailID().getProductVersionID().getProductVersionID());
+        ratingDTO2.setName(rating.getOrderDetailID().getProductVersionID().getProductID().getName());
         ratingDTO2.setVersionName(rating.getOrderDetailID().getProductVersionID().getVersionName());
         ratingDTO2.setImage(rating.getOrderDetailID().getProductVersionID().getImage());
         ratingDTO2.setRatingValue(rating.getRatingValue());
@@ -124,6 +125,7 @@ public class RatingService {
         ratingDTO.setAvatar(rating.getUserID().getAvatar());
         ratingDTO.setOrderDetailID(rating.getOrderDetailID().getOrderDetailID());
         ratingDTO.setProductVersionID(rating.getOrderDetailID().getProductVersionID().getProductVersionID());
+        ratingDTO.setName(rating.getOrderDetailID().getProductVersionID().getProductID().getName());
         ratingDTO.setVersionName(rating.getOrderDetailID().getProductVersionID().getVersionName());
         ratingDTO.setImage(rating.getOrderDetailID().getProductVersionID().getImage());
         ratingDTO.setRatingValue(rating.getRatingValue());
@@ -139,10 +141,11 @@ public class RatingService {
         return ratingDTO;
     }
 
-    public Page<RatingDTO2> getRatingsByKeyWord(String keyword, int ratingValue, Pageable pageable) {
-        Page<Rating> ratings = ratingRepository.findByKeyWord(keyword, ratingValue, pageable);
+    public Page<RatingDTO2> getRatingsByKeyWord(String keyword, int ratingValue, int month, int year, Pageable pageable) {
+        Page<Rating> ratings = ratingRepository.findByKeyWord(keyword, ratingValue, month, year, pageable);
         return ratings.map(this::convertToDTO2);
     }
+
 
     // Chuyển đổi đối tượng RatingPicture sang RatingPictureDTO
     private RatingPictureDTO convertToPictureDTO(Ratingpicture ratingPicture) {
@@ -206,6 +209,30 @@ public class RatingService {
 
         // Xóa đánh giá
         ratingRepository.delete(rating);
+    }
+
+    public Long getTotalRatingsCount() {
+        return ratingRepository.countTotalRatings();
+    }
+
+    public Double calculateWeightedAverageRating() {
+        List<Object[]> ratingsGrouped = ratingRepository.findRatingsGroupedByValue();
+        double totalRatingValue = 0; // Tổng giá trị sao
+        long totalCount = 0; // Tổng số lượt đánh giá
+
+        for (Object[] row : ratingsGrouped) {
+            Integer ratingValue = (Integer) row[0];  // Mức sao (1, 2, 3, 4, 5)
+            Long count = (Long) row[1];              // Số lượt đánh giá cho mức sao đó
+
+            totalRatingValue += ratingValue * count; // Cộng tổng điểm (ratingValue * count)
+            totalCount += count;                     // Cộng tổng số lượt đánh giá
+        }
+
+        if (totalCount == 0) {
+            return 0.0; // Trả về 0 nếu không có đánh giá nào
+        }
+
+        return totalRatingValue / totalCount; // Tính trung bình trọng số
     }
 
 }

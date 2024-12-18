@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,6 +40,12 @@ public class RoleController {
         Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<RoleDTO> roles = roleService.getAllRoles(keyword, pageable);
+        return ResponseEntity.ok(roles);
+    }
+
+    @GetMapping("/get-all")
+    public ResponseEntity<List<RoleDTO>> getAllRoles() {
+        List<RoleDTO> roles = roleService.getAllRoles();
         return ResponseEntity.ok(roles);
     }
 
