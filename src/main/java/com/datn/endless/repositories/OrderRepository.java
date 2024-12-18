@@ -37,6 +37,15 @@ public interface OrderRepository extends JpaRepository<Order, String> {
             Pageable pageable);
 
 
+    @Query("select o from Order o " +
+            " join Orderdetail od on od.orderID.orderID = o.orderID" +
+            " where o.userID.username = :username and (" +
+            "   (:keyword is null or od.productVersionID.productID.name like %:keyword%)" +
+            "   or (:keyword is null or od.productVersionID.versionName like %:keyword%)" +
+            "   or (:keyword is null or o.orderID = :keyword)" +
+            ")")
+    List<Order> findByUserID_UsernameAndKeyword(@Param("username") String username, @Param("keyword") String keyword);
+
 
     List<Order> findByUserID_Username(String username);
 
