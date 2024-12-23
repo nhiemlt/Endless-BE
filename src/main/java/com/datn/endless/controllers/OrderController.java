@@ -137,9 +137,9 @@ public class OrderController {
 
     // Lấy tất cả đơn hàng của người dùng đăng nhập
     @GetMapping("/user")
-    public ResponseEntity<?> getAllUserOrders(@RequestParam(name = "keyword", required = false) String keyword) {
+    public ResponseEntity<?> getAllUserOrders() {
         try {
-            List<OrderDTO> orders = orderService.getAllUserLogin(keyword);
+            List<OrderDTO> orders = orderService.getAllUserLogin();
             if (orders.isEmpty()) {
                 return new ResponseEntity<>(Map.of("message", "Không tìm thấy đơn hàng của người dùng", "data", orders), HttpStatus.NO_CONTENT);
             }

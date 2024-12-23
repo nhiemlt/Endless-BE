@@ -54,12 +54,13 @@ public class SecurityConfig {
                                 .requestMatchers("/products/{id}").permitAll()  // Sử dụng quyền view_product_details
                                 .requestMatchers("/api/product-versions/get-user").permitAll()
                                 .requestMatchers("/api/product-versions/filter-product-versions").permitAll()
-                                .requestMatchers("/api/product-versions/top5ByCategory").permitAll()
+                                .requestMatchers("/api/product-versions/top5ByCategory/**").permitAll()
                                 .requestMatchers("/api/product-versions/filter").permitAll()
                                 .requestMatchers(HttpMethod.GET,"/api/product-versions/{id}").permitAll()
                                 .requestMatchers("/api/product-versions/top-selling").permitAll()
                                 .requestMatchers("/api/product-versions/top-selling/all-time").permitAll()
                                 .requestMatchers("/api/user-vouchers").permitAll()
+                                .requestMatchers("/api/vouchers").authenticated()
                                 .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers("/api/permission/**").permitAll()
                                 .requestMatchers("/api/payment/**").permitAll()
@@ -91,9 +92,6 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/notifications/markAllAsRead").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/notifications/delete").hasAuthority("notifications/delete")
                                 .requestMatchers(HttpMethod.DELETE, "/notifications/delete/{notificationRecipientID}").authenticated()
-
-                                .requestMatchers("/api/vouchers").hasAuthority("manage_voucher")
-                                .requestMatchers("/api/vouchers/**").hasAuthority("manage_voucher")
 
                                 .requestMatchers(HttpMethod.POST, "/orders").authenticated()
                                 .requestMatchers(HttpMethod.POST, "/orders/create-order-online").authenticated()
@@ -165,10 +163,6 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.GET, "/api/ratings/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/ratings").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/api/ratings/{id}").hasAuthority("delete_review")
-
-                                .requestMatchers(HttpMethod.GET, "/api/vouchers/**").hasAuthority("view_voucher")
-                                .requestMatchers(HttpMethod.POST, "/api/vouchers/**").hasAuthority("add_voucher")
-                                .requestMatchers(HttpMethod.PUT, "/api/vouchers/update/{id}").hasAuthority("update_voucher")
 
                                 .requestMatchers(HttpMethod.PUT, "/user-roles/{id}").hasAuthority("update_user_role")
                                 .requestMatchers(HttpMethod.DELETE, "/user-roles/{id}").hasAuthority("delete_user_role")

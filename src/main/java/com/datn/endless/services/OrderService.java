@@ -345,18 +345,15 @@ public class OrderService {
         return getAllOrderDTOS( keywords, statusId, pageable);
     }
 
-    public List<OrderDTO> getAllUserLogin(String keyword) {
+    public List<OrderDTO> getAllUserLogin() {
         // Fetch orders based on the current username
-
-        List<Order> orders = orderRepository.findByUserID_UsernameAndKeyword(userLoginInformation.getCurrentUsername(), keyword);
+        List<Order> orders = orderRepository.findByUserID_UsernameOrderByOrderDateDesc(userLoginInformation.getCurrentUsername());
 
         // Map each Order to OrderDTO
         return orders.stream()
                 .map(this::convertToOrderDTO)
                 .collect(Collectors.toList());
     }
-
-    private Page<OrderDTO> getAllOrderDTOS( String keywords, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
 
 
     public Page<OrderDTO> getAllOrderDTOsByUserLogin( String keywords, int statusId,Pageable pageable) {
@@ -372,6 +369,7 @@ public class OrderService {
 
         return orders.map(this::convertToOrderDTO);
     }
+
 
     // Lấy chi tiết đơn hàng theo ID
     public List<OrderDetailDTO> getOrderDetailsDTOByOrderId(String orderId) {
@@ -616,7 +614,7 @@ public class OrderService {
 
 
 
-        // Chuyển đổi Order thành OrderDTO
+    // Chuyển đổi Order thành OrderDTO
     private OrderDTO convertToOrderDTO(Order order) {
         OrderDTO dto = new OrderDTO();
         dto.setOrderID(order.getOrderID());
